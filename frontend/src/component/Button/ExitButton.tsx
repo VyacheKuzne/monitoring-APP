@@ -1,12 +1,12 @@
-import React from "react";
-
-function ExitButton() {
-    return (
-        <>
-        <button className="text12-24px bg-custom-blue text-white px-[30%] rounded-md">
-            <p>Войти</p>
-        </button>
-        </>
-    )
+import React from 'react'
+import ExitSvg from '../../img/exit.svg'
+export default function NotificationButton() {
+  return (
+    <>
+    <button className='flex mx-[5%]'>
+        <img src={ExitSvg} alt="Кнопка выхода" />
+        <p className='mx-[10%]'>Выйти</p>
+    </button>
+    </>
+  )
 }
-export default ExitButton   
