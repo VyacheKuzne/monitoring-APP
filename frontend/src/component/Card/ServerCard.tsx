@@ -7,8 +7,8 @@ export default function ServerCard() {
             <div className='w-1/4 mx-[2%] bg-white rounded-md text-left p-[1.5%] shadow-lg'>
                 <p className='text8-16px'>Статус работы серверов</p>
                 <div className='h-[1px] bg-gray-500 my-[2%]' content=''></div>
-                <div>
-                    <div className='flex content-center  relative w-auto h-[35px]'>
+                <div className='h-[35px]'>
+                    <div className='flex content-center  relative w-auto h-full'>
                         <input
                             type="text"
                             className='bg-gray-200 rounded-2xl text6-12px w-3/4 p-[2%] pr-[3em]' /* pr - padding right */
@@ -23,9 +23,9 @@ export default function ServerCard() {
                                 className='h-[1.2em] w-[1.2em]' /* устанавливаем высоту и ширину картинки в em*/
                             />
                         </div>
-                        <div className='flex'>
-                            <div content=''className='bg-white border-4 border-red-500 h-[20px] w-[20px] rounded-full'/>
-                            <div content=''className='bg-white border-4 border-green-500 h-[20px] w-[20px] rounded-full'/>
+                        <div className='flex h-full items-center justify-around w-1/5'>
+                            <button content=''className='bg-white border-4 border-red-500 h-[20px] w-[20px] rounded-full'/>
+                            <button content=''className='bg-white border-4 border-green-500 h-[20px] w-[20px] rounded-full'/>
                         </div>
                     </div>
                 </div>
