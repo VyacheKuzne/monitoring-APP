@@ -9,6 +9,35 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL") // Шо сюда писать!?
+}
+
+model company {
+  idCompany Int @id @default(autoincrement())
+  name String @db.VarChar(50)
+
+  servers server[] // Связь с таблицей server один ко многим
+}
+
+model server {
+  idServer Int @id @default(autoincrement())
+  parentCompany Int
+  ipAddress String @db.VarChar(50)
+  hostname String @db.VarChar(50)
+  location String @db.VarChar(50)
+  os String @db.VarChar(50)
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  company company @relation(fields: [parentCompany], references: [idCompany]) // Связь с таблицей company один ко многим
+  app app[] // Связь с таблицей server один ко многим
+}
+
+model app {
+  idApp Int @id @default(autoincrement())
+  parentServer Int
+  name String @db.VarChar(50)
+
+  server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей company один ко многим
 }
