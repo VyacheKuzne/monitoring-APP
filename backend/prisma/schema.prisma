@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL") // Шо сюда писать!?
+  url = env("DATABASE_URL")
 }
 
 model company {
