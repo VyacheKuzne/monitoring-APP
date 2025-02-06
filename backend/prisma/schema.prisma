@@ -30,14 +30,115 @@ model server {
   created DateTime @default(now())
   updated DateTime @updatedAt
 
+  app app[]
+  checkServerStats checkServerStats[]
+  serverHasDomain serverHasDomain[]
+  serverHasSSL serverHasSSL[]
+
   company company @relation(fields: [parentCompany], references: [idCompany]) // Связь с таблицей company один ко многим
-  app app[] // Связь с таблицей server один ко многим
 }
 
 model app {
   idApp Int @id @default(autoincrement())
   parentServer Int
   name String @db.VarChar(50)
+  oneDomain Int?
 
-  server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей company один ко многим
+  checkPage checkPage[]
+
+  server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
+  // domain domain? @relation(fields: [oneDomain], references: [idDomain]) // Связь с таблицей domain один к одному
+}
+
+model domain {
+  idDomain Int @id @default(autoincrement())
+  oneApp Int?
+  name String @db.VarChar(50)
+  registered DateTime
+  expires DateTime
+  updated DateTime
+  parentStatus Int?
+  nameRegistar String @db.VarChar(50)
+  nameOwner String @db.VarChar(50)
+  access Boolean
+
+  serverHasDomain serverHasDomain[]
+
+  // app app? @relation(fields: [oneApp], references: [idApp]) // Связь с таблицей app один к одному
+  status status? @relation(fields: [parentStatus], references: [idStatus]) // Связь с таблицей status один ко многим
+}
+
+model SSL {
+  idSSL Int @id @default(autoincrement())
+  serialNumber String @db.VarChar(50)
+  namePublisher String @db.VarChar(50)
+  registered DateTime
+  expires DateTime
+  parentStatus Int?
+  fingerprint String @db.VarChar(50)
+  publickey String @db.VarChar(50)
+  privatekey String @db.VarChar(50)
+  version String @db.VarChar(50)
+  protocol String @db.VarChar(50)
+
+  serverHasSSL serverHasSSL[]
+
+  status status? @relation(fields: [parentStatus], references: [idStatus]) // Связь с таблицей status один ко многим
+}
+
+model status {
+  idStatus Int @id @default(autoincrement())
+  status String @db.VarChar(50)
+
+  domain domain[]
+  ssl SSL[]
+}
+
+model serverHasDomain { // Связь многие ко многим таблиц server и domain
+  manyServer Int
+  server server @relation(fields: [manyServer], references: [idServer])
+  manyDomain Int
+  domain domain @relation(fields: [manyDomain], references: [idDomain])
+
+  @@id([manyServer, manyDomain])
+}
+
+model serverHasSSL { // Связь многие ко многим таблиц server и SSL
+  manyServer Int
+  server server @relation(fields: [manyServer], references: [idServer])
+  manySSL Int
+  ssl SSL @relation(fields: [manySSL], references: [idSSL])
+
+  @@id([manyServer, manySSL])
+}
+
+model checkServerStats {
+  idCheckServerStats Int @id @default(autoincrement())
+  parentServer Int
+  totalRAM  String @db.VarChar(50)
+  usedRAM  String @db.VarChar(50)
+  remainingRAM  String @db.VarChar(50)
+  totalMemory  String @db.VarChar(50)
+  usedMemory  String @db.VarChar(50)
+  remainingMemory  String @db.VarChar(50)
+  countProcesses Int
+  countErrors Int
+
+  server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
+}
+
+model checkPage {
+  idCheckPage Int @id @default(autoincrement())
+  parentApp Int
+  statusLoadPage  String @db.VarChar(50)
+  statusLoadContent  String @db.VarChar(50)
+  statusLoadDOM  String @db.VarChar(50)
+  statusLoadMedia  String @db.VarChar(50)
+  statusLoadStyles  String @db.VarChar(50)
+  statusLoadScripts  String @db.VarChar(50)
+  requestTime DateTime
+  responseTime DateTime
+  responseRate DateTime
+
+  app app @relation(fields: [parentApp], references: [idApp]) // Связь с таблицей app один ко многим
 }
