@@ -46,11 +46,6 @@ export class AppController {
       throw new InternalServerErrorException(`Failed to retrieve whois data for domain: ${domain}`);
     }
   }
-
-  @Post('company')
-  async createUser(@Body() body: { name: string }) {
-    return this.appService.createCompany(body.name);
-  }
 }
 
 @Controller('company')
@@ -58,7 +53,11 @@ export class AppControlleeer {
   constructor(private readonly appService: AppService) {}
 
   @Post('/create')
-  async createUser(@Body() body: { name: string }) {
+  async createCompany(@Body() body: { name: string }) {
     return this.appService.createCompany(body.name);
+  }
+  @Get('/get')
+  async getCompany() {
+    return this.appService.getCompany();
   }
 }

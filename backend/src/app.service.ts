@@ -24,7 +24,10 @@ export class AppService {
 
   async createCompany(name: string) {
     return this.prisma.company.create({
-      data: { name},
+      data: {name},
     });
+  }
+  async getCompany() {
+    return this.prisma.company.findMany();
   }
 }

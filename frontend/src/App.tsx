@@ -46,22 +46,44 @@ function App() {
     }
   };
 
-  const enterData = async () => {
-    console.log('Произошёл пам пам');
+  
+  useEffect(() => {
+    fetchRandomDomain(); // Fetch a random domain on initial load
+    getData();
+  }, []);
+  
+  const [companyData, setCompanyData] = useState('');
 
-    const userData = {
-      name: 'ООО "Детский дом"',
-    };
+  // let companyData = 'ООО "Название компании"'
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCompanyData(event.target.value);
+  };
 
-    axios.post('http://localhost:3000/company/create', userData).then(response => 
+  const createCompany = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    axios.post('http://localhost:3000/company/create', {
+      name: companyData
+    }).then(response => 
     {
       console.log('Компания создана:', response.data);
     });
   };
 
-  useEffect(() => {
-    fetchRandomDomain(); // Fetch a random domain on initial load
-  }, []);
+  interface Company {
+    idCompany: number;
+    name: string;
+  }
+
+  const [companies, setCompanies] = useState<Company[]>([]);
+
+  const getData = async () => {
+    axios.get('http://localhost:3000/company/get').then(response => 
+    {
+      console.log('Данные получены:', response.data);
+      setCompanies(response.data);
+    });
+  };
 
   return (
     <div>
@@ -87,8 +109,35 @@ function App() {
         </div>
       )}
 
+
+      <form onSubmit={createCompany}>
+        <input 
+          className='w-[350px] border' 
+          type="text" 
+          placeholder="Название компании" 
+          value={companyData} 
+          onChange={handleChange}
+        />
+        <button type="submit">Внести данные инпута</button>
+      </form>
       <div>
-        <button onClick={enterData}>Внести какие-то данные</button>
+        <button onClick={getData}>Получить данные</button>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Название</th>
+            </tr>
+          </thead>
+          <tbody>
+          {companies.map((company, index) => (
+            <tr key={index}>
+              <td>{company.idCompany}</td> {/* Используем idCompany */}
+              <td>{company.name}</td> {/* Используем name */}
+            </tr>
+          ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
