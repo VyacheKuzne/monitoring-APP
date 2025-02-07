@@ -1,5 +1,4 @@
-// src/app.controller.ts
-import { Controller, Get, Post, Body, Param, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { AppService } from './app.service';
 import * as whois from 'whois';
 
@@ -45,19 +44,5 @@ export class AppController {
       }
       throw new InternalServerErrorException(`Failed to retrieve whois data for domain: ${domain}`);
     }
-  }
-}
-
-@Controller('company')
-export class AppControlleeer {
-  constructor(private readonly appService: AppService) {}
-
-  @Post('/create')
-  async createCompany(@Body() body: { name: string }) {
-    return this.appService.createCompany(body.name);
-  }
-  @Get('/get')
-  async getCompany() {
-    return this.appService.getCompany();
   }
 }

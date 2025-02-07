@@ -112,7 +112,7 @@ function App() {
 
       <form onSubmit={createCompany}>
         <input 
-          className='w-[350px] border' 
+          className='w-[350px] border-2' 
           type="text" 
           placeholder="Название компании" 
           value={companyData} 
@@ -121,19 +121,22 @@ function App() {
         <button type="submit">Внести данные инпута</button>
       </form>
       <div>
-        <button onClick={getData}>Получить данные</button>
-        <table>
+        <button onClick={getData}>Обновить данные</button>
+        <table className='border-2'>
           <thead>
             <tr>
               <th>ID</th>
               <th>Название</th>
+              <th>Действия</th>
             </tr>
           </thead>
           <tbody>
           {companies.map((company, index) => (
-            <tr key={index}>
+            <tr  className='border-2' key={index}>
               <td>{company.idCompany}</td> {/* Используем idCompany */}
               <td>{company.name}</td> {/* Используем name */}
+              <td><button>Изменить</button></td>
+              <td><button>Удалить</button></td>
             </tr>
           ))}
           </tbody>

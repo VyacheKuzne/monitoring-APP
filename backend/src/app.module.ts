@@ -1,14 +1,14 @@
-// src/app.module.ts (ensure 'http' module is installed: npm install @nestjs/platform-express)
 import { Module } from '@nestjs/common';
-import { AppControlleeer, AppController } from './app.controller';
+import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { HttpModule } from '@nestjs/axios';
+import { WhoisModule } from './whois/whois.module';
+import { ConfigModule } from '@nestjs/config';
+import { SslLabsModule } from './ssl-labs/ssl-labs.module';
+import { SystemModule } from './systeminformation/system.module'; // Import SystemModule
 
 @Module({
-  imports: [HttpModule],
-  controllers: [AppControlleeer, AppController],
+  imports: [WhoisModule, SystemModule, SslLabsModule , ConfigModule.forRoot({ isGlobal: true })],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-
-// React Frontend
