@@ -12,12 +12,14 @@
 
 - Клонировать репозиторий `git clone <link>` (вписать `git pull` если требуется обновить до новой версии)
 - Отдельно для папок `frontend` и `backend`, прописать в терминале команду `npm install`
-- Находясь в папке `backend`, также прописать `npm install prisma --save-dev` + `npm install prisma --save-dev`
+<!-- - Находясь в папке `backend`, также прописать `npm install prisma --save-dev` + `npm install @prisma/client` -->
 
 ---
 
 **Запуск**
 
-Подготовка к запуску:
+Порядок запуска:
 
-- Для папки `frontend`, прописать `npm start`
+1. Мигрировать БД `npx prisma migrate deploy` (`npx prisma migrate reset` для обновления)
+2. Для папки `frontend`, прописать `npm start`
+3. Для папки `backend`, прописать `npm run start`

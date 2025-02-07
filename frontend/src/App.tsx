@@ -46,6 +46,19 @@ function App() {
     }
   };
 
+  const enterData = async () => {
+    console.log('Произошёл пам пам');
+
+    const userData = {
+      name: 'ООО "Детский дом"',
+    };
+
+    axios.post('http://localhost:3000/company/create', userData).then(response => 
+    {
+      console.log('Компания создана:', response.data);
+    });
+  };
+
   useEffect(() => {
     fetchRandomDomain(); // Fetch a random domain on initial load
   }, []);
@@ -73,6 +86,10 @@ function App() {
           <pre>{whoisData.raw}</pre> {/* Display raw data */}
         </div>
       )}
+
+      <div>
+        <button onClick={enterData}>Внести какие-то данные</button>
+      </div>
     </div>
   );
 }
