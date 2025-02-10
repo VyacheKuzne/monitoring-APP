@@ -7,6 +7,8 @@ import { DiskData } from './interfaces/disk.interface';
 import { NetworkData } from './interfaces/network.interface';
 import { MemoryData } from './interfaces/memory.interface';
 import { SystemData } from './interfaces/system-data.interface';
+import { timeout } from 'rxjs/operators';
+
 
 @Injectable()
 export class SystemService implements OnModuleInit, OnModuleDestroy {
@@ -19,7 +21,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private systemData$ = new BehaviorSubject<SystemData | null>(null);
 
   private intervalSubscription: any;
-  private readonly pollingInterval = 5000;
+  private readonly pollingInterval = 60000;
 
   onModuleInit() {
     this.startMonitoring();
@@ -64,7 +66,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   // --- CPU ---
   private updateCpuData() {
     from(si.cpuCurrentSpeed())
-      .pipe(
+      .pipe(  
         switchMap((speed) =>
           from(si.cpu()).pipe(
             map((cpu) => ({
@@ -98,7 +100,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   // --- DISK ---
   private updateDiskData() {
     from(si.fsSize())
-      .pipe(
+      .pipe(  
         map((disks) =>
           disks.map((disk) => {
             // Use type assertion to tell TypeScript that disk has a device property
@@ -129,7 +131,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   // --- NETWORK ---
   private updateNetworkData() {
     from(si.networkInterfaces())
-      .pipe(
+      .pipe(  
         switchMap((interfaces) => {
           const interfacesArray = Array.isArray(interfaces) ? interfaces : [interfaces];
 
@@ -165,7 +167,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private updateMemoryData() {
     this.logger.debug('Getting memory information...');
     from(si.mem())
-      .pipe(
+      .pipe(  
         map((memory) => ({
           total: memory.total,
           free: memory.free,
