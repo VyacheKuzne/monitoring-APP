@@ -15,11 +15,11 @@ export class testDBController {
     return this.testDBService.getCompany();
   }
   @Patch('/edit/:idCompany')
-  async editCompany(@Param('idCompany') idCompany: string, @Body() body: { name: string }) {
+  async editCompany(@Param('idCompany') idCompany: number, @Body() body: { name: string }) {
     return this.testDBService.editCompany(idCompany, body.name);
   }
-  @Delete('/destroy/:idCompany')
-  async deleteCompany(@Param('idCompany') idCompany: string) {
-    return this.testDBService.deleteCompany(idCompany);
-  }
+  // @Delete('/destroy/:idCompany')
+  // async deleteCompany(@Param('idCompany') idCompany: string) {
+  //   return this.testDBService.deleteCompany(idCompany);
+  // }
 }

@@ -17,13 +17,12 @@ export class testDBService {
     return this.prisma.company.findMany();
   }
   async editCompany(idCompany: number, name: string) {
-    const companyIndex = this.prisma.company.findIndex(company => company.id === idCompany);
-
-    return this.prisma.company.create({
-      data: {name},
+    return this.prisma.company.update({
+      where: { idCompany: idCompany }, // Условие для поиска компании
+      data: { name }, // Новые данные для обновления
     });
   }
-  async deleteCompany(idCompany: number) {
-    return this.prisma.company.findMany();
-  }
+  // async deleteCompany(idCompany: number) {
+  //   return this.prisma.company.findMany();
+  // }
 }
