@@ -52,14 +52,14 @@ model app {
 
 model domain {
   idDomain Int @id @default(autoincrement())
-  name String @db.VarChar(50)
-  registered DateTime
-  expires DateTime
-  updated DateTime
+  name String @db.VarChar(50) @unique
+  registered String?
+  expires String?
+  updated String?
   parentStatus Int?
-  nameRegistar String @db.VarChar(50)
-  nameOwner String @db.VarChar(50)
-  access Boolean
+  nameRegistar String? @db.VarChar(50)
+  nameOwner String? @db.VarChar(50)
+  access Boolean?
 
   app app[]
   serverHasDomain serverHasDomain[]

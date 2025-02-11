@@ -1,13 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { testDBModule } from './testDB/testDB.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const test = await NestFactory.create(testDBModule);
   app.enableCors({
-    origin: 'http://localhost:3001', // Разрешаем запросы только с этого домена
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Разрешаем указанные HTTP-методы
-    credentials: true, // Разрешаем отправку куки (если необходимо)
+    origin: 'http://localhost:3001', // Разрешает запросы с React
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization',
   });
-  await app.listen(3000);
+  await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
