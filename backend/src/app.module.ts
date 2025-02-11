@@ -5,7 +5,7 @@ import { WhoisModule } from './whois/whois.module';
 import { ConfigModule } from '@nestjs/config';
 import { SslLabsModule } from './ssl-labs/ssl-labs.module';
 import { SystemModule } from './systeminformation/system.module'; // Import SystemModule
-import { testDBModule } from './testDB.module';
+import { testDBModule } from './testDB/testDB.module';
 
 @Module({
   imports: [WhoisModule, SystemModule, SslLabsModule , ConfigModule.forRoot({ isGlobal: true }), testDBModule],

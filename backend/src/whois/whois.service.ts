@@ -2,28 +2,26 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
 import { catchError, switchMap } from 'rxjs/operators';
-import { Observable, throwError, of, from } from 'rxjs'; // Import 'from'
+import { Observable, throwError, of, from } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
-import { parseString } from 'xml2js'; // Import xml2js
+import { parseString } from 'xml2js';
 
 export interface WhoisData {
-  domainName: string;
-  creationDate?: string;
-  expiresDate?: string; // Add expiresDate
-  daysToExpire?: number; // Add daysToExpire
+  name: string;
+  registered?: string;
+  expires?: string;
+  daysToExpire?: number; // Оставлено закомментированным для будущего использования
 }
 
 interface WhoisRecord {
   createdDate?: string;
   updatedDate?: string;
   expiresDate?: string;
-  // ... другие поля из XML-ответа ...
 }
 
 interface WhoisResponse {
   WhoisRecord?: WhoisRecord;
   ErrorMessage?: {
-    // Add field to handle API errors
     code: number;
     msg: string;
   };
@@ -32,29 +30,24 @@ interface WhoisResponse {
 @Injectable()
 export class WhoisService {
   private readonly apiKey: string;
-  private readonly baseUrl: string =
-    'https://www.whoisxmlapi.com/whoisserver/WhoisService'; // Updated endpoint
+  private readonly baseUrl: string = 'https://www.whoisxmlapi.com/whoisserver/WhoisService';
   private readonly logger = new Logger(WhoisService.name);
 
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.apiKey = this.configService.get<string>('WHOISXMLAPI_API_KEY') || ''; // Get API key from ConfigService
+    this.apiKey = this.configService.get<string>('WHOISXMLAPI_API_KEY') || '';
     if (!this.apiKey) {
-      this.logger.warn(
-        'WHOISXMLAPI_API_KEY is not set in environment variables. Please set your API key in .env file.',
-      );
+      this.logger.warn('WHOISXMLAPI_API_KEY is not set in environment variables.');
     }
   }
 
   getDomainCreationDate(domain: string): Observable<WhoisData> {
     if (!this.apiKey) {
-      this.logger.error('API key is not set. Cannot make request.');
+      this.logger.error('API key is not set.');
       return throwError(() => new Error('API key is not set.'));
     }
-
-    this.logger.debug(`Sending request for domain ${domain}`);
 
     return this.httpService
       .post(
@@ -66,24 +59,18 @@ export class WhoisService {
         {
           headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/xml', // Запрашиваем XML-ответ
+            Accept: 'application/xml',
           },
         },
       )
       .pipe(
         switchMap((response: AxiosResponse<string>) => {
-          // Заменили тип AxiosResponse на string
-          this.logger.debug(`Full XML API response received: ${response.data}`); // Логируем XML
-
           return from(
             new Promise<WhoisData>((resolve, reject) => {
               parseString(response.data, (err, result) => {
                 if (err) {
-                  this.logger.error(`Error parsing XML: ${err.message}`, err.stack);
-                  reject({
-                    domainName: domain,
-                    creationDate: 'Error parsing XML',
-                  });
+                  this.logger.error(`XML parsing error: ${err.message}`, err.stack);
+                  reject({ name: domain, registered: 'Parse error' });
                   return;
                 }
 
@@ -91,50 +78,39 @@ export class WhoisService {
                 const createdDate = whoisRecord?.createdDate?.[0];
                 const expiresDate = whoisRecord?.expiresDate?.[0];
 
-                this.logger.debug(`Parsed createdDate: ${createdDate}`);
-                this.logger.debug(`Parsed expiresDate: ${expiresDate}`);
-
+                // Закомментированный расчет дней до истечения
+                /*
                 let daysToExpire: number | undefined;
                 if (expiresDate) {
-                  const now = new Date(); // Current date and time
-                  const expiry = new Date(expiresDate); // Expiry date and time
-
-                  // Convert both dates to UTC and remove the time part
-                  const nowUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-                  const expiryUTC = Date.UTC(expiry.getUTCFullYear(), expiry.getUTCMonth(), expiry.getUTCDate());
-
-                  // Calculate the difference in milliseconds
-                  const diff = expiryUTC - nowUTC;
-
-                  // Convert the difference to days
-                  daysToExpire = Math.ceil(diff / (1000 * 3600 * 24));
-
-                  this.logger.debug(`Days to expire: ${daysToExpire}`);
+                  const now = new Date();
+                  const expiry = new Date(expiresDate);
+                  const nowUTC = Date.UTC(
+                    now.getUTCFullYear(),
+                    now.getUTCMonth(),
+                    now.getUTCDate()
+                  );
+                  const expiryUTC = Date.UTC(
+                    expiry.getUTCFullYear(),
+                    expiry.getUTCMonth(),
+                    expiry.getUTCDate()
+                  );
+                  daysToExpire = Math.ceil((expiryUTC - nowUTC) / (1000 * 3600 * 24));
                 }
+                */
 
-                const whoisData: WhoisData = {
-                  domainName: domain,
-                  creationDate: createdDate || 'Creation date not found',
-                  expiresDate: expiresDate || 'Expiration date not found',
-                  daysToExpire: daysToExpire,
-                };
-
-                this.logger.debug(`WhoisData: ${JSON.stringify(whoisData)}`);
-                resolve(whoisData);
+                resolve({
+                  name: domain,
+                  registered: createdDate || 'Date not found',
+                  expires: expiresDate || 'Date not found',
+                  // daysToExpire // Раскомментировать при необходимости
+                });
               });
             }),
           );
         }),
         catchError((error) => {
-          this.logger.error(
-            `Error during Whois API request for domain ${domain}: ${error.message}`,
-            error.stack,
-          );
-          this.logger.error(`Full error object: ${JSON.stringify(error)}`);
-          return of({
-            domainName: domain,
-            creationDate: 'Error during request',
-          }); // Wrap in 'of()'
+          this.logger.error(`API request failed for ${domain}: ${error.message}`, error.stack);
+          return of({ name: domain, registered: 'Request error' });
         }),
       );
   }
