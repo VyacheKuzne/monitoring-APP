@@ -1,14 +1,13 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { WhoisService } from './whois.service';
+import { Controller, Get, Query, Inject } from '@nestjs/common';  // Import Query
+import { WhoisService, WhoisData } from './whois.service'; // Import WhoisService and WhoisData
 import { Observable } from 'rxjs';
-import { WhoisData } from './whois.service'; // Import WhoisData
 
-@Controller('whois')
+@Controller()
 export class WhoisController {
-    constructor(private readonly whoisService: WhoisService) { }
+  constructor(private readonly whoisService: WhoisService) {}
 
-    @Get(':domain')
-    getDomainCreationDate(@Param('domain') domain: string): Observable<WhoisData> {
-        return this.whoisService.getDomainCreationDate(domain);
-    }
+  @Get()
+  getWhoisData(@Query('domain') domain: string): Observable<WhoisData> {  // Get domain from query parameter
+    return this.whoisService.getDomainCreationDate(domain);
+  }
 }

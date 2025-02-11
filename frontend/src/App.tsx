@@ -111,53 +111,55 @@
 
 // src/App.tsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
-function App() {  
+function App() {
+  const [domain, setDomain] = useState('');
+  const [whoisData, setWhoisData] = useState<WhoisData | null>(null);
+  const [error, setError] = useState('');
 
-  // interface DomainInfo {
-  //   domainName: string;
-  //   creationDate: string;
-  //   expiresDate: string;
-  //   daysToExpire: number;
-  // }
-
-  const [domainData, setDomainData] = useState('');
-  // const [domainInfo, setDomainInfo] = useState<DomainInfo | null>(null);
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDomainData(event.target.value);
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDomain(event.target.value);
   };
 
-  const getDomainInfo = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError('');
+    setWhoisData(null);
 
-    axios.get(`http://localhost:3000/whois/${domainData}`)
-    .then(response => 
-    {
-      console.log('Информация о домене получена и добавлена в базу:', response.data);
-      // setDomainInfo(response.data);
-    });
+    try {
+      const response: AxiosResponse<WhoisData> = await axios.get(`http://localhost:3000/?domain=${domain}`); // Замените URL, если необходимо
+      setWhoisData(response.data);
+    } catch (e: any) {
+      setError(e.message || 'An error occurred');
+    }
   };
 
   return (
     <div>
-      <form onSubmit={getDomainInfo}>
-        <input 
-          className='w-[350px] border-2' 
-          type="text" 
-          placeholder="Домен 'example.com'" 
-          value={domainData} 
-          onChange={handleChange}
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="domain">Enter Domain:</label>
+        <input
+          type="text"
+          id="domain"
+          value={domain}
+          onChange={handleInputChange}
+          placeholder="example.com"
         />
-        <button type="submit">Получить данные по домену</button>
+        <button type="submit">Get Whois Data</button>
       </form>
-      <div>
-        {/* <p>{domainInfo.domainName}</p>
-        <p>{domainInfo.creationDate}</p>
-        <p>{domainInfo.expiresDate}</p>
-        <p>{domainInfo.daysToExpire}</p> */}
-      </div>
+
+      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+
+      {whoisData && (
+        <div>
+          <h2>Whois Data for {whoisData.domainName}</h2>
+          <p>Registrar: {whoisData.registrar || 'N/A'}</p>
+          <p>Creation Date: {whoisData.creationDate || 'N/A'}</p>
+          <p>Expiration Date: {whoisData.expirationDate || 'N/A'}</p>
+          <p>Raw Data: {whoisData.raw || 'N/A'}</p>
+        </div>
+      )}
     </div>
   );
 }
