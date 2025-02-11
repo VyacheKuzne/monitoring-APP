@@ -1,17 +1,34 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import NotificationButton from '../component/Button/NotificationButton'
 import ExitButton from '../component/Button/ExitButton'
 import CreateCompanyButton from '../component/Button/CreateCompanyButton'
 import ClientButton from '../component/Button/ClientButton'
+import { Company } from '../interfaces/company';
 
 export default function ModalBlock() {
+
+useEffect(() => {
+    getCompanies();
+}, []);
+
+const [companies, setCompanies] = useState<Company[]>([]);
+
+const getCompanies = async () => {
+    axios.get('http://localhost:3000/company/get')
+    .then(response => 
+    {
+        setCompanies(response.data);
+    });
+}    
+
 const mainText = [
     'Главная',
     
 ]
   return (
     <>
-    <div className='bg-white w-full h-[950px] p-[10%] shadow-xl flex flex-col justify-between'>
+    <div className='bg-white w-full h-screen p-[10%] shadow-xl flex flex-col justify-between'>
         <div>
             <div className='flex justify-between'>
                 <NotificationButton/>
@@ -28,7 +45,7 @@ const mainText = [
                 }
             </div>
             <div>
-                <ClientButton/>
+                <ClientButton companiesData={companies} />
             </div>
         </div>
         <div>

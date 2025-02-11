@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import ClientSvg from '../../img/ClientSvg.svg';
+import { Company } from '../../interfaces/company';
 
-export default function ClientButton() {
+interface ModalBlockProps {
+    companiesData: Company[];
+}
+
+export default function ClientButton({ companiesData }: ModalBlockProps) {
     const [isOpen, setIsOpen] = useState(false); // Состояние, показывающее, открыт ли список
     const rotateAngle = isOpen ? 180 : 0;  // Угол поворота
 
     const handleClick = () => {
         setIsOpen(!isOpen); // Переключение состояния при клике
     };
-    const clientText = [
-        'Client 1',
-        'Client 2'
-    ]
+    const clients = companiesData;
     return (
         <>
             <button
@@ -33,9 +35,8 @@ export default function ClientButton() {
                 <div className='my-[5%]'>
                     <ul className='text-left border-l-[3px] border-gray-500 px-[3%]'>
                         {
-                            clientText.map((text, index) =>(
-                                <li className='px-[5%] py-[3%]' key={index}>{text}
-                                </li>
+                            clients.map((client, index) =>(
+                                <li className='px-[5%] py-[3%]' key={index}>{client.name}</li>
                             ))
                         }
                     </ul>

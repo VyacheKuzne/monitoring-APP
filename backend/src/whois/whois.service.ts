@@ -5,18 +5,27 @@ import { catchError, switchMap } from 'rxjs/operators';
 import { Observable, throwError, of, from } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { parseString } from 'xml2js';
+import { PrismaClient } from '@prisma/client';
 
 export interface WhoisData {
     domainName: string;
-    creationDate?: string;
-    expiresDate?: string;
-    daysToExpire?: number;
+    creationDate?: Date | string;
+    updatingDate?: Date | string;
+    expiresDate?: Date | string;
+    // daysToExpire?: number;
+    registrarName?: string;
+    ownerName?: string;
 }
 
 interface WhoisRecord {
     createdDate?: string;
     updatedDate?: string;
     expiresDate?: string;
+    registrarName?: string;
+    registrant?: 
+    {
+      organization?: string;
+    };
 }
 
 interface WhoisResponse {
@@ -32,6 +41,7 @@ export class WhoisService {
     private readonly apiKey: string;
     private readonly baseUrl: string = 'https://www.whoisxmlapi.com/whoisserver/WhoisService';
     private readonly logger = new Logger(WhoisService.name);
+    private prisma = new PrismaClient(); // Создаём Prisma клиент
 
     constructor(
         private readonly httpService: HttpService,
@@ -76,37 +86,59 @@ export class WhoisService {
                             parseString(response.data, (err, result: WhoisResponse) => {
                                 if (err) {
                                     this.logger.error(`Error parsing XML: ${err.message}`, err.stack);
-                                    reject({ domainName: domain, creationDate: undefined, expiresDate: undefined, daysToExpire: undefined });
+                                    reject({ 
+                                      domainName: domain, 
+                                      creationDate: undefined, 
+                                      updatedDate: undefined,
+                                      expiresDate: undefined,
+                                      // daysToExpire: undefined 
+                                      registrarName: undefined,
+                                      organization: undefined,
+                                    });
                                     return;
                                 }
 
                                 const whoisRecord = result?.WhoisRecord;
                                 const createdDate = whoisRecord?.createdDate?.[0] || undefined;
+                                const updatedDate = whoisRecord?.updatedDate?.[0] || undefined;
                                 const expiresDate = whoisRecord?.expiresDate?.[0] || undefined;
-                                let daysToExpire: number | undefined;
+                                // let daysToExpire: number | undefined;
+                                const registrarName = whoisRecord?.registrarName?.[0] || undefined;
+                                const organization = whoisRecord?.registrant?.organization?.[0] || undefined;
 
-                                if (expiresDate) {
-                                    const now = new Date();
-                                    const expiry = new Date(expiresDate);
+                                // if (expiresDate) {
+                                //     const now = new Date();
+                                //     const expiry = new Date(expiresDate);
 
-                                    const nowUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-                                    const expiryUTC = Date.UTC(expiry.getUTCFullYear(), expiry.getUTCMonth(), expiry.getUTCDate());
+                                //     const nowUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+                                //     const expiryUTC = Date.UTC(expiry.getUTCFullYear(), expiry.getUTCMonth(), expiry.getUTCDate());
 
-                                    const diff = expiryUTC - nowUTC;
-                                    daysToExpire = Math.ceil(diff / (1000 * 3600 * 24));
-                                } else {
-                                    daysToExpire = undefined;
+                                //     const diff = expiryUTC - nowUTC;
+                                //     daysToExpire = Math.ceil(diff / (1000 * 3600 * 24));
+                                // } else {
+                                //     daysToExpire = undefined;
+                                // }
+                                
+                                function replace(rawDate)
+                                {
+                                  const formattedDate = new Date(rawDate.replace("+0000", "Z"));
+                                  return formattedDate;
                                 }
 
                                 const whoisData: WhoisData = {
                                     domainName: domain,
-                                    creationDate: createdDate,
-                                    expiresDate: expiresDate,
-                                    daysToExpire: daysToExpire,
+                                    creationDate: replace(createdDate),
+                                    updatingDate: replace(updatedDate),
+                                    expiresDate: replace(expiresDate),
+                                    // daysToExpire: daysToExpire,
+                                    registrarName: registrarName,
+                                    ownerName: organization,
                                 };
 
                                 this.logger.debug(`WhoisData: ${JSON.stringify(whoisData)}`);
                                 resolve(whoisData);
+
+                                this.createDomain(whoisData);
                             });
                         }),
                     );
@@ -123,5 +155,30 @@ export class WhoisService {
                     });
                 }),
             );
+    }
+
+    async createDomain(whoisData: WhoisData): Promise<void>
+    {
+      await this.prisma.domain.upsert({
+        where:
+        {
+          name: whoisData.domainName
+        },
+        update: {
+          registered: whoisData.creationDate instanceof Date ? whoisData.creationDate.toISOString() : whoisData.creationDate,
+          updated: whoisData.updatingDate instanceof Date ? whoisData.updatingDate.toISOString() : whoisData.updatingDate,
+          expires: whoisData.expiresDate instanceof Date ? whoisData.expiresDate.toISOString() : whoisData.expiresDate,
+          nameRegistar: whoisData.registrarName,
+          nameOwner: whoisData.ownerName,
+        },
+        create: {
+            name: whoisData.domainName,
+            registered: whoisData.creationDate instanceof Date ? whoisData.creationDate.toISOString() : whoisData.creationDate,
+            updated: whoisData.updatingDate instanceof Date ? whoisData.updatingDate.toISOString() : whoisData.updatingDate,
+            expires: whoisData.expiresDate instanceof Date ? whoisData.expiresDate.toISOString() : whoisData.expiresDate,
+            nameRegistar: whoisData.registrarName,
+            nameOwner: whoisData.ownerName,
+        },
+      });
     }
 }

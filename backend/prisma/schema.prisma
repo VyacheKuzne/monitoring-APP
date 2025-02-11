@@ -53,9 +53,9 @@ model app {
 model domain {
   idDomain Int @id @default(autoincrement())
   name String @db.VarChar(50) @unique
-  registered String?
-  expires String?
-  updated String?
+  registered DateTime?
+  expires DateTime?
+  updated DateTime?
   parentStatus Int?
   nameRegistar String? @db.VarChar(50)
   nameOwner String? @db.VarChar(50)
