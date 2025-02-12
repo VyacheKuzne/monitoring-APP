@@ -11,8 +11,8 @@ export default function ServerCard() {
                     <div className='flex content-center  relative w-auto h-full'>
                         <input
                             type="text"
-                            className='bg-gray-200 rounded-2xl text6-12px w-3/4 p-[2%] pr-[3em]' /* pr - padding right */
-                            placeholder='        Найти сервер'
+                            className='bg-gray-200 rounded-2xl text-[12px] w-3/4 pl-[30px] p-[2%] pr-[3em]' /* pr - padding right */
+                            placeholder='Найти сервер'
                         />
                         <div
                             className='absolute top-1/2 left-[0.5em] transform -translate-y-1/2' /* top-1/2, left, выравнивание по центру по вертикали, левый отступ */

@@ -18,4 +18,9 @@ export class AppService
       where: { idCompany: idCompany }
     });
   }
+  async createCompany(name: string) {
+    return this.prisma.company.create({
+      data: {name},
+    });
+  }
 }

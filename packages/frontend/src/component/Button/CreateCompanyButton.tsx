@@ -2,14 +2,10 @@ import React from 'react'
 import PlusSvg from '../../img/Plus.svg'
 
 interface ModalBlockProps {
-  openForm: (shouldOpen: boolean) => void;
+  openForm: (modalAction: boolean) => void;
 }
 
 const CreateCompanyButton:React.FC<ModalBlockProps> = ({ openForm }) => {
-
-  // const openFormCompany = async () => {
-  //   openForm = !openForm;
-  // }
 
   return (
     <>

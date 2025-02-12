@@ -1,4 +1,4 @@
-import { Controller, Get, Param, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { AppService } from './app.service';
 import * as whois from 'whois';
 
@@ -24,5 +24,9 @@ export class AppController {
   {
     const numberCompany = Number(idCompany);
     return this.appService.getCompany(numberCompany);
+  }
+  @Post('/company/create')
+  async createCompany(@Body() body: { name: string }) {
+    return this.appService.createCompany(body.name);
   }
 }

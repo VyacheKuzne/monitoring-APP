@@ -5,6 +5,7 @@ import ExitButton from '../component/Button/ExitButton'
 import CreateCompanyButton from '../component/Button/CreateCompanyButton'
 import ClientButton from '../component/Button/ClientButton'
 import { Company } from '../interfaces/company';
+import FormCreateCompany from '../component/ModalBlock/FormCreateCompany';
 
 const ModalBlock: React.FC = () => {
 
@@ -13,7 +14,7 @@ useEffect(() => {
 }, []);
 
 const [companies, setCompanies] = useState<Company[]>([]);
-const [modalOpen, setModalOpen] = useState<boolean>(false);
+const [modal, setModal] = useState<boolean>(false);
 
 const getCompanies = async () => {
     axios.get('http://localhost:3000/companies/get')
@@ -23,9 +24,8 @@ const getCompanies = async () => {
     });
 }    
 
-const openFormCompany = (shouldOpen: boolean) => {
-    setModalOpen(shouldOpen);
-    console.log(shouldOpen);
+const FormCompany = (modalAction: boolean) => {
+    setModal(modalAction);
 }
 
 const mainText = [
@@ -33,6 +33,9 @@ const mainText = [
 ]
   return (
     <>
+    {
+        modal ? <FormCreateCompany closeForm={FormCompany}/> : null
+    }
     <div className='bg-white w-full h-screen p-[10%] shadow-xl flex flex-col justify-between'>
         <div>
             <div className='flex justify-between'>
@@ -52,9 +55,7 @@ const mainText = [
                 <ClientButton companiesData={companies} />
             </div>
         </div>
-        <div>
-            <CreateCompanyButton openForm={openFormCompany} />
-        </div>
+            <CreateCompanyButton openForm={FormCompany} />
     </div>
     </>
   )

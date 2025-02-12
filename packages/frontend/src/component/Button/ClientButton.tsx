@@ -17,7 +17,7 @@ export default function ClientButton({ companiesData }: ModalBlockProps) {
     return (
         <>
             <button
-                className='flex'
+                className='flex gap-[8px]'
                 onClick={handleClick}
                 style={{ transition: 'transform 0.3s ease' }}
             >
@@ -32,7 +32,7 @@ export default function ClientButton({ companiesData }: ModalBlockProps) {
                 </p>
             </button>
             {isOpen && (
-                <div className='my-[5%]'>
+                <div className='ml-[9px] my-[5%]'>
                     <ul className='text-left border-l-[3px] border-gray-500 px-[3%]'>
                         {
                             clients.map((client, index) =>(
