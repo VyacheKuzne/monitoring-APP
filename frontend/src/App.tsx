@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard'; // Импортируем страницу
+import CompanyInfo from './pages/CompanyInfo'; // Импортируем страницу
 
 
 // // src/App.tsx
@@ -179,6 +180,7 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/company/:idCompany" element={<CompanyInfo />} />
         </Routes>
     </Router>
     );

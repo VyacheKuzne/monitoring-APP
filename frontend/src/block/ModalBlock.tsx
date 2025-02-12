@@ -15,7 +15,7 @@ useEffect(() => {
 const [companies, setCompanies] = useState<Company[]>([]);
 
 const getCompanies = async () => {
-    axios.get('http://localhost:3000/company/get')
+    axios.get('http://localhost:3000/companies/get')
     .then(response => 
     {
         setCompanies(response.data);
@@ -24,7 +24,6 @@ const getCompanies = async () => {
 
 const mainText = [
     'Главная',
-    
 ]
   return (
     <>
@@ -36,13 +35,12 @@ const mainText = [
             </div>
                 <hr className='my-[5%] h-[2px] bg-slate-600'/>
             <div className='flex-col text-left '>
-                {
-                    mainText.map((text, index)=>(
-                        <div key={index} className='py-[5%] flex'>
-                            <div className='w-[5px] rounded-md bg-green-500' content=''></div> <p className=' px-[5%]'>{text}</p>
-                        </div>
-                    ))
-                }
+                {mainText.map((text, index)=>(
+                    <div key={index} className='py-[5%] flex'>
+                        <div className='w-[5px] rounded-md bg-green-500' content=''></div>
+                        <a className=' px-[5%]' href='/'>{text}</a>
+                    </div>
+                ))}
             </div>
             <div>
                 <ClientButton companiesData={companies} />
