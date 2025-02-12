@@ -1,5 +1,4 @@
 import React from 'react'
-import ServerCard from '../component/Card/ServerCard'
 
 interface pageProps {
   page: string;
@@ -13,7 +12,6 @@ export default function InfoBlock({page}: pageProps ) {
             <p className='text10-20px'>{ page }</p>
         </div>
         <div className='flex'>
-            <ServerCard/>
         </div>
     </div>
     </>

@@ -13,7 +13,6 @@ function CompanyInfo() {
   }, []);
 
   const { idCompany } = useParams<{ idCompany: string }>();
-  console.log()
   const [company, setCompany] = useState<CompanyData | null>(null);
 
   const getCompanyInfo = async () => {

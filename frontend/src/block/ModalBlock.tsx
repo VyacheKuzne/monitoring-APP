@@ -6,13 +6,14 @@ import CreateCompanyButton from '../component/Button/CreateCompanyButton'
 import ClientButton from '../component/Button/ClientButton'
 import { Company } from '../interfaces/company';
 
-export default function ModalBlock() {
+const ModalBlock: React.FC = () => {
 
 useEffect(() => {
     getCompanies();
 }, []);
 
 const [companies, setCompanies] = useState<Company[]>([]);
+const [modalOpen, setModalOpen] = useState<boolean>(false);
 
 const getCompanies = async () => {
     axios.get('http://localhost:3000/companies/get')
@@ -21,6 +22,11 @@ const getCompanies = async () => {
         setCompanies(response.data);
     });
 }    
+
+const openFormCompany = (shouldOpen: boolean) => {
+    setModalOpen(shouldOpen);
+    console.log(shouldOpen);
+}
 
 const mainText = [
     'Главная',
@@ -37,7 +43,7 @@ const mainText = [
             <div className='flex-col text-left '>
                 {mainText.map((text, index)=>(
                     <div key={index} className='py-[5%] flex'>
-                        <div className='w-[5px] rounded-md bg-green-500' content=''></div>
+                        <div className='w-[5px] rounded-md bg-green-500 mx-[9px]' content=''></div>
                         <a className=' px-[5%]' href='/'>{text}</a>
                     </div>
                 ))}
@@ -47,9 +53,10 @@ const mainText = [
             </div>
         </div>
         <div>
-            <CreateCompanyButton/>
+            <CreateCompanyButton openForm={openFormCompany} />
         </div>
     </div>
     </>
   )
 }
+export default ModalBlock;
