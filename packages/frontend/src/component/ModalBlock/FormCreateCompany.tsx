@@ -18,7 +18,7 @@ const FormCreateCompany:React.FC<ModalBlockProps> = ({ closeForm }) => {
       axios.post('http://localhost:3000/company/create', {
         name: companyData
       }).then(response => {
-        window.location.href = 'https://localhost:3001';
+        window.location.href = 'http://localhost:3001';
       });
   };
 

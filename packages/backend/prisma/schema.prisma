@@ -113,17 +113,40 @@ model serverHasSSL { // Связь многие ко многим таблиц s
 
 model checkServerStats {
   idCheckServerStats Int @id @default(autoincrement())
-  parentServer Int
-  totalRAM  String @db.VarChar(50)
-  usedRAM  String @db.VarChar(50)
-  remainingRAM  String @db.VarChar(50)
-  totalMemory  String @db.VarChar(50)
-  usedMemory  String @db.VarChar(50)
-  remainingMemory  String @db.VarChar(50)
-  countProcesses Int
-  countErrors Int
+  parentServer Int?
 
-  server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
+  modelCPU String
+  loadCPU Float
+  totalRAM BigInt
+  usedRAM BigInt
+  remainingRAM BigInt
+  
+  iface String
+  ip4 String
+  ip6 String
+  received BigInt
+  sent BigInt
+  speed Float
+
+  countProcesses Int?
+  countErrors Int?
+
+  server server? @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
+  disk disk[]
+}
+
+model disk {
+  idDisk Int @id @default(autoincrement())
+  parentServerStats Int
+  device String?
+  mount String
+  type String
+  totalMemory BigInt
+  usedMemory BigInt
+  remainingMemory BigInt
+  loadMemory Float
+
+  checkServerStats checkServerStats @relation(fields: [parentServerStats], references: [idCheckServerStats]) // Связь с таблицей checkServerStats один ко многим
 }
 
 model checkPage {

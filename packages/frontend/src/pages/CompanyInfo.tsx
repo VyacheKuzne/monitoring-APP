@@ -5,6 +5,9 @@ import '../App.css';
 import ModalBlock from '../block/ModalBlock'
 import InfoBlock from '../block/InfoBlock'
 import { CompanyData } from '../interfaces/company';
+import { Server } from '../interfaces/server';
+import ServerCard from '../component/Card/ServerCard';
+import CreateServerButton from '../component/Button/CreateServerButton';
 
 function CompanyInfo() {
 
@@ -14,12 +17,19 @@ function CompanyInfo() {
 
   const { idCompany } = useParams<{ idCompany: string }>();
   const [company, setCompany] = useState<CompanyData | null>(null);
+  const [server, setServer] = useState<Server[]>([]);
 
   const getCompanyInfo = async () => {
     axios.get(`http://localhost:3000/company/${idCompany}/get`)
     .then(response => 
     {
         setCompany(response.data);
+        // console.log(response.data);
+        axios.get(`http://localhost:3000/company/${idCompany}/servers/get`)
+        .then(response => {
+          setServer(response.data);
+          // console.log(response.data);
+        });
     });
   }
 
@@ -34,9 +44,17 @@ function CompanyInfo() {
   };
 
   return (
-    <div className="App font-montserrat grid grid-cols-[300px_84%]">
+    <div className="App font-montserrat grid grid-cols-[300px_auto]">
       <ModalBlock/>
-      <InfoBlock page={getCompanyName()} />
+      <div>
+        <InfoBlock page={getCompanyName()} />
+        <div className='grid grid-cols-3 gap-[2%] w-auto h-auto mx-[2%] '>
+          {server.map((serverItem, index) => (
+            <ServerCard key={serverItem.idServer} serverData={serverItem} />
+          ))}
+          <CreateServerButton />
+        </div>
+      </div>
     </div>
   );
 }

@@ -29,4 +29,17 @@ export class AppController {
   async createCompany(@Body() body: { name: string }) {
     return this.appService.createCompany(body.name);
   }
+  @Get('/company/:idCompany/servers/get')
+  async getServers(@Param('idCompany') idCompany: number) 
+  {
+    const numberCompany = Number(idCompany);
+    return this.appService.getServers(numberCompany);
+  }
+  @Get('/company/:idCompany/server/:idServer/get')
+  async getServer(@Param('idCompany') idCompany: number, @Param('idServer') idServer: number) {
+    const numberCompany = Number(idCompany);
+    const numberServer = Number(idServer);
+    return this.appService.getServer(numberCompany, numberServer);
+  }
+  
 }

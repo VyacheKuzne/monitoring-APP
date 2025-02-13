@@ -8,7 +8,7 @@ import ServerFilter from '../component/Card/ServerFilter'
 function Dashboard() {
 
   return (
-    <div className="App font-montserrat grid grid-cols-[300px_84%]">
+      <div className="App font-montserrat grid grid-cols-[300px_auto]">
       <ModalBlock/>
       <div>
         <InfoBlock page="Главная" />

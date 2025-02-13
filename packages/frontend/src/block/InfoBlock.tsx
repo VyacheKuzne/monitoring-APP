@@ -1,7 +1,7 @@
 import React from 'react'
 
 interface pageProps {
-  page: string;
+  page?: string;
 }
 
 export default function InfoBlock({page}: pageProps ) {

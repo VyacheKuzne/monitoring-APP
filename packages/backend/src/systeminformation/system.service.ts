@@ -8,10 +8,11 @@ import { NetworkData } from './interfaces/network.interface';
 import { MemoryData } from './interfaces/memory.interface';
 import { SystemData } from './interfaces/system-data.interface';
 import { timeout } from 'rxjs/operators';
-
+import { RecordStatsService } from './recordStats.service';
 
 @Injectable()
 export class SystemService implements OnModuleInit, OnModuleDestroy {
+  constructor(private readonly recordStats: RecordStatsService) {}
   private readonly logger = new Logger(SystemService.name);
 
   private cpuData$ = new BehaviorSubject<CpuData | null>(null);
@@ -45,14 +46,17 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
       this.diskData$,
       this.networkData$,
       this.memoryData$,
-    ]).subscribe(([cpu, disk, network, memory]) => {
-      const systemData: SystemData = {
-        cpu: cpu,
-        disk: disk,
-        network: network,
-        memory: memory,
-      };
-      this.systemData$.next(systemData);
+    ])        
+    .pipe(
+      map(([cpu, disk, network, memory]) => ({
+        cpu,
+        disk,
+        network,
+        memory,
+      }))
+    )
+    .subscribe((systemData) => {
+      this.recordStats.recordStats(systemData); // Передаём напрямую в сервис базы
     });
   }
 

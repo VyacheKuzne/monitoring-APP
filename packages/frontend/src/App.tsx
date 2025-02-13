@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Dashboard from './pages/Dashboard'; // Импортируем страницу
-import CompanyInfo from './pages/CompanyInfo'; // Импортируем страницу
+import Dashboard from './pages/Dashboard';
+import CompanyInfo from './pages/CompanyInfo';
+import ServerInfo from './pages/ServerInfo';
 
 
 // // src/App.tsx
@@ -117,72 +118,16 @@ import CompanyInfo from './pages/CompanyInfo'; // Импортируем стр�
 
 // export default App;
 
-interface WhoisData {
-  domainName?: string;
-  creationDate?: string;
-  updatingDate?: string;
-  expiresDate?: string;
-  registrarName?: string;
-  ownerName?: string;
-}
-
-const App: React.FC = () => {
-  const [domain, setDomain] = useState('');
-  const [whoisData, setWhoisData] = useState<WhoisData | null>(null);
-  const [error, setError] = useState('');
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDomain(event.target.value);
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError('');
-    setWhoisData(null);
-
-    try {
-      const response: AxiosResponse<WhoisData> = await axios.get(`http://localhost:3000/?domain=${domain}`); // Замените URL, если необходимо
-      setWhoisData(response.data);
-      console.log(response.data);
-    } catch (e: any) {
-      setError(e.message || 'An error occurred');
-    }
-  };
+function App() {
 
   return (
-      // <div>
-      //   <form onSubmit={handleSubmit}>
-      //     <label htmlFor="domain">Enter Domain:</label>
-      //     <input
-      //       type="text"
-      //       id="domain"
-      //       value={domain}
-      //       onChange={handleInputChange}
-      //       placeholder="example.com"
-      //     />
-      //     <button type="submit">Get Whois Data</button>
-      //   </form>
-
-      //   {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-
-      //   {whoisData && (
-      //     <div>
-      //       <h2>Whois Data for {whoisData.domainName}</h2>
-      //       <p>Creation Date: {whoisData.creationDate || 'N/A'}</p>
-      //       <p>Updating Date: {whoisData.updatingDate || 'N/A'}</p>
-      //       <p>Expiration Date: {whoisData.expiresDate || 'N/A'}</p>
-      //       <p>Registrar: {whoisData.registrarName || 'N/A'}</p>
-      //       <p>Owner: {whoisData.ownerName || 'N/A'}</p>
-      //     </div>
-      //   )}
-      // </div>
-
       <Router>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/company/:idCompany" element={<CompanyInfo />} />
+          <Route path="/company/:idCompany/" element={<CompanyInfo />} />
+          <Route path="/company/:idCompany/server/:idServer/" element={<ServerInfo />} />
         </Routes>
-    </Router>
+      </Router>
     );
 }
 

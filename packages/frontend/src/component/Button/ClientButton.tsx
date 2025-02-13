@@ -36,7 +36,7 @@ export default function ClientButton({ companiesData }: ModalBlockProps) {
                     <ul className='text-left border-l-[3px] border-gray-500 px-[3%]'>
                         {
                             clients.map((client, index) =>(
-                                <li className='px-[5%] py-[3%]' key={index}><a href={`/company/${client.idCompany}`}>
+                                <li className='px-[5%] py-[3%]' key={index}><a href={`/company/${client.idCompany}/`}>
                                     {client.name}
                                 </a></li>
                             ))

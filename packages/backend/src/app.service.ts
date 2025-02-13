@@ -23,4 +23,16 @@ export class AppService
       data: {name},
     });
   }
+  async getServers(idCompany: number) 
+  {
+    return this.prisma.server.findMany({
+      where: { parentCompany: idCompany },
+    });
+  }
+  async getServer(idCompany: number, idServer: number) 
+  {
+    return this.prisma.server.findMany({
+      where: { parentCompany: idCompany },
+    });
+  }
 }
