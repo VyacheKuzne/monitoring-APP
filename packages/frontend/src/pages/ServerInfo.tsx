@@ -54,7 +54,8 @@ function CompanyInfo() {
       <ModalBlock/>
       <div>
           <InfoBlock/>
-          <div className='flex flex-col gap-5 m-[2%] text-left'>
+
+          {/* <div className='flex flex-col gap-5 m-[2%] text-left'>
             <form className='flex gap-5' onSubmit={handleSubmit}>
               <label htmlFor="domain">Enter Domain:</label>
               <input
@@ -79,7 +80,14 @@ function CompanyInfo() {
                 <p>Owner: {whoisData.ownerName || 'N/A'}</p>
               </div>
             )}
-          </div>
+          </div> */}
+          
+        <div className='grid grid-cols-3 gap-[2%] w-auto h-auto mx-[2%] '>
+          {server.map((serverItem, index) => (
+            <ServerCard key={serverItem.idServer} serverData={serverItem} />
+          ))}
+          <CreateServerButton />
+        </div>
       </div>
     </div>
   );

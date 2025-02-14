@@ -8,6 +8,7 @@ import { NetworkData } from './interfaces/network.interface';
 import { MemoryData } from './interfaces/memory.interface';
 import { SystemData } from './interfaces/system-data.interface';
 import { timeout } from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 import { RecordStatsService } from './recordStats.service';
 
 @Injectable()
@@ -23,6 +24,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
 
   private intervalSubscription: any;
   private readonly pollingInterval = 60000;
+  private DelayTime = 5000;
 
   onModuleInit() {
     this.startMonitoring();
@@ -48,6 +50,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
       this.memoryData$,
     ])        
     .pipe(
+      debounceTime(this.DelayTime),
       map(([cpu, disk, network, memory]) => ({
         cpu,
         disk,
@@ -69,6 +72,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
 
   // --- CPU ---
   private updateCpuData() {
+    this.logger.debug('Getting CPU information...');
     from(si.cpuCurrentSpeed())
       .pipe(  
         switchMap((speed) =>
@@ -103,6 +107,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
 
   // --- DISK ---
   private updateDiskData() {
+    this.logger.debug('Getting Disk information...');
     from(si.fsSize())
       .pipe(  
         map((disks) =>
@@ -134,6 +139,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
 
   // --- NETWORK ---
   private updateNetworkData() {
+    this.logger.debug('Getting Network information...');
     from(si.networkInterfaces())
       .pipe(  
         switchMap((interfaces) => {
