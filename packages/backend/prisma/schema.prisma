@@ -146,7 +146,7 @@ model disk {
   remainingMemory BigInt
   loadMemory Float
 
-  checkServerStats checkServerStats @relation(fields: [parentServerStats], references: [idCheckServerStats]) // Связь с таблицей checkServerStats один ко многим
+  checkServerStats checkServerStats @relation(fields: [parentServerStats], references: [idCheckServerStats], onDelete: Cascade) // Связь с таблицей checkServerStats один ко многим
 }
 
 model checkPage {
