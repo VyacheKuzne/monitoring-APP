@@ -20,6 +20,6 @@
 
 Порядок запуска:
 
-1. Мигрировать БД `npx prisma migrate deploy` (`npx prisma migrate reset` для обновления)
+1. Мигрировать БД `npx prisma migrate deploy` (прописать `npx prisma migrate reset` для обновления, так-же срабатывают и сиды)
 2. Для папки `frontend`, прописать `npm start`
 3. Для папки `backend`, прописать `npm run start`
