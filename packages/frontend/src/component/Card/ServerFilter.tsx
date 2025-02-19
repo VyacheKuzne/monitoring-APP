@@ -4,7 +4,7 @@ import SearchSvg from '../../img/SearchSvg.svg';
 export default function ServerCard() {
     return (
         <>
-            <div className='w-1/4 mx-[2%] bg-white rounded-md text-left p-[1.5%] shadow-lg'>
+            <div className='w-1/4 bg-white rounded-md text-left p-[1.5%] shadow-lg'>
                 <p className='text8-16px'>Статус работы серверов</p>
                 <div className='h-[1px] bg-gray-500 my-[2%]' content=''></div>
                 <div className='h-[35px]'>

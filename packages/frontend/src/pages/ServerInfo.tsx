@@ -4,20 +4,22 @@ import axios, { AxiosResponse } from 'axios';
 import '../App.css';
 import ModalBlock from '../block/ModalBlock'
 import InfoBlock from '../block/InfoBlock'
-import { CompanyData } from '../interfaces/company';
+import { Company } from '../interfaces/company';
 import { Server } from '../interfaces/server';
-import ServerCard from '../component/Card/ServerCard';
+import AppCard from '../component/Card/AppCard';
 import CreateServerButton from '../component/Button/CreateServerButton';
 import { WhoisData } from '../interfaces/whois';
 
-function CompanyInfo() {
+function ServerInfo() {
 
   useEffect(() => {
     getServerInfo();
   }, []);
 
   const { idCompany, idServer } = useParams<{ idCompany: string, idServer: string }>();
-  const [server, setServer] = useState<Server[]>([]);
+
+  const [server, setServer] = useState<Server | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
   
   const [domain, setDomain] = useState('');
   const [whoisData, setWhoisData] = useState<WhoisData | null>(null);
@@ -26,8 +28,8 @@ function CompanyInfo() {
   const getServerInfo = async () => {
     axios.get(`http://localhost:3000/company/${idCompany}/server/${idServer}/get`)
     .then(response => {
-      setServer(response.data);
-      // console.log(response.data);
+      setServer(response.data.server);
+      setCompany(response.data.company);
     });
   }
 
@@ -49,11 +51,24 @@ function CompanyInfo() {
     }
   };
 
+  const url = [`/company/${company?.idCompany}/`];
+  const crumb = [`${server?.hostname}`];
+
+
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
       <ModalBlock/>
-      <div>
-          <InfoBlock/>
+      <div className='flex flex-col gap-[3.5%] m-[2%]'>
+          <InfoBlock page={company?.name} url={url} crumb={crumb} />
+
+          <div className='flex w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
+            <div className='flex flex-col gap-[10px] text-left text-[14px]'>
+              <span>Ip адрес: {server?.ipAddress ?? ' Загрузка...'}</span>
+              <span>Имя хоста: {server?.hostname ?? ' Загрузка...'}</span>
+              <span>Местонахождение: {server?.location ?? ' Загрузка...'}</span>
+              <span>Операц. система: {server?.os ?? ' Загрузка...'}</span>
+            </div>
+          </div>
 
           {/* <div className='flex flex-col gap-5 m-[2%] text-left'>
             <form className='flex gap-5' onSubmit={handleSubmit}>
@@ -82,14 +97,12 @@ function CompanyInfo() {
             )}
           </div> */}
           
-        <div className='grid grid-cols-3 gap-[2%] w-auto h-auto mx-[2%] '>
-          {server.map((serverItem, index) => (
-            <ServerCard key={serverItem.idServer} serverData={serverItem} />
-          ))}
+        <div className='grid grid-cols-3 gap-[2%] w-auto h-auto'>
+            {/* <AppCard /> */}
           <CreateServerButton />
         </div>
       </div>
     </div>
   );
 }
-export default CompanyInfo;
+export default ServerInfo;

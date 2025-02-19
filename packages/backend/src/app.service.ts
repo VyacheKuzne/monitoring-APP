@@ -29,10 +29,15 @@ export class AppService
       where: { parentCompany: idCompany },
     });
   }
-  async getServer(idCompany: number, idServer: number) 
+  async getServer(numberServer: number, numberCompany: number) 
   {
-    return this.prisma.server.findMany({
-      where: { parentCompany: idCompany },
-    });
+    return {
+      server: await this.prisma.server.findFirst({
+        where: { idServer: numberServer },
+      }),
+      company: await this.prisma.company.findFirst({
+        where: { idCompany: numberCompany },
+      }),
+    };
   }
 }

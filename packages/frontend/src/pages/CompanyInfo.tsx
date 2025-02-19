@@ -46,9 +46,9 @@ function CompanyInfo() {
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
       <ModalBlock/>
-      <div>
+      <div className='flex flex-col gap-[3.5%] m-[2%]'>
         <InfoBlock page={getCompanyName()} />
-        <div className='grid grid-cols-3 gap-[2%] w-auto h-auto mx-[2%] '>
+        <div className='grid grid-cols-3 gap-[2%] w-auto h-auto'>
           {server.map((serverItem, index) => (
             <ServerCard key={serverItem.idServer} serverData={serverItem} />
           ))}

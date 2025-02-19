@@ -36,10 +36,10 @@ export class AppController {
     return this.appService.getServers(numberCompany);
   }
   @Get('/company/:idCompany/server/:idServer/get')
-  async getServer(@Param('idCompany') idCompany: number, @Param('idServer') idServer: number) {
-    const numberCompany = Number(idCompany);
+  async getServer(@Param('idServer') idServer: number, @Param('idCompany') idCompany: number) {
     const numberServer = Number(idServer);
-    return this.appService.getServer(numberCompany, numberServer);
+    const numberCompany = Number(idCompany);
+    return this.appService.getServer(numberServer, numberCompany);
   }
   
 }

@@ -6,8 +6,9 @@ import { ConfigModule } from '@nestjs/config';
 import { SystemModule } from './systeminformation/system.module'; // Import SystemModule
 import { testDBModule } from './testDB/testDB.module';
 import { SslLabsModule } from './ssl-labs/ssl-labs.module';
+import { PuppeteerModule } from './puppeteer/puppeteer.module';
 @Module({
-  imports: [WhoisModule, SystemModule, SslLabsModule , ConfigModule.forRoot({ isGlobal: true }), testDBModule],
+  imports: [WhoisModule, SystemModule, SslLabsModule, PuppeteerModule, ConfigModule.forRoot({ isGlobal: true }), testDBModule],
   controllers: [AppController],
   providers: [AppService],
 })

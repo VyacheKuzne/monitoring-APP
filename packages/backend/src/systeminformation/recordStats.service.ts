@@ -26,6 +26,8 @@ export class RecordStatsService {
                 sent: BigInt(systemData.network?.[0]?.sent || 0),
                 speed: systemData.network?.[0]?.speed || 0,
 
+                date: new Date(),
+
                 disk: {
                     create: systemData.disk.map((d) => ({
                         device: d.device || 'N/A',

@@ -130,6 +130,7 @@ model checkServerStats {
 
   countProcesses Int?
   countErrors Int?
+  date DateTime
 
   server server? @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
   disk disk[]
@@ -158,9 +159,11 @@ model checkPage {
   statusLoadMedia  String @db.VarChar(50)
   statusLoadStyles  String @db.VarChar(50)
   statusLoadScripts  String @db.VarChar(50)
-  requestTime DateTime
-  responseTime DateTime
-  responseRate DateTime
+  requestTime Float
+  responseTime Float
+  responseRate Float
+
+  date DateTime
 
   app app @relation(fields: [parentApp], references: [idApp]) // Связь с таблицей app один ко многим
 }
