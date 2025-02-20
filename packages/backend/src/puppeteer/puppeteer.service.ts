@@ -3,6 +3,7 @@ import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/commo
 import { PrismaClient } from '@prisma/client';
 import * as puppeteer from 'puppeteer'; 
 import { RecordPageService } from './recordPage.service';
+import { PageData } from './page.interface';
 import axios from 'axios';
 import { interval, Subscription } from 'rxjs';
 
@@ -17,8 +18,8 @@ export class PuppeteerService implements OnModuleInit, OnModuleDestroy
     private page: puppeteer.Page;
 
     private intervalSubscription: any;
-    private url = 'https://www.cloudflare.com/ru-ru/';
-    private readonly pollingInterval = 20000;
+    private url = 'https://irkat.ru';
+    private readonly pollingInterval = 60000;
   
     async onModuleInit() 
     {
@@ -45,12 +46,12 @@ export class PuppeteerService implements OnModuleInit, OnModuleDestroy
         const response = await this.page.goto(this.url, { waitUntil: 'networkidle2' });
         this.logger.log(`Updated page data from: ${this.url}`);
     
-        const statusLoadPage = response?.status();
+        const statusLoadPage = response?.status().toString() ?? '';
         const statusLoadDOM = await this.page.evaluate(() => document.readyState);
     
         const resourceStatus = await this.getResourceStatus(this.page);
     
-        const statusLoadContent = resourceStatus.allLoaded ? "Content fully loaded" : "Some resources are still loading";
+        const statusLoadContent = resourceStatus.allLoaded ? "Content fully loaded" : "Some resources not loaded";
     
         const navigationEntry = await this.page.evaluate(() => {
             const entries = performance.getEntriesByType('navigation');
@@ -95,40 +96,52 @@ export class PuppeteerService implements OnModuleInit, OnModuleDestroy
 
         this.recordPage.recordPage(PageData);
     }
-    
+
     async getResourceStatus(page: puppeteer.Page) {
-        return await page.evaluate(() => {
-            const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+        try {
+            return await page.evaluate(() => {
+                const mediaLoaded = Array.from(document.querySelectorAll('img'))
+                    .every(img => img.complete && img.naturalWidth > 0);
+                const mediaStatus = mediaLoaded ? "Loaded" : "Failed";
     
-            const mediaResources = resources.filter(entry => entry.initiatorType === 'img');
-            const scriptResources = resources.filter(entry => entry.initiatorType === 'script');
+                // Стили (<link>, <style>, инлайн, @import)
+                const sheets = [
+                    ...Array.from(document.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[],
+                    ...Array.from(document.querySelectorAll('style')) as HTMLStyleElement[],
+                ];
+                const styleLoaded = sheets.every(sheet => {
+                    try {
+                        const rules = sheet.sheet?.cssRules;
+                        return rules && rules.length >= 0;
+                    } catch (e) {
+                        return false;
+                    }
+                });
+                const styleStatus = styleLoaded ? "Loaded" : "Failed";
     
-            const styleSheetsLoaded = document.styleSheets.length > 0;
-            const computedStyleCheck = window.getComputedStyle(document.body).color !== "";
+                const scriptLoaded = Array.from(document.querySelectorAll('script[src]'))
+                    .every(script => script.hasAttribute('async') || script.hasAttribute('defer') || document.readyState === 'complete');
+                const scriptStatus = scriptLoaded ? "Loaded" : "Failed";
     
-            const linkTags = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-                .map(link => (link as HTMLLinkElement).href);
+                const allLoaded = mediaLoaded && styleLoaded && scriptLoaded;
     
-            const perfResources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-            const styleResources = perfResources.filter(entry => entry.initiatorType === 'link');
-    
-            function getStatus(resources: PerformanceResourceTiming[], type: string) {
-                if (resources.length === 0) return `${type}: No resources`;
-                const loaded = resources.every(r => r.responseEnd > 0);
-                return loaded ? `${type}: Loaded` : `${type}: Some are still loading`;
-            }
-    
+                return {
+                    allLoaded,
+                    mediaStatus,
+                    styleStatus,
+                    scriptStatus,
+                };
+            });
+        } catch (error) {
+            this.logger.error(`Error in getResourceStatus: ${error.message}`);
             return {
-                stylesheetsInDOM: linkTags,
-                styleSheetsLoaded,
-                computedStyleApplied: computedStyleCheck,
-                mediaStatus: getStatus(mediaResources, "Media"),
-                styleStatus: getStatus(styleResources, "Styles"),
-                scriptStatus: getStatus(scriptResources, "Scripts"),
-                allLoaded: [mediaResources, styleResources, scriptResources].every(arr => arr.every(r => r.responseEnd > 0))
+                allLoaded: false,
+                mediaStatus: "Failed",
+                styleStatus: "Failed",
+                scriptStatus: "Failed",
             };
-        });
-    }      
+        }
+    }
 
     async stopMonitoring()
     {

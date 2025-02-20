@@ -34,3 +34,15 @@ export interface SSLInfo {
       version: string;
       date: string;
   }
+
+  export interface SSLData {
+    serialNumber: string;
+    namePublisher: string;
+    registered: Date;
+    expires: Date;
+    parentStatus: number | null;
+    fingerprint: string;
+    publickey: string;
+    privatekey: string;
+    version: string;
+  }
