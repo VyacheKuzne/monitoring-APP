@@ -8,6 +8,16 @@ export interface SSLInfo {
     testTime: number;
     engineVersion: string;
     criteriaVersion: string;
+    certs?: CertInfo[];
+  }
+
+  interface CertInfo {
+    serialNumber?: string;
+    issuerSubject?: string;
+    notBefore?: number;
+    notAfter?: number;
+    sha256Hash?: string;
+    publicKey?: string;
   }
   
   export interface SSLEndpoint {
@@ -20,7 +30,23 @@ export interface SSLInfo {
     progress: number;
     duration: number;
     delegation: number;
-    details: any; // Замените на более конкретный интерфейс, если нужно
+    protocol?: string;
+    details: {
+      protocols: 
+      { 
+        name: string; 
+        version: string 
+      }[];
+      cert?: {
+        serialNumber: string;
+        issuer: string;
+        validFrom: number;
+        validTo: number;
+        sha256Fingerprint: string;
+        version: number;
+        publicKey?: string;
+      };
+    };  
   }
   
   export interface SSLInfoAPI {
@@ -40,7 +66,6 @@ export interface SSLInfo {
     namePublisher: string;
     registered: Date;
     expires: Date;
-    parentStatus: number | null;
     fingerprint: string;
     publickey: string;
     privatekey: string;

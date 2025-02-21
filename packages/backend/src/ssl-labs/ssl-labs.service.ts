@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { map, catchError, tap, last, takeWhile } from 'rxjs/operators';
 import { AxiosError } from 'axios';
-import { Observable, throwError, interval, of } from 'rxjs';
+import { Observable, throwError, interval, of, from } from 'rxjs';
 import { switchMap } from 'rxjs/operators'; // Import switchMap separately
 import { SSLInfo, SSLInfoAPI, SSLData } from './ssl-labs.interfaces';
 import { PrismaClient } from '@prisma/client';
@@ -28,7 +28,7 @@ export class SslLabsService {
   }
 
   analyze(host: string): Observable<SSLInfo> {
-    const url = `${this.apiUrl}/analyze?host=${host}`;
+    const url = `${this.apiUrl}/analyze?host=${host}/&all=done`;
     this.logger.log(`Starting SSL Labs analysis for ${host}`);
     return this.httpService.get<SSLInfo>(url).pipe(
       map(response => response.data),
@@ -64,42 +64,56 @@ export class SslLabsService {
                   );
               }
           }),
-          map(data => this.transformToSslResult(data)), 
-          switchMap(result => this.recordSSL(result))
-      );
+          switchMap(data => {
+            const sslData = this.transformToSslResult(data);
+            return from(this.recordSSL(sslData)).pipe(
+                map(() => data) // Возвращаем исходные данные после записи
+            );
+        })      
+    );
   }
 
-  private transformToSslResult(data: SSLInfo): SSLData {
+  private transformToSslResult(data: SSLInfo): SSLData[] {
+    // this.logger.debug('Данные из SSL Labs API:', JSON.stringify(data, null, 2));
+    if (!data.certs || !Array.isArray(data.certs) || data.certs.length === 0) {
+      this.logger.warn('No certificates found in response');
+      return [];
+    }
 
-    console.log('Данные из SSL Labs API:', JSON.stringify(data, null, 2)); // Форматируем для удобства чтения
-
-    const endpoint = data.endpoints[0];
-    return {
-        serialNumber: endpoint.serialNumber || 'Unknown',
-        namePublisher: data.endpoints?.[0]?.details?.namePublisher || 'Unknown',        
-        registered: new Date(data.startTime),
-        expires: new Date(data.endpoints?.[0]?.details?.expires || Date.now()), // Исправлено на expires
-        parentStatus: null,
-        fingerprint: data.endpoints?.[0]?.details?.fingerprint || 'N/A',
-        publickey: data.endpoints?.[0]?.details?.publicKey || 'N/A',
-        privatekey: '',
-        version: endpoint?.protocol || 'Unknown', // Убедись, что это корректно
-    };
+    return data.certs.map(cert => {
+        const endpoint = data.endpoints[0]; // Берем первый элемент массива
+        const versions = endpoint?.details?.protocols.map(protocol => protocol.version).join(', ') || endpoint?.protocol || 'Unknown'; // Собираем версии
+      
+        return {
+          serialNumber: cert.serialNumber || 'Unknown',
+          namePublisher: cert.issuerSubject?.split(',').find(part => part.trim().startsWith('CN='))?.replace('CN=', '') || 'Unknown',
+          registered: cert.notBefore ? new Date(cert.notBefore) : new Date(data.startTime),
+          expires: cert.notAfter ? new Date(cert.notAfter) : new Date(data.testTime),
+          fingerprint: cert.sha256Hash || 'Unknown',
+          publickey: '', 
+          privatekey: '',
+          version: versions,
+        };
+      });
   }
 
-  async recordSSL(data: SSLData): Promise<any> {
-    return await this.prisma.sSL.create({
-        data: {
-            serialNumber: data.serialNumber,
-            namePublisher: data.namePublisher,
-            registered: data.registered,
-            expires: data.expires,
-            parentStatus: data.parentStatus,
-            fingerprint: data.fingerprint,
-            publickey: data.publickey,
-            privatekey: data.privatekey,
-            version: data.version,
-        },
-    });
-  }
+  async recordSSL(data: SSLData[]): Promise<void> {
+    try {
+
+        for (const [index, record] of data.entries()) {
+            await this.prisma.sSL.upsert({ 
+                where: { serialNumber: record.serialNumber  },
+                update: record,
+                create: record,
+            });
+        }
+        
+        this.logger.log('SSL data recorded successfully');
+      } 
+    catch (error) 
+    {
+        this.logger.error(`SSL data recording error`);
+            throw error;
+        }
+    }
 }

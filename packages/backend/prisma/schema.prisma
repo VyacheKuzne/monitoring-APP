@@ -69,7 +69,7 @@ model domain {
 
 model SSL {
   idSSL Int @id @default(autoincrement())
-  serialNumber String @db.VarChar(50)
+  serialNumber String @db.VarChar(64) @unique
   namePublisher String @db.VarChar(50)
   registered DateTime
   expires DateTime
