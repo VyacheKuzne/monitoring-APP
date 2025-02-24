@@ -152,6 +152,7 @@ model disk {
 model checkPage {
   idCheckPage Int @id @default(autoincrement())
   parentApp Int?
+  urlPage String @db.VarChar(2050)
   statusLoadPage  String @db.VarChar(50)
   statusLoadContent  String @db.VarChar(50)
   statusLoadDOM  String @db.VarChar(50)

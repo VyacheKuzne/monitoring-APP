@@ -14,26 +14,27 @@ export class RecordPageService {
         {
             const result = await this.prisma.checkPage.create({
                 data: {
+                    urlPage: pageData.urlPage,
                     statusLoadPage: pageData.statusLoadPage,
                     statusLoadContent: pageData.statusLoadContent,
                     statusLoadDOM: pageData.statusLoadDOM,
-                    statusLoadMedia: pageData.mediaStatus, // Обновите на правильное имя, если нужно
-                    statusLoadStyles: pageData.styleStatus, // Обновите на правильное имя, если нужно
-                    statusLoadScripts: pageData.scriptStatus, // Обновите на правильное имя, если нужно
-                    requestTime: parseFloat(pageData.requestTime), // Конвертируем в float
-                    responseTime: parseFloat(pageData.responseTime), // Конвертируем в float
+                    statusLoadMedia: pageData.mediaStatus,
+                    statusLoadStyles: pageData.styleStatus,
+                    statusLoadScripts: pageData.scriptStatus,
+                    requestTime: parseFloat(pageData.requestTime),
+                    responseTime: parseFloat(pageData.responseTime),
                     responseRate: parseFloat(pageData.responseRate),
 
                     date: new Date(),
                 },
             });
 
-            this.logger.log(`Page loaded correctly`);
+            this.logger.log(`Page data recorded successfully`);
             return result;
         }
         else
         {
-            this.logger.error('Page load error');
+            this.logger.error('Page data recording error');
             return;
         }
     }

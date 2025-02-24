@@ -1,15 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { PuppeteerService } from './puppeteer.service';
-import { Observable, map } from 'rxjs';
-import { Response } from 'express';
 
-@Controller()
+@Controller('pages')
 export class PuppeteerController {
   constructor(private readonly puppeteerService: PuppeteerService) {}
 
-  @Get('')
-  getPageLoadInfo()
+  @Get('/:domain')
+  getPageLoadInfo(@Param('domain') domain: string)
   {
-    // return this.puppeteerService.getPageData();
+    return this.puppeteerService.startPageMonitoring(domain);
   }
 }

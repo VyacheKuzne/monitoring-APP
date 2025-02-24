@@ -47,7 +47,7 @@ export class RecordStatsService {
         }
         else
         {
-            this.logger.error('Data recording error');
+            this.logger.error('Monitoring data recording error');
             return;
         }
     }

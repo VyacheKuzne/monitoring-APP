@@ -1,4 +1,5 @@
 export interface PageData {
+    urlPage: string;
     statusLoadPage: string;
     statusLoadContent: string;
     statusLoadDOM: string;

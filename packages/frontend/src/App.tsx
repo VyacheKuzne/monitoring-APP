@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// import { ModalProvider } from './component/ModalBlock/ModalContext';
 import Dashboard from './pages/Dashboard';
 import CompanyInfo from './pages/CompanyInfo';
 import ServerInfo from './pages/ServerInfo';
@@ -123,9 +124,11 @@ function App() {
   return (
       <Router>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/company/:idCompany/" element={<CompanyInfo />} />
-          <Route path="/company/:idCompany/server/:idServer/" element={<ServerInfo />} />
+          {/* <ModalProvider> */}
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/company/:idCompany/" element={<CompanyInfo />} />
+            <Route path="/company/:idCompany/server/:idServer/" element={<ServerInfo />} />
+          {/* </ModalProvider> */}
         </Routes>
       </Router>
     );
