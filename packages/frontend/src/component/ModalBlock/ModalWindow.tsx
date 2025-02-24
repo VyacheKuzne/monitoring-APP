@@ -8,7 +8,7 @@ const ModalWindow:React.FC<ModalBlockProps> = ({ closeForm, children }) => {
     <div className='absolute flex justify-center items-center'>
         <div className='absolute max-w-[80%] h-auto bg-white rounded-[15px] z-20'>
           <div className='flex justify-end p-[10px]'>
-            <button className='rotate-45 select-none' onClick={() => closeForm(false)}><img src={PlusSvg} alt="Создать новую компанию" /></button>
+            <button className='rotate-45 select-none' onClick={() => closeForm(false)}><img src={PlusSvg} alt="Закрыть модальное окно" /></button>
           </div>
           <div className='px-[30px] pb-[30px]'>
               {children}

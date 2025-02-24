@@ -7,7 +7,6 @@ import InfoBlock from '../block/InfoBlock'
 import { CompanyData } from '../interfaces/company';
 import { Server } from '../interfaces/server';
 import ServerCard from '../component/Card/ServerCard';
-import CreateServerButton from '../component/Button/CreateServerButton';
 
 function CompanyInfo() {
 
@@ -52,7 +51,6 @@ function CompanyInfo() {
           {server.map((serverItem, index) => (
             <ServerCard key={serverItem.idServer} serverData={serverItem} />
           ))}
-          <CreateServerButton />
         </div>
       </div>
     </div>

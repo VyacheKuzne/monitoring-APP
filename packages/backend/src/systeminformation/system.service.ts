@@ -23,7 +23,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private systemData$ = new BehaviorSubject<SystemData | null>(null);
 
   private intervalSubscription: any;
-  private readonly pollingInterval = 60000;
+  private readonly pollingInterval = 10000;
   private DelayTime = 5000;
 
   onModuleInit() {
@@ -36,32 +36,42 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
 
   startMonitoring() {
     this.logger.log(`Starting system monitoring with interval: ${this.pollingInterval}ms`);
+    
+    // 1. Запускаем интервал для обновления данных
     this.intervalSubscription = interval(this.pollingInterval).subscribe(() => {
-      this.updateCpuData();
-      this.updateDiskData();
-      this.updateNetworkData();
-      this.updateMemoryData();
+      this.updateCpuData();  // Обновляем данные процессора
+      this.updateDiskData(); // Обновляем данные диска
+      this.updateNetworkData(); // Обновляем данные сети
+      this.updateMemoryData(); // Обновляем данные памяти
     });
-
+  
+    // 2. Объединяем все данные и обрабатываем их
     combineLatest([
       this.cpuData$,
       this.diskData$,
       this.networkData$,
       this.memoryData$,
-    ])        
-    .pipe(
-      debounceTime(this.DelayTime),
-      map(([cpu, disk, network, memory]) => ({
-        cpu,
-        disk,
-        network,
-        memory,
-      }))
-    )
-    .subscribe((systemData) => {
-      this.recordStats.recordStats(systemData); // Передаём напрямую в сервис базы
-    });
+    ])
+      .pipe(
+        // Задержка перед обработкой данных (debounceTime)
+        debounceTime(this.DelayTime),
+        // Преобразуем данные в объект SystemData
+        map(([cpu, disk, network, memory]) => ({
+          cpu,
+          disk,
+          network,
+          memory,
+        }))
+      )
+      .subscribe((systemData) => {
+        // 3. Сохраняем данные в базе
+        this.recordStats.recordStats(systemData); // Передаем в сервис базы данных
+  
+        // 4. Отправляем данные на клиентскую сторону (например, через WebSocket или другие механизмы)
+        this.systemData$.next(systemData); // Публикуем данные для вывода на страницу
+      });
   }
+  
 
   stopMonitoring() {
     this.logger.log('Stopping system monitoring');

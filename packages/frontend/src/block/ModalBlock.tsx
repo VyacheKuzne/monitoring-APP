@@ -28,6 +28,7 @@ const FormCompany = (modalAction: boolean) => {
     setModal(modalAction);
 }
 
+
 const mainText = [
     'Главная',
 ]
@@ -36,6 +37,7 @@ const mainText = [
     {
         modal ? <FormCreateCompany closeForm={FormCompany}/> : null
     }
+
     <div className='bg-white w-full h-screen p-[10%] shadow-xl flex flex-col justify-between'>
         <div>
             <div className='flex justify-between'>
@@ -56,6 +58,7 @@ const mainText = [
             </div>
         </div>
             <CreateCompanyButton openForm={FormCompany} />
+
     </div>
     </>
   )
