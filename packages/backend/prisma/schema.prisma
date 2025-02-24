@@ -69,7 +69,7 @@ model domain {
 
 model SSL {
   idSSL Int @id @default(autoincrement())
-  serialNumber String @db.VarChar(50)
+  serialNumber String @db.VarChar(64) @unique
   namePublisher String @db.VarChar(50)
   registered DateTime
   expires DateTime
@@ -78,7 +78,6 @@ model SSL {
   publickey String @db.VarChar(50)
   privatekey String @db.VarChar(50)
   version String @db.VarChar(50)
-  protocol String @db.VarChar(50)
 
   serverHasSSL serverHasSSL[]
 
@@ -152,7 +151,7 @@ model disk {
 
 model checkPage {
   idCheckPage Int @id @default(autoincrement())
-  parentApp Int
+  parentApp Int?
   statusLoadPage  String @db.VarChar(50)
   statusLoadContent  String @db.VarChar(50)
   statusLoadDOM  String @db.VarChar(50)
@@ -165,5 +164,5 @@ model checkPage {
 
   date DateTime
 
-  app app @relation(fields: [parentApp], references: [idApp]) // Связь с таблицей app один ко многим
+  app app? @relation(fields: [parentApp], references: [idApp]) // Связь с таблицей app один ко многим
 }

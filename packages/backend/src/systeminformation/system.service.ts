@@ -23,7 +23,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private systemData$ = new BehaviorSubject<SystemData | null>(null);
 
   private intervalSubscription: any;
-  private readonly pollingInterval = 10000;
+  private readonly pollingInterval = 60000;
   private DelayTime = 5000;
 
   onModuleInit() {

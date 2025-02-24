@@ -107,29 +107,7 @@ function ServerInfo() {
   const url = [`/company/${company?.idCompany}/`];
   const crumb = [`${server?.hostname}`];
 
-{/* костыль */}
 
-const [domainData, setCompanyData] = useState('https://');
-
-const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  const inputValue = event.target.value;
-
-  if (!inputValue.startsWith("https://")) {
-    return;
-  }
-
-  setCompanyData(inputValue);
-};
-const createServer = async (event: React.FormEvent) => {
-  event.preventDefault();
-  const domainName = domainData.replace("https://", "");
-
-  axios.post('http://localhost:3000/server/create', {
-    name: domainName
-  })
-};
-
-{/* костыль */}
 
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
@@ -137,23 +115,7 @@ const createServer = async (event: React.FormEvent) => {
       <div className='flex flex-col gap-[3.5%] m-[2%]'>
         <InfoBlock page={company?.name} url={url} crumb={crumb} />
 
-{/* костыль */}
-      <form className='flex flex-col gap-5 items-center border-black border-2' onSubmit={createServer}>
-        <div className='flex flex-col border-2'>
-          <span className='text-left text-[14px] mb-[5px]'>Домейн компании</span>
-          <input 
-                className='bg-gray-200 rounded-2xl border-black border-2 text-[12px] p-[10px] pr-[30px] placeholder:text-[12px]' 
-                type="text" 
-                placeholder='Введите Домейн компании'
-                value={domainData} 
-                onChange={handleChange}
-              />
-        </div>
-        <button className="w-[50%] p-[5px] bg-slate-500 hover:bg-slate-400 rounded-[5px] text-[14px] font-montserrat transition" type="submit">
-          Создать
-        </button>
-      </form>
-{/* костыль */}
+
 
         <div className='flex w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
           <div className='flex flex-col gap-[10px] text-left text-[14px]'>
