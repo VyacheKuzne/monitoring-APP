@@ -15,6 +15,7 @@ function ServerCard({ serverData }: getServerData) {
         hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition"
         href={`server/${serverData.idServer}`}
     >
+
         <div className='flex items-center justify-between'>
             <span>Сервер №1</span>
             <div className='flex items-center gap-[10px]'>

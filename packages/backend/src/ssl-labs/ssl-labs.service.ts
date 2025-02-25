@@ -13,19 +13,20 @@ export class SslLabsService {
   private readonly apiUrl = 'https://api.ssllabs.com/api/v3';
   private prisma = new PrismaClient();
 
-  constructor(private readonly httpService: HttpService) {}
+    constructor(private readonly httpService: HttpService) {}
 
-  getInfo(): Observable<SSLInfoAPI> {
-      const url = `${this.apiUrl}/info`;
-      this.logger.log(`Getting SSL Labs Info`);
-      return this.httpService.get<SSLInfoAPI>(url).pipe(
-          map(response => response.data),
-          catchError((error: AxiosError) => {
-              this.logger.error(`Error getting SSL Labs Info: ${error.message}`);
-              return throwError(() => new Error(error.message));
-          }),
-      );
-  }
+    // Получение информации об API
+    getInfo(): Observable<SSLInfoAPI> {
+        const url = `${this.apiUrl}/info`;
+        this.logger.log(`Getting SSL Labs Info`);
+        return this.httpService.get<SSLInfoAPI>(url).pipe(
+        map(response => response.data),
+        catchError((error: AxiosError) => {
+            this.logger.error(`Error getting SSL Labs Info: ${error.message}`);
+            return throwError(() => new Error(error.message));
+        }),
+        );
+    }
 
   analyze(host: string): Observable<SSLInfo> {
     const url = `${this.apiUrl}/analyze?host=${host}/&all=done`;
