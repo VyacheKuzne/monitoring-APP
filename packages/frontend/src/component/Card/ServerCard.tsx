@@ -17,7 +17,7 @@ function ServerCard({ serverData }: getServerData) {
     >
 
         <div className='flex items-center justify-between'>
-            <span>Сервер №1</span>
+            <span>Сервер №{serverData.idServer}</span>
             <div className='flex items-center gap-[10px]'>
                 <span className='text-[12px]'>Статус: Активен</span>
                 <div className='bg-[#2FBD12] w-[17px] h-[17px] rounded-full'></div>
@@ -31,7 +31,8 @@ function ServerCard({ serverData }: getServerData) {
             </div>
             <div className='flex flex-col gap-[15px]  text-right'>
                 <span>без срока</span>
-                <span>до: 17.04.2025</span>
+                <span>до: {serverData.domain?.registered ? serverData.domain.registered.toLocaleDateString() : 'без срока'}</span>
+
                 <span>до: 17.04.2025</span>
             </div>
         </div>

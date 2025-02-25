@@ -9,7 +9,7 @@ module.exports = {
         montserrat: ['"Montserrat"', 'sans-serif'],
       },
       colors: {
-        'color-fon': 'rgba(231, 231, 231, 1)',
+        'color-fon': 'rgba(89, 89, 89, 0.77)',
       },
     },
   },

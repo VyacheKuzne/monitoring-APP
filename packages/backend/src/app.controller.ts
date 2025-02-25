@@ -25,10 +25,7 @@ export class AppController {
     const numberCompany = Number(idCompany);
     return this.appService.getCompany(numberCompany);
   }
-  @Post('/company/create')
-  async createCompany(@Body() body: { name: string }) {
-    return this.appService.createCompany(body.name);
-  }
+
   @Get('/company/:idCompany/servers/get')
   async getServers(@Param('idCompany') idCompany: number) 
   {

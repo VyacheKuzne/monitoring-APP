@@ -1,7 +1,6 @@
 // src/app.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import axios from 'axios';
 
 @Injectable()
 export class AppService 
@@ -18,15 +17,17 @@ export class AppService
       where: { idCompany: idCompany }
     });
   }
-  async createCompany(name: string) {
-    return this.prisma.company.create({
-      data: {name},
-    });
-  }
-  async getServers(idCompany: number) 
-  {
+
+  async getServers(idCompany: number) {
     return this.prisma.server.findMany({
       where: { parentCompany: idCompany },
+      include: {
+        domain: {
+          where: {
+            name: { equals: 'host' }, // здесь мы связываем имя домена с полем host из сервера
+          },
+        },
+      },
     });
   }
   async getServer(numberServer: number, numberCompany: number) 
