@@ -8,9 +8,10 @@ import { testDBModule } from './testDB/testDB.module';
 import { SslLabsModule } from './ssl-labs/ssl-labs.module';
 import { CpuModule } from './dataForgGrafix/cpu/cpu.module';  // Убедитесь, что добавлен CpuModule
 import { DomainModule } from './create/create/createDomain.module';
+import { PuppeteerModule } from './puppeteer/puppeteer.module';
 
 @Module({
-  imports: [WhoisModule,DomainModule, SystemModule, SslLabsModule, CpuModule, ConfigModule.forRoot({ isGlobal: true }), testDBModule],
+  imports: [WhoisModule,DomainModule, SystemModule, SslLabsModule, CpuModule, PuppeteerModule, ConfigModule.forRoot({ isGlobal: true }), testDBModule],
   controllers: [AppController],
   providers: [AppService],
 })

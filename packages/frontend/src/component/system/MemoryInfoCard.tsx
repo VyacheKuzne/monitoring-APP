@@ -1,5 +1,5 @@
 import React from 'react';
-import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+// import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import LineChartComponent from './LineChartComponent'; // Импортируем компонент LineChart
 
 interface MemoryInfo {
