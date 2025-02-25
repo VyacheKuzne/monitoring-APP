@@ -1,28 +1,33 @@
 // src/app.service.ts
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
 import * as puppeteer from 'puppeteer'; 
 import { RecordPageService } from './recordPage.service';
 import { PageData } from './page.interface';
 import axios from 'axios';
 import * as xml2js from 'xml2js';
+import pLimit from 'p-limit';
 
 @Injectable()
 export class PuppeteerService implements OnModuleDestroy
 {
     constructor(private readonly recordPage: RecordPageService) {}
     private readonly logger = new Logger(PuppeteerService.name);
-
-    private prisma = new PrismaClient();
     private browser: puppeteer.Browser;
-    private page: puppeteer.Page;
-
-    private intervalSubscription: any;
+    private isMonitoring: boolean = false;
+    private attempts = 3;
+    private timeout = 30000;
+    private concurrency = 5;
 
     async startPageMonitoring(domain: string)
     {
+        if (this.isMonitoring) {
+            this.logger.log(`Monitoring already in progress for domain: ${domain}`);
+            return;
+        }
+
+        this.isMonitoring = true;
         this.logger.log(`Starting the Domain page test: ${domain}`);
-        this.browser = await puppeteer.launch();
+        this.browser = await puppeteer.launch({ args: ['--disable-web-security'] });
         await this.checkSitemap(domain);
     }
     
@@ -110,57 +115,94 @@ export class PuppeteerService implements OnModuleDestroy
         await this.updatePageData(puppedLinks);
     }
 
+    async runParallel<T>(
+        items: T[],
+        task: (item: T) => Promise<void>,
+        concurrency: number = this.concurrency
+    ): Promise<void> 
+    {
+        const limit = pLimit(concurrency);
+        await Promise.all(items.map(item => limit(() => task(item))));
+    }
+
     async updatePageData(urls: string[]): Promise<void> {
 
-        const page = await this.browser.newPage();
-
-        try {
-            for (const url of urls) {
-
+        const processUrl = async (url: string): Promise<void> => {
+            const page = await this.browser.newPage();
+            try {
                 this.logger.log(`Processing URL: ${url}`);
-                try {
-                    const response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
-                    const statusLoadPage = response?.status()?.toString() ?? 'Unknown';
-                    const statusLoadDOM = await page.evaluate(() => document.readyState);
+                let attempts = this.attempts;
+                let timeout = this.timeout;
+                let statusLoadPage = 'Unknown';
+                let response: puppeteer.HTTPResponse | null = null;
 
-                    const resourceStatus = await this.getResourceStatus(page);
-                    const statusLoadContent = resourceStatus.allLoaded ? "Content fully loaded" : "Some resources not loaded";
+                while (attempts--) {
+                    try {
+                        response = await page.goto(url, { waitUntil: 'networkidle2', timeout });
 
-                    const navigationEntry = await page.evaluate(() => {
-                        const entries = performance.getEntriesByType('navigation');
-                        if (entries.length > 0) {
-                        const navEntry = entries[0] as PerformanceNavigationTiming;
-                        return {
-                            startTime: navEntry.startTime,
-                            responseEnd: navEntry.responseEnd,
-                        };
+                        if (response) {
+                            statusLoadPage = response.status().toString();
                         }
-                        return null;
-                    });
+                        break;
+                    }
+                    catch (error) {
+                        this.logger.error(`Could not read the page, attempts left ${attempts}`);
+                        if (attempts === 0) {
+                            this.logger.error(`Failed to load page after multiple attempts`);
+                            statusLoadPage = 'Error';
+                            break;
+                        }
+                        timeout += 15000;
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                try {
+                    if (statusLoadPage !== 'Error') {
+                        // Страница загрузилась успешно, выполняем проверки
+                        await page.waitForFunction(() => document.readyState === "complete");
+                        const statusLoadDOM = await page.evaluate(() => document.readyState);
 
-                    const requestTime = navigationEntry?.startTime ?? 0;
-                    const responseTime = navigationEntry?.responseEnd ?? 0;
-                    const responseRate = responseTime - requestTime;
-                    
-                    this.logger.log(`Page loaded correctly`);
-                    const PageData: PageData = {
-                        urlPage: url,
-                        statusLoadPage,
-                        statusLoadContent,
-                        statusLoadDOM,
-                        mediaStatus: resourceStatus.mediaStatus,
-                        styleStatus: resourceStatus.styleStatus,
-                        scriptStatus: resourceStatus.scriptStatus,
-                        requestTime: requestTime.toFixed(2),
-                        responseTime: responseTime.toFixed(2),
-                        responseRate: responseRate.toFixed(2),
-                    };
+                        const resourceStatus = await this.getResourceStatus(page);
+                        const statusLoadContent = resourceStatus.allLoaded ? "Content fully loaded" : "Some resources not loaded";
 
-                    this.recordPage.recordPage(PageData);
+                        const navigationEntry = await page.evaluate(() => {
+                            const entries = performance.getEntriesByType('navigation');
+                            if (entries.length > 0) {
+                                const navEntry = entries[0] as PerformanceNavigationTiming;
+                                return {
+                                    startTime: navEntry.startTime,
+                                    responseEnd: navEntry.responseEnd,
+                                };
+                            }
+                            return null;
+                        });
+
+                        const requestTime = navigationEntry?.startTime ?? 0;
+                        const responseTime = navigationEntry?.responseEnd ?? 0;
+                        const responseRate = responseTime - requestTime;
+
+                        this.logger.log(`Page loaded correctly`);
+                        const PageData: PageData = {
+                            urlPage: url,
+                            statusLoadPage,
+                            statusLoadContent,
+                            statusLoadDOM,
+                            mediaStatus: resourceStatus.mediaStatus,
+                            styleStatus: resourceStatus.styleStatus,
+                            scriptStatus: resourceStatus.scriptStatus,
+                            requestTime: requestTime.toFixed(2),
+                            responseTime: responseTime.toFixed(2),
+                            responseRate: responseRate.toFixed(2),
+                        };
+                        this.recordPage.recordPage(PageData);
+                    } 
+                    else {
+                        throw new Error(`Failed to load after all attempts`);
+                    }
                 } 
                 catch (error) {
-                    this.logger.error(`Error load page`);
+                    this.logger.error(`Error load page: ${error.message}`);
                     const PageData: PageData = {
                         urlPage: url,
                         statusLoadPage: 'Error',
@@ -175,35 +217,71 @@ export class PuppeteerService implements OnModuleDestroy
                     };
                     this.recordPage.recordPage(PageData);
                 }
+                // Очистка состояния страницы перед следующим URL
+                await page.goto('about:blank');
+                await page.evaluate(() => performance.clearResourceTimings());
             }
-        }
-        finally {
-            await page.close();
-        }
+            finally {
+                await page.close();
+            }
+        };
+        // Запускаем параллельную обработку всех URL
+        await this.runParallel(urls, processUrl, this.concurrency);
     }
 
     async getResourceStatus(page: puppeteer.Page) {
         try {
             return await page.evaluate(() => {
-                const mediaLoaded = Array.from(document.querySelectorAll('img'))
-                    .every(img => img.complete && img.naturalWidth > 0);
+                // Медиа (Картинки, видео, аудио)
+                const mediaLoaded = [
+                    ...Array.from(document.querySelectorAll('img')).filter(img => img.hasAttribute('src')),
+                    ...Array.from(document.querySelectorAll('video')).filter(video => video.hasAttribute('src')),
+                    ...Array.from(document.querySelectorAll('audio')).filter(audio => audio.hasAttribute('src'))
+                ].every(media => {
+                    if (media instanceof HTMLImageElement) {
+                        return media.complete && media.naturalWidth > 0;
+                    }
+                    if (media instanceof HTMLVideoElement || media instanceof HTMLAudioElement) {
+                        return media.readyState >= 3; // 3 — достаточно данных для воспроизведения
+                    }
+                    return false;
+                });
+
                 const mediaStatus = mediaLoaded ? "Loaded" : "Failed";
     
                 // Стили (<link>, <style>, инлайн, @import)
-                const sheets = [
+                const styleElements = [
                     ...Array.from(document.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[],
                     ...Array.from(document.querySelectorAll('style')) as HTMLStyleElement[],
                 ];
-                const styleLoaded = sheets.every(sheet => {
+                
+                let styleLoaded = true;
+                const importedSheets: CSSStyleSheet[] = [];
+
+                styleElements.forEach(element => {
+                    const sheet = element.sheet;
+                    if (!sheet) {
+                        styleLoaded = false;
+                        return;
+                    }
+
                     try {
-                        const rules = sheet.sheet?.cssRules;
-                        return rules && rules.length >= 0;
-                    } catch (e) {
-                        return false;
+                        const rules = Array.from(sheet.cssRules);
+                        const importRules = rules.filter(rule => rule instanceof CSSImportRule) as CSSImportRule[];
+                        importRules.forEach(importRule => {
+                          if (importRule.styleSheet) {
+                            importedSheets.push(importRule.styleSheet);
+                          }
+                        });
+                    }
+                    catch (error) {
+                        this.logger.error(`Error accessing cssRules:`, error);
+                        styleLoaded = false;
                     }
                 });
                 const styleStatus = styleLoaded ? "Loaded" : "Failed";
     
+                // Скрипты
                 const scriptLoaded = Array.from(document.querySelectorAll('script[src]'))
                     .every(script => script.hasAttribute('async') || script.hasAttribute('defer') || document.readyState === 'complete');
                 const scriptStatus = scriptLoaded ? "Loaded" : "Failed";
@@ -217,8 +295,9 @@ export class PuppeteerService implements OnModuleDestroy
                     scriptStatus,
                 };
             });
-        } catch (error) {
-            this.logger.error(`Error in getResourceStatus: ${error.message}`);
+        } 
+        catch (error) {
+            this.logger.error(`Resource acquisition error`);
             return {
                 allLoaded: false,
                 mediaStatus: "Failed",
@@ -230,6 +309,7 @@ export class PuppeteerService implements OnModuleDestroy
 
     async stopMonitoring()
     {
+        this.isMonitoring = false;
         await this.browser.close();
     }
 }
