@@ -21,7 +21,7 @@ const LineChartComponent: React.FC<LineChartComponentProps> = ({ title, data, da
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" />
+          <XAxis dataKey="time" reversed={true} /> {/* reversed для отображения данных с правой стороны */}
           <YAxis />
           <Tooltip />
           <Legend />
@@ -33,4 +33,3 @@ const LineChartComponent: React.FC<LineChartComponentProps> = ({ title, data, da
 };
 
 export default LineChartComponent;
-  

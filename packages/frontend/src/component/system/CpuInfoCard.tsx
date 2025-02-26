@@ -32,6 +32,7 @@ const CpuInfoCard: React.FC<Props> = ({ cpuInfo, cpuData }) => {
             {cpuInfo.currentLoad !== undefined 
               ? cpuInfo.currentLoad.toFixed(2) 
               : 'Данные отсутствуют'}
+            %
           </li>
         </ul>
       ) : (

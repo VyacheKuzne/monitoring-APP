@@ -26,14 +26,9 @@ function ServerCard({ serverData }: getServerData) {
         <div className='grid grid-cols-2 text-[14px]'>
             <div className='flex flex-col gap-[15px] text-left '>
                 <span>Хост: {serverData.hostname}</span>
-                <span>Домен: fox-pizza.ru</span>
-                <span>SSL сертификат</span>
             </div>
             <div className='flex flex-col gap-[15px]  text-right'>
                 <span>без срока</span>
-                <span>до: {serverData.domain?.registered ? serverData.domain.registered.toLocaleDateString() : 'без срока'}</span>
-
-                <span>до: 17.04.2025</span>
             </div>
         </div>
     </a>

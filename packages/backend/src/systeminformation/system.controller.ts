@@ -9,21 +9,26 @@ export class SystemController {
   constructor(private readonly systemService: SystemService) {}
 
   @Get('all')
-  getSystemInfo(@Res() res: Response): Observable<SystemData | null> {
+  getSystemInfo(@Res() res: Response): Observable<void> {  // Возвращаем Observable<void>, так как данные не возвращаются
     return this.systemService.getSystemData().pipe(
       map((systemData) => {
         if (systemData) {
-          res.status(200).json(systemData);  // Отправляем данные, если они получены
-          return systemData;
+          // Отправляем ответ и завершаем поток, не возвращаем ничего
+          res.status(200).json(systemData);  // Ответ отправлен
         } else {
-          res.status(500).json({ message: 'Failed to retrieve system information' });
-          return null;  // Возвращаем null, если данных нет
+          // Отправляем ошибку, если данные отсутствуют
+          res.status(500).json({ message: 'Failed to retrieve system information' });  // Ответ отправлен
         }
+        return; // Возвращаем `void`, завершая выполнение
       }),
       catchError((error) => {
-        res.status(500).json({ message: 'Failed to retrieve system information', error });
-        return [];
+        if (!res.headersSent) {
+          res.status(500).json({ message: 'Failed to retrieve system information', error });
+        }
+        return new Observable<void>(); // Завершаем поток
       }),
     );
   }
 }
+
+

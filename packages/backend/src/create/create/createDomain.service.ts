@@ -35,8 +35,8 @@ export class DomainService {
   // Новый метод для создания сервера и связывания его с доменом передаем обьект для заполнения дмоена и связей 
   public async createServerAndLinkDomain(domain: string, idCompany: number) {
     // Получаем информацию о домене (например, дату регистрации)
-    const whoisData = await this.getWhoisData(domain);
-    const SSLabsData = await this.getSSLabsData(domain);
+    // const whoisData = await this.getWhoisData(domain);
+    // const SSLabsData = await this.getSSLabsData(domain);
   // Преобразуем idCompany в число, если это строка
   const parentCompanyId = Number(idCompany);
 
