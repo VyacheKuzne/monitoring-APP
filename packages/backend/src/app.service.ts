@@ -22,14 +22,21 @@ export class AppService
     return this.prisma.server.findMany({
       where: { parentCompany: idCompany },
       include: {
-        domain: {
+        serverHasDomain: {
           where: {
-            name: { equals: 'host' }, // здесь мы связываем имя домена с полем host из сервера
+            domain: {
+              name: { equals: 'host' },  // Filter for domain with name 'host'
+            },
+          },
+          include: {
+            domain: true,  // Include the domain details
           },
         },
       },
     });
   }
+  
+  
   async getServer(numberServer: number, numberCompany: number) 
   {
     return {
