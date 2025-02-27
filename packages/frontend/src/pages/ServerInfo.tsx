@@ -9,11 +9,11 @@ import { Server } from '../interfaces/server';
 import { WhoisData } from '../interfaces/whois';
 import CpuInfoCard, { DataPoint } from '../component/system/CpuInfoCard';
 import FormCreateServer from '../component/ModalBlock/FormCreateServer';
+import PlusSvg from '../img/Plus.svg'
 
 function ServerInfo() {
-  const { idCompany, idServer } = useParams<{ idCompany: string, idServer: string }>();
 
-  const [server, setServer] = useState<Server | null>(null);
+  const { idCompany, idServer } = useParams<{ idCompany: string, idServer: string }>();  const [server, setServer] = useState<Server | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
   const [domain, setDomain] = useState('');
   const [whoisData, setWhoisData] = useState<WhoisData | null>(null);
@@ -109,6 +109,86 @@ function ServerInfo() {
 
 
 
+
+  // useEffect(() => {
+  //   getCompanyInfo();
+  // }, []);
+
+  // const getCompanyInfo = async () => {
+  //   try {
+  //     // Получаем информацию о компании
+  //     const companyResponse = await axios.get(`http://localhost:3000/company/${idCompany}/get`);
+  //     setCompany(companyResponse.data); // Обновляем данные компании
+  
+  //     // Получаем информацию о серверах компании
+  //     const serverResponse = await axios.get(`http://localhost:3000/company/${idCompany}/servers/get`);
+  //     setServer(serverResponse.data); // Обновляем данные серверов
+  //   } catch (error) {
+  //     console.error('Ошибка при получении данных компании или серверов:', error);
+  //   }
+  // };
+  
+  const createDomain = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const domainName = domainData.replace("https://", "");
+  
+    try {
+      // Выполняем POST-запрос для создания сервера и ждём его завершения
+      await axios.post('http://localhost:3000/domain/create', {
+        idCompany: Number(idCompany),  // Преобразуем в число
+        name: domainName,
+        appName: appName,
+        idServer: Number(idServer)     // Преобразуем в число
+      });
+      
+  
+      // После успешного добавления сервера, вызываем обновление данных компании и серверов
+      // await getCompanyInfo();
+  
+    } catch (error) {
+      console.error('Ошибка при создании сервера:', error);
+    }
+  };
+  
+  const getCompanyName = (): string => {
+    if (!company) {
+      return "";
+    }
+    if (Array.isArray(company)) {
+      return company.length > 0 ? company[0].name : "Нет данных";
+    } 
+    return company.name;
+  };
+
+const [domainData, setCompanyData] = useState('https://');
+
+const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const inputValue = event.target.value;
+
+  if (!inputValue.startsWith("https://")) {
+    return;
+  }
+  setCompanyData(inputValue);
+};
+
+const [appName, setappName] = useState('');
+
+const handleChangeName = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const inputValue = event.target.value;
+
+  setappName(inputValue);
+};
+
+
+const [Modal, setModal] = useState<boolean>(false)
+const showModal = () => {
+  setModal(true)
+}
+const closeModal = () => {
+  setModal(false)
+}
+ 
+
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
       <ModalBlock />
@@ -131,7 +211,51 @@ function ServerInfo() {
           <CpuInfoCard cpuInfo={cpuInfo} cpuData={cpuData} />
         )}
 
-        <div className='grid grid-cols-3 gap-[2%] w-auto h-auto'>
+<div className='grid grid-cols-3 gap-[2%] w-auto h-auto'>
+          {/* {server.map((serverItem, index) => (
+            <ServerCard key={serverItem.idServer} serverData={serverItem} />
+          ))} */}
+        <button onClick={showModal} className='flex justify-center items-center max-w-[400px] min-h-[200px] p-[30px] bg-white 
+        hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition '>
+         <img src={PlusSvg} className='w-[30px] h-[30px] mx-3' alt="Закрыть модальное окно" /> 
+         <p>Добавить приложение</p>
+        </button>
+        {Modal && (
+           <div className='w-screen h-screen absolute flex justify-center items-center bg-color-fon z-10 top-0 left-0'>
+              {/* блок контента */}
+              <div className='bg-white  rounded-[5px] p-2 flex flex-col'>
+                {/* верхняя часть дива с кнопкой для закрытия блока */}
+                <div className='flex flex-row-reverse'>
+                  <button className='rotate-45 select-none' onClick={closeModal}>
+                   <img src={PlusSvg} alt="Закрыть модальное окно" />
+                 </button>
+                </div>
+                {/* форма для запоолнения */}
+                <form className='flex flex-col gap-5 items-center w-[450px] h-[150px' onSubmit={createDomain}>
+                 <div className='flex flex-col'>
+                   <span className='text-left text-[20px] mb-[5px]'>Введите Домейн приложения</span>
+                   <input 
+                         className='bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]' 
+                         type="text" 
+                         placeholder='Введите Домейн приложения'
+                         value={domainData} 
+                         onChange={handleChange}
+                       />
+                         <input 
+                         className='bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]' 
+                         type="text" 
+                         placeholder='Введите название приложения'
+                         value={appName} 
+                         onChange={handleChangeName}
+                       />
+                 </div>
+                 <button className="w-[50%] p-[5px]  bg-slate-300 hover:bg-slate-400 rounded-[5px] text-[14px] font-montserrat transition" type="submit">
+                   <p>Создать</p>
+                 </button>
+               </form>
+              </div>
+            </div>
+        )}
         </div>
       </div>
     </div>

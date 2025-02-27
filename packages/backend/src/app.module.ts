@@ -7,11 +7,12 @@ import { SystemModule } from './systeminformation/system.module'; // Import Syst
 import { testDBModule } from './testDB/testDB.module';
 import { SslLabsModule } from './ssl-labs/ssl-labs.module';
 import { CpuModule } from './dataForgGrafix/cpu/cpu.module';  // Убедитесь, что добавлен CpuModule
-import { DomainModule } from './create/create/createDomain.module';
+import { DomainModule } from './create/createDomain/createDomain.module';
 import { PuppeteerModule } from './puppeteer/puppeteer.module';
+import { CreateServerModule } from './create/create-server/create-server.module';
 import { CreateCompanyModule } from './create/create-company/create-company.module';
 @Module({
-  imports: [WhoisModule,DomainModule, CreateCompanyModule, SystemModule, SslLabsModule, CpuModule, PuppeteerModule, ConfigModule.forRoot({ isGlobal: true }), testDBModule],
+  imports: [WhoisModule,CreateCompanyModule, CreateServerModule, DomainModule, SystemModule, SslLabsModule, CpuModule, PuppeteerModule, ConfigModule.forRoot({ isGlobal: true }), testDBModule],
   controllers: [AppController],
   providers: [AppService],
 })

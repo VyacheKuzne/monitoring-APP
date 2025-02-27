@@ -123,7 +123,6 @@ const closeModal = () => {
               </div>
             </div>
         )}
-      {/* костыль */}
         </div>
       </div>
     </div>
