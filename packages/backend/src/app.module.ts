@@ -11,8 +11,22 @@ import { DomainModule } from './create/createDomain/createDomain.module';
 import { PuppeteerModule } from './puppeteer/puppeteer.module';
 import { CreateServerModule } from './create/create-server/create-server.module';
 import { CreateCompanyModule } from './create/create-company/create-company.module';
+import { CreateNotificationModule } from './create/create-notification/createNotification.module';
+
 @Module({
-  imports: [WhoisModule,CreateCompanyModule, CreateServerModule, DomainModule, SystemModule, SslLabsModule, CpuModule, PuppeteerModule, ConfigModule.forRoot({ isGlobal: true }), testDBModule],
+  imports: [
+    WhoisModule, 
+    DomainModule, 
+    CreateCompanyModule, 
+    CreateServerModule,
+    SystemModule, 
+    SslLabsModule, 
+    CpuModule, 
+    PuppeteerModule, 
+    ConfigModule.forRoot({ isGlobal: true }),
+    CreateNotificationModule,
+    testDBModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

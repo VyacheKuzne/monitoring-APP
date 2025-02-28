@@ -1,22 +1,30 @@
 // src/app.service.ts
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as puppeteer from 'puppeteer'; 
 import { RecordPageService } from './recordPage.service';
 import { PageData } from './page.interface';
 import axios from 'axios';
+import { HttpService } from '@nestjs/axios';
 import * as xml2js from 'xml2js';
 import pLimit from 'p-limit';
 
 @Injectable()
-export class PuppeteerService implements OnModuleDestroy
+export class PuppeteerService
 {
-    constructor(private readonly recordPage: RecordPageService) {}
+    constructor(
+        private readonly recordPage: RecordPageService, 
+        private readonly httpService: HttpService
+    ) {}
+
     private readonly logger = new Logger(PuppeteerService.name);
     private browser: puppeteer.Browser;
     private isMonitoring: boolean = false;
     private attempts = 3;
     private timeout = 30000;
     private concurrency = 5;
+
+    private PageCount = 0;
+    private failedPageCount = 0;
 
     async startPageMonitoring(domain: string)
     {
@@ -29,11 +37,8 @@ export class PuppeteerService implements OnModuleDestroy
         this.logger.log(`Starting the Domain page test: ${domain}`);
         this.browser = await puppeteer.launch({ args: ['--disable-web-security'] });
         await this.checkSitemap(domain);
-    }
-    
-    async onModuleDestroy() 
-    {
-        this.stopMonitoring();
+        
+        this.stopMonitoring(domain);
     }
 
     async checkSitemap(domain: string)
@@ -80,6 +85,7 @@ export class PuppeteerService implements OnModuleDestroy
                         const nestedParsed = await xml2js.parseStringPromise(nestedResponse.data);
                         const nestedPageUrls = nestedParsed.urlset.url.map((entry: any) => entry.loc[0]);
                         this.logger.debug(`Found ${nestedPageUrls.length} links in ${nestedSitemapUrl}`);
+                        this.PageCount = nestedPageUrls.length;
                         
                         await this.updatePageData(nestedPageUrls);
                     } 
@@ -110,6 +116,8 @@ export class PuppeteerService implements OnModuleDestroy
                     .map(href => href.startsWith('/') ? `https://${domain}${href}` : href)
             ));
         }, domain);
+        
+        this.PageCount = puppedLinks.length;
 
         await page.close();
         await this.updatePageData(puppedLinks);
@@ -151,6 +159,7 @@ export class PuppeteerService implements OnModuleDestroy
                         if (attempts === 0) {
                             this.logger.error(`Failed to load page after multiple attempts`);
                             statusLoadPage = 'Error';
+                            this.failedPageCount++;
                             break;
                         }
                         timeout += 15000;
@@ -215,6 +224,7 @@ export class PuppeteerService implements OnModuleDestroy
                         responseTime: '0',
                         responseRate: '0',
                     };
+                    this.failedPageCount++;
                     this.recordPage.recordPage(PageData);
                 }
                 // Очистка состояния страницы перед следующим URL
@@ -307,9 +317,26 @@ export class PuppeteerService implements OnModuleDestroy
         }
     }
 
-    async stopMonitoring()
+    async stopMonitoring(domain: string)
     {
-        this.isMonitoring = false;
+        this.logger.log(`Stop monitoring pages. Total pages: ${this.PageCount}, Failed pages: ${this.failedPageCount}`);
+        if((this.failedPageCount / this.PageCount) >= 0.1)
+        {
+            const url = 'http://localhost:3000/notification/create';
+            const percent = Math.round((this.failedPageCount / this.PageCount) * 100);
+            const data = {
+                text: `При проверке страниц приложения ${domain}, количество провальных проверок достигло ${percent}%.`,
+                parentCompany: null,
+                parentServer: null,
+                parentApp: null,
+            }
+
+            await this.httpService.post(url, data).toPromise();
+        }
+
         await this.browser.close();
+        this.PageCount = 0;
+        this.failedPageCount= 0;
+        this.isMonitoring = false;
     }
 }

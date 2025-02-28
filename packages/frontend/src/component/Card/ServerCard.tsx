@@ -23,12 +23,21 @@ function ServerCard({ serverData }: getServerData) {
                 <div className='bg-[#2FBD12] w-[17px] h-[17px] rounded-full'></div>
             </div>
         </div>
-        <div className='grid grid-cols-2 text-[14px]'>
-            <div className='flex flex-col gap-[15px] text-left '>
-                <span>Хост: {serverData.hostname}</span>
+        <div className='grid grid-cols-[1fr_auto] gap-[15px] text-[14px]'>
+            <div className='col-span-2 text-left '>
+                <span>Ip-адрес: {serverData.ipAddress}</span>
             </div>
-            <div className='flex flex-col gap-[15px]  text-right'>
+            <div className='text-left'>
+                <span>Имя хоста: {serverData.hostname}</span>
+            </div>
+            <div className='flex items-center justify-end auto text-[12px]'>
                 <span>без срока</span>
+            </div>
+            <div className='col-span-2 text-left'>
+                <span>Местонахождение: {serverData.location}</span>
+            </div>
+            <div className='col-span-2 text-left'>
+                <span>Операц. система: {serverData.os}</span>
             </div>
         </div>
     </a>

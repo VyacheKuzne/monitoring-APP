@@ -18,6 +18,7 @@ model company {
   name String @db.VarChar(50)
 
   servers server[] // Связь с таблицей server один ко многим
+  notification notification[] // Связь с таблицей notification один ко многим
 }
 
 model server {
@@ -34,6 +35,7 @@ model server {
   checkServerStats checkServerStats[]
   serverHasDomain serverHasDomain[]
   serverHasSSL serverHasSSL[]
+  notification notification[] // Связь с таблицей notification один ко многим
 
   company company @relation(fields: [parentCompany], references: [idCompany]) // Связь с таблицей company один ко многим
 }
@@ -45,6 +47,7 @@ model app {
   name String @db.VarChar(50)
 
   checkPage checkPage[]
+  notification notification[] // Связь с таблицей notification один ко многим
 
   server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
   domain domain? @relation(fields: [parentDomain], references: [idDomain]) // Связь с таблицей domain один ко многим
@@ -165,5 +168,18 @@ model checkPage {
 
   date DateTime
 
+  app app? @relation(fields: [parentApp], references: [idApp]) // Связь с таблицей app один ко многим
+}
+
+model notification {
+  idNotification Int @id @default(autoincrement())
+  text String
+  parentCompany Int?
+  parentServer Int?
+  parentApp Int?
+  date DateTime
+
+  company company? @relation(fields: [parentCompany], references: [idCompany]) // Связь с таблицей company один ко многим
+  server server? @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
   app app? @relation(fields: [parentApp], references: [idApp]) // Связь с таблицей app один ко многим
 }

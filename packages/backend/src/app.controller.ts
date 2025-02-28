@@ -39,4 +39,9 @@ export class AppController {
     return this.appService.getServer(numberServer, numberCompany);
   }
   
+  @Get('/notifications/get')
+  async getAllNotifications() 
+  {
+    return this.appService.getAllNotifications();
+  }
 }
