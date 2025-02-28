@@ -32,7 +32,18 @@ export class DomainService {
       return {};
     }
   }
-
+  // Этот метод будет отправлять запрос на получение данных о страницах 
+  public async getPagesData(domain: string): Promise<{ creationDate?: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`http://localhost:3000/pages/${domain}`)
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Ошибка при получении информации о страницах:', error);
+      return {};
+    }
+  }
   // Функция для ожидания
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -67,8 +78,9 @@ export class DomainService {
     const whoisData = await this.getWhoisData(domain);
     // Получаем данные SSL Labs
     const sslLabsData = await this.getSSLabsData(domain);
-    
-    console.log('SSL Labs Data:', sslLabsData);
+    // Получаем данные о страницах 
+    const getPagesData = await this.getPagesData(domain);
+    // console.log('SSL Labs Data:', sslLabsData);
 
     // Преобразуем идентификаторы
     const parentCompanyId = Number(idCompany);

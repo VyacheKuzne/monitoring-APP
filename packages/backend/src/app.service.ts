@@ -48,6 +48,19 @@ export class AppService
       }),
     };
   }
+  // фукнция получить данные о приложениях
+  async getApp(numberServer: number) 
+  {
+    return {
+      server: await this.prisma.server.findFirst({
+        where: { idServer: numberServer },
+      }),
+      app: await this.prisma.app.findFirst({
+        where: { parentServer: numberServer },
+      }),
+    };
+  }
+
   async getAllNotifications() 
   {
     return this.prisma.notification.findMany({

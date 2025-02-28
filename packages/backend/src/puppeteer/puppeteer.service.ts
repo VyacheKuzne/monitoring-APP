@@ -37,8 +37,6 @@ export class PuppeteerService
         this.logger.log(`Starting the Domain page test: ${domain}`);
         this.browser = await puppeteer.launch({ args: ['--disable-web-security'] });
         await this.checkSitemap(domain);
-        
-        this.stopMonitoring(domain);
     }
 
     async checkSitemap(domain: string)
@@ -237,6 +235,8 @@ export class PuppeteerService
         };
         // Запускаем параллельную обработку всех URL
         await this.runParallel(urls, processUrl, this.concurrency);
+        
+        this.stopMonitoring();
     }
 
     async getResourceStatus(page: puppeteer.Page) {
@@ -317,7 +317,7 @@ export class PuppeteerService
         }
     }
 
-    async stopMonitoring(domain: string)
+    async stopMonitoring()
     {
         this.logger.log(`Stop monitoring pages. Total pages: ${this.PageCount}, Failed pages: ${this.failedPageCount}`);
         if((this.failedPageCount / this.PageCount) >= 0.1)
@@ -325,7 +325,7 @@ export class PuppeteerService
             const url = 'http://localhost:3000/notification/create';
             const percent = Math.round((this.failedPageCount / this.PageCount) * 100);
             const data = {
-                text: `При проверке страниц приложения ${domain}, количество провальных проверок достигло ${percent}%.`,
+                text: `При проверке страниц приложения {}, количество провальных проверок достигло ${percent}%.`,
                 parentCompany: null,
                 parentServer: null,
                 parentApp: null,

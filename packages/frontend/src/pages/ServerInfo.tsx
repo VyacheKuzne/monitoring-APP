@@ -6,15 +6,18 @@ import ModalBlock from '../block/ModalBlock';
 import InfoBlock from '../block/InfoBlock';
 import { Company } from '../interfaces/company';
 import { Server } from '../interfaces/server';
+import { App } from '../interfaces/app';
 import { WhoisData } from '../interfaces/whois';
 import CpuInfoCard, { DataPoint } from '../component/system/CpuInfoCard';
 import FormCreateServer from '../component/ModalBlock/FormCreateServer';
 import PlusSvg from '../img/Plus.svg'
+import AppCard from '../component/Card/AppCard';
 
 function ServerInfo() {
 
   const { idCompany, idServer } = useParams<{ idCompany: string, idServer: string }>();  const [server, setServer] = useState<Server | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
+  const [app, setApp] = useState<App[]>([]);
   const [domain, setDomain] = useState('');
   const [whoisData, setWhoisData] = useState<WhoisData | null>(null);
   const [cpuInfo, setCpuInfo] = useState<any>(null); // Данные процессора
@@ -109,24 +112,27 @@ function ServerInfo() {
 
 
 
+// получаем данные о приложении на сервере 
+useEffect(() => {
+  getAppInfo();
+}, []);
 
-  // useEffect(() => {
-  //   getCompanyInfo();
-  // }, []);
+const getAppInfo = async () => {
+  try {
+    const AppResponse = await axios.get(`http://localhost:3000/company/${idCompany}/server/${idServer}/app/get`);
 
-  // const getCompanyInfo = async () => {
-  //   try {
-  //     // Получаем информацию о компании
-  //     const companyResponse = await axios.get(`http://localhost:3000/company/${idCompany}/get`);
-  //     setCompany(companyResponse.data); // Обновляем данные компании
+    // Выводим в консоль все данные, полученные от сервера
+    console.log('Полученные данные приложения:', AppResponse.data);
+
+    // Ensure 'app' is always an array, even if the response is a single object
+    setApp(Array.isArray(AppResponse.data) ? AppResponse.data : [AppResponse.data]);
+
+  } catch (error) {
+    console.error('Ошибка при получении данных приложения или серверов:', error);
+  }
+};
+
   
-  //     // Получаем информацию о серверах компании
-  //     const serverResponse = await axios.get(`http://localhost:3000/company/${idCompany}/servers/get`);
-  //     setServer(serverResponse.data); // Обновляем данные серверов
-  //   } catch (error) {
-  //     console.error('Ошибка при получении данных компании или серверов:', error);
-  //   }
-  // };
   
   const createDomain = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -212,9 +218,9 @@ const closeModal = () => {
         )}
 
 <div className='grid grid-cols-3 gap-[2%] w-auto h-auto'>
-          {/* {server.map((serverItem, index) => (
-            <ServerCard key={serverItem.idServer} serverData={serverItem} />
-          ))} */}
+          {app.map((appItem) => (
+            <AppCard key={appItem.server.idServer} appData={appItem} />
+          ))}
         <button onClick={showModal} className='flex justify-center items-center max-w-[400px] min-h-[200px] p-[30px] bg-white 
         hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition '>
          <img src={PlusSvg} className='w-[30px] h-[30px] mx-3' alt="Закрыть модальное окно" /> 

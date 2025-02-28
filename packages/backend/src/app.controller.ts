@@ -38,7 +38,12 @@ export class AppController {
     const numberCompany = Number(idCompany);
     return this.appService.getServer(numberServer, numberCompany);
   }
-  
+  // маршурт чтобы получить данные о приложениях на сервере
+@Get('/company/:idCompany/server/:idServer/app/get')
+  async getApp(@Param('idServer') idServer: number) {
+    const numberServer = Number(idServer);
+    return this.appService.getApp(numberServer);
+  }
   @Get('/notifications/get')
   async getAllNotifications() 
   {
