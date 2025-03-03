@@ -1,12 +1,25 @@
 import { Injectable, Logger} from '@nestjs/common';
 import { SystemData } from './interfaces/system-data.interface';
 import { PrismaClient } from '@prisma/client';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class RecordStatsService {
 
+    constructor(
+        private readonly httpService: HttpService
+    ) {}
+
     private prisma = new PrismaClient();
     private readonly logger = new Logger(RecordStatsService.name);
+
+    private timer = 600000; // Миллисекунды
+    private percent = 90;
+    private reductionRatio = 0.8; // Коэффициент выхода из 
+
+    private highLoadStartTime: number | null = null;
+    private initialNotificationSent = false;
+    private lastHourlyReminder: number | null = null;
 
     async recordStats(systemData: SystemData) {
 
@@ -43,6 +56,7 @@ export class RecordStatsService {
             });
 
             this.logger.log(`Monitoring data recorded successfully`);
+            await this.statsNotification(systemData.cpu.currentLoad);
             return result;
         }
         else
@@ -50,5 +64,52 @@ export class RecordStatsService {
             this.logger.error('Monitoring data recording error');
             return;
         }
+    }
+    async statsNotification(currentLoad: number)
+    {
+        const url = 'http://localhost:3000/notification/create';
+        const thresholdDrop = this.percent * this.reductionRatio;
+        const hour = 3600000;
+
+        if (currentLoad < thresholdDrop && this.highLoadStartTime !== null) {
+            this.highLoadStartTime = null;
+        }
+
+        if (currentLoad >= this.percent && this.highLoadStartTime === null) {
+            this.highLoadStartTime = Date.now();
+        }
+
+        if (this.highLoadStartTime !== null) {
+            const timeDifference = (Date.now() - this.highLoadStartTime);
+        
+            if (timeDifference >= this.timer && !this.initialNotificationSent) {
+
+                const data = {
+                  text: `Сервер в нагрузке свыше ${this.percent}%, уже дольше ${(this.timer / 60000).toFixed(0)} минут.`,
+                  parentCompany: null,
+                  parentServer: null,
+                  parentApp: null,
+                };
+                await this.httpService.post(url, data).toPromise();
+                this.initialNotificationSent = true;
+            }
+            if(timeDifference >= hour)
+            {
+                const hoursElapsed = Math.floor(timeDifference / hour); // Количество полных часов
+                const nextReminderTime = this.highLoadStartTime + hoursElapsed * hour;
+                if (this.lastHourlyReminder === null || nextReminderTime > this.lastHourlyReminder) {
+                    
+                    const data = {
+                      text: `Сервер в нагрузке свыше ${this.percent}%, уже дольше ${hoursElapsed} часов`,
+                      parentCompany: null,
+                      parentServer: null,
+                      parentApp: null,
+                    };
+                    await this.httpService.post(url, data).toPromise();
+                    this.lastHourlyReminder = nextReminderTime; // Обновляем время последнего напоминания
+                }
+            }
+        }
+
     }
 }

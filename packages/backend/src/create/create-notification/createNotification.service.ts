@@ -23,7 +23,7 @@ export class NotificationService {
           date: new Date(),
         },
       });
-      this.logger.log(`Notification recorded`);
+      this.logger.log(`Notification recorded successfully`);
     }
     else
     {
