@@ -34,7 +34,6 @@ model server {
   app app[]
   checkServerStats checkServerStats[]
   serverHasDomain serverHasDomain[]
-  serverHasSSL serverHasSSL[]
   notification notification[] // Связь с таблицей notification один ко многим
 
   company company @relation(fields: [parentCompany], references: [idCompany]) // Связь с таблицей company один ко многим
@@ -48,6 +47,7 @@ model app {
 
   checkPage checkPage[]
   notification notification[] // Связь с таблицей notification один ко многим
+  appHasSSL appHasSSL[] // Связь с таблицей appHasSSL многие ко многим
 
   server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
   domain domain? @relation(fields: [parentDomain], references: [idDomain]) // Связь с таблицей domain один ко многим
@@ -82,7 +82,7 @@ model SSL {
   privatekey String @db.VarChar(50)
   version String @db.VarChar(50)
 
-  serverHasSSL serverHasSSL[]
+  appHasSSL appHasSSL[]
 
   status status? @relation(fields: [parentStatus], references: [idStatus]) // Связь с таблицей status один ко многим
 }
@@ -104,13 +104,13 @@ model serverHasDomain { // Связь многие ко многим табли�
   @@id([manyServer, manyDomain])
 }
 
-model serverHasSSL { // Связь многие ко многим таблиц server и SSL
-  manyServer Int
-  server server @relation(fields: [manyServer], references: [idServer])
+model appHasSSL { // Связь многие ко многим таблиц server и SSL
+  manyApp Int
+  app app @relation(fields: [manyApp], references: [idApp])
   manySSL Int
   ssl SSL @relation(fields: [manySSL], references: [idSSL])
 
-  @@id([manyServer, manySSL])
+  @@id([manyApp, manySSL])
 }
 
 model checkServerStats {

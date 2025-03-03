@@ -12,9 +12,10 @@ export interface WhoisData {
     creationDate?: Date | string;
     updatingDate?: Date | string;
     expiresDate?: Date | string;
-    // daysToExpire?: number;
     registrarName?: string;
     ownerName?: string;
+
+    daysToExpire?: number;
 }
 
 interface WhoisRecord {
@@ -82,8 +83,7 @@ export class WhoisService {
             )
             .pipe(
                 switchMap((response: AxiosResponse<string>) => {
-                    this.logger.debug(`Full XML API response received: ${response.data}`);
-
+                    // this.logger.debug(`Full XML API response received: ${response.data}`);
                     return from(
                         new Promise<WhoisData>((resolve, reject) => {
                             parseString(response.data, (err, result: WhoisResponse) => {
@@ -94,9 +94,10 @@ export class WhoisService {
                                         creationDate: undefined, 
                                         updatedDate: undefined,
                                         expiresDate: undefined,
-                                        // daysToExpire: undefined 
                                         registrarName: undefined,
                                         organization: undefined,
+
+                                        daysToExpire: undefined 
                                     });
                                     return;
                                 }
@@ -111,6 +112,18 @@ export class WhoisService {
                                 const registrarName = whoisRecord?.registrarName?.[0] || undefined;
                                 const organization = whoisRecord?.registrant?.organization?.[0] || undefined;
 
+                                let daysToExpire: number | undefined;
+                                if (expiresDate) {
+                                  const now = new Date();
+                                  const expiry = new Date(expiresDate);
+                
+                                  const nowUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+                                  const expiryUTC = Date.UTC(expiry.getUTCFullYear(), expiry.getUTCMonth(), expiry.getUTCDate());
+                
+                                  const diff = expiryUTC - nowUTC;
+                                  daysToExpire = Math.ceil(diff / (1000 * 3600 * 24));
+                                }
+
                                 function replace(rawDate: string): Date {
                                     const formattedDate = new Date(rawDate.replace("+0000", "Z"));
                                     return formattedDate;
@@ -123,9 +136,11 @@ export class WhoisService {
                                     expiresDate: expiresDate ? replace(expiresDate) : undefined,
                                     registrarName: registrarName,
                                     ownerName: organization,
+
+                                    daysToExpire: daysToExpire
                                 };
 
-                                this.logger.debug(`WhoisData: ${JSON.stringify(whoisData)}`);
+                                // this.logger.debug(`WhoisData: ${JSON.stringify(whoisData)}`);
                                 resolve(whoisData);
 
                                 this.createDomain(whoisData);
@@ -148,25 +163,51 @@ export class WhoisService {
     }
 
     async createDomain(whoisData: WhoisData): Promise<void> {
-        await this.prisma.domain.upsert({
-            where: {
-                name: whoisData.domainName,
-            },
-            update: {
-                registered: whoisData.creationDate instanceof Date ? whoisData.creationDate.toISOString() : whoisData.creationDate,
-                updated: whoisData.updatingDate instanceof Date ? whoisData.updatingDate.toISOString() : whoisData.updatingDate,
-                expires: whoisData.expiresDate instanceof Date ? whoisData.expiresDate.toISOString() : whoisData.expiresDate,
-                nameRegistar: whoisData.registrarName,
-                nameOwner: whoisData.ownerName,
-            },
-            create: {
-                name: whoisData.domainName,
-                registered: whoisData.creationDate instanceof Date ? whoisData.creationDate.toISOString() : whoisData.creationDate,
-                updated: whoisData.updatingDate instanceof Date ? whoisData.updatingDate.toISOString() : whoisData.updatingDate,
-                expires: whoisData.expiresDate instanceof Date ? whoisData.expiresDate.toISOString() : whoisData.expiresDate,
-                nameRegistar: whoisData.registrarName,
-                nameOwner: whoisData.ownerName,
-            },
-        });
+        
+        if(whoisData)
+        {
+            await this.prisma.domain.upsert({
+                where: {
+                    name: whoisData.domainName,
+                },
+                update: {
+                    registered: whoisData.creationDate instanceof Date ? whoisData.creationDate.toISOString() : whoisData.creationDate,
+                    updated: whoisData.updatingDate instanceof Date ? whoisData.updatingDate.toISOString() : whoisData.updatingDate,
+                    expires: whoisData.expiresDate instanceof Date ? whoisData.expiresDate.toISOString() : whoisData.expiresDate,
+                    nameRegistar: whoisData.registrarName,
+                    nameOwner: whoisData.ownerName,
+                },
+                create: {
+                    name: whoisData.domainName,
+                    registered: whoisData.creationDate instanceof Date ? whoisData.creationDate.toISOString() : whoisData.creationDate,
+                    updated: whoisData.updatingDate instanceof Date ? whoisData.updatingDate.toISOString() : whoisData.updatingDate,
+                    expires: whoisData.expiresDate instanceof Date ? whoisData.expiresDate.toISOString() : whoisData.expiresDate,
+                    nameRegistar: whoisData.registrarName,
+                    nameOwner: whoisData.ownerName,
+                },
+            });
+
+            this.logger.log(`Whois data ${whoisData.domainName} recorded successfully`);
+            await this.whoisNotification(whoisData);
+        }
+        else
+        {
+            this.logger.error(`Whois data recording error`);
+        }
+    }
+
+    async whoisNotification(whoisData: WhoisData)
+    {
+        if(whoisData.daysToExpire && whoisData.daysToExpire <= 30)
+        {
+            const url = 'http://localhost:3000/notification/create';
+            const data = {
+                text: `Срок действия домена ${whoisData.domainName}, истекает через ${whoisData.daysToExpire} дней`,
+                parentCompany: null,
+                parentServer: null,
+                parentApp: null,
+              };
+              await this.httpService.post(url, data).toPromise();
+        }
     }
 }
