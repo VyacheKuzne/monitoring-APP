@@ -124,8 +124,8 @@ const getAppInfo = async () => {
     // Выводим в консоль все данные, полученные от сервера
     console.log('Полученные данные приложения:', AppResponse.data);
 
-    // Ensure 'app' is always an array, even if the response is a single object
-    setApp(Array.isArray(AppResponse.data) ? AppResponse.data : [AppResponse.data]);
+    // Если данные не в виде массива, оборачиваем их в массив
+    setApp(Array.isArray(AppResponse.data.app) ? AppResponse.data.app : [AppResponse.data.app]);
 
   } catch (error) {
     console.error('Ошибка при получении данных приложения или серверов:', error);
@@ -195,77 +195,80 @@ const closeModal = () => {
 }
  
 
-  return (
-    <div className="App font-montserrat grid grid-cols-[300px_auto]">
-      <ModalBlock />
-      <div className='flex flex-col gap-[3.5%] m-[2%]'>
-        <InfoBlock page={company?.name} url={url} crumb={crumb} />
+return (
+  <div className="App font-montserrat grid grid-cols-[300px_auto]">
+    <ModalBlock />
+    <div className='flex flex-col gap-[3.5%] m-[2%]'>
+      <InfoBlock page={company?.name} url={url} crumb={crumb} />
 
-
-
-        <div className='flex w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
-          <div className='flex flex-col gap-[10px] text-left text-[14px]'>
-            <span>Ip адрес: {server?.ipAddress ?? ' Загрузка...'}</span>
-            <span>Имя хоста: {server?.hostname ?? ' Загрузка...'}</span>
-            <span>Местонахождение: {server?.location ?? ' Загрузка...'}</span>
-            <span>Операц. система: {server?.os ?? ' Загрузка...'}</span>
-          </div>
-        </div>
-
-        {/* Компонент для отображения данных процессора */}
-        {cpuInfo && cpuData.length > 0 && (
-          <CpuInfoCard cpuInfo={cpuInfo} cpuData={cpuData} />
-        )}
-
-<div className='grid grid-cols-3 gap-[2%] w-auto h-auto'>
-          {app.map((appItem) => (
-            <AppCard key={appItem.server.idServer} appData={appItem} />
-          ))}
-        <button onClick={showModal} className='flex justify-center items-center max-w-[400px] min-h-[200px] p-[30px] bg-white 
-        hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition '>
-         <img src={PlusSvg} className='w-[30px] h-[30px] mx-3' alt="Закрыть модальное окно" /> 
-         <p>Добавить приложение</p>
-        </button>
-        {Modal && (
-           <div className='w-screen h-screen absolute flex justify-center items-center bg-color-fon z-10 top-0 left-0'>
-              {/* блок контента */}
-              <div className='bg-white  rounded-[5px] p-2 flex flex-col'>
-                {/* верхняя часть дива с кнопкой для закрытия блока */}
-                <div className='flex flex-row-reverse'>
-                  <button className='rotate-45 select-none' onClick={closeModal}>
-                   <img src={PlusSvg} alt="Закрыть модальное окно" />
-                 </button>
-                </div>
-                {/* форма для запоолнения */}
-                <form className='flex flex-col gap-5 items-center w-[450px] h-[150px' onSubmit={createDomain}>
-                 <div className='flex flex-col'>
-                   <span className='text-left text-[20px] mb-[5px]'>Введите Домейн приложения</span>
-                   <input 
-                         className='bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]' 
-                         type="text" 
-                         placeholder='Введите Домейн приложения'
-                         value={domainData} 
-                         onChange={handleChange}
-                       />
-                         <input 
-                         className='bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]' 
-                         type="text" 
-                         placeholder='Введите название приложения'
-                         value={appName} 
-                         onChange={handleChangeName}
-                       />
-                 </div>
-                 <button className="w-[50%] p-[5px]  bg-slate-300 hover:bg-slate-400 rounded-[5px] text-[14px] font-montserrat transition" type="submit">
-                   <p>Создать</p>
-                 </button>
-               </form>
-              </div>
-            </div>
-        )}
+      <div className='flex w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
+        <div className='flex flex-col gap-[10px] text-left text-[14px]'>
+          <span>Ip адрес: {server?.ipAddress ?? ' Загрузка...'}</span>
+          <span>Имя хоста: {server?.hostname ?? ' Загрузка...'}</span>
+          <span>Местонахождение: {server?.location ?? ' Загрузка...'}</span>
+          <span>Операц. система: {server?.os ?? ' Загрузка...'}</span>
         </div>
       </div>
+
+      {/* Компонент для отображения данных процессора */}
+      {cpuInfo && cpuData.length > 0 && (
+        <CpuInfoCard cpuInfo={cpuInfo} cpuData={cpuData} />
+      )}
+      <div className='grid grid-cols-4'>
+        {app.map((appItem) => (
+          <div key={appItem.idApp}>
+            {/* Передаем сам объект app, чтобы в AppCard можно было получить доступ к его свойствам */}
+            <AppCard appData={appItem} />
+          </div>
+        ))}
+
+        <button onClick={showModal} className='flex justify-center items-center max-w-[400px] min-h-[200px] p-[30px] bg-white hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition'>
+          <img src={PlusSvg} className='w-[30px] h-[30px] mx-3' alt="Закрыть модальное окно" />
+          <p>Добавить приложение</p>
+        </button>
+
+        {Modal && (
+          <div className='w-screen h-screen absolute flex justify-center items-center bg-color-fon z-10 top-0 left-0'>
+            {/* блок контента */}
+            <div className='bg-white rounded-[5px] p-2 flex flex-col'>
+              {/* верхняя часть дива с кнопкой для закрытия блока */}
+              <div className='flex flex-row-reverse'>
+                <button className='rotate-45 select-none' onClick={closeModal}>
+                  <img src={PlusSvg} alt="Закрыть модальное окно" />
+                </button>
+              </div>
+              {/* форма для запоолнения */}
+              <form className='flex flex-col gap-5 items-center w-[450px] h-[150px]' onSubmit={createDomain}>
+                <div className='flex flex-col'>
+                  <span className='text-left text-[20px] mb-[5px]'>Введите Домейн приложения</span>
+                  <input
+                    className='bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]'
+                    type="text"
+                    placeholder='Введите Домейн приложения'
+                    value={domainData}
+                    onChange={handleChange}
+                  />
+                  <input
+                    className='bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]'
+                    type="text"
+                    placeholder='Введите название приложения'
+                    value={appName}
+                    onChange={handleChangeName}
+                  />
+                </div>
+                <button className="w-[50%] p-[5px] bg-slate-300 hover:bg-slate-400 rounded-[5px] text-[14px] font-montserrat transition" type="submit">
+                  <p>Создать</p>
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
-  );
+      </div>
+      
+);
+
 }
 
 export default ServerInfo;

@@ -52,9 +52,6 @@ export class AppService
   async getApp(numberServer: number) 
   {
     return {
-      server: await this.prisma.server.findFirst({
-        where: { idServer: numberServer },
-      }),
       app: await this.prisma.app.findFirst({
         where: { parentServer: numberServer },
       }),
