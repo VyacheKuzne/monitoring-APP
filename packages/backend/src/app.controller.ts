@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body,  NotFoundException, InternalServerErrorException, ParseIntPipe } from '@nestjs/common';
 import { AppService } from './app.service';
 import * as whois from 'whois';
 
@@ -44,6 +44,12 @@ export class AppController {
     const numberServer = Number(idServer);
     return this.appService.getApp(numberServer);
   }
+  // // запрос на получение данных о приложении 
+  // @Get('/company/:idCompany/server/:idServer/app/:idApp')
+  // async getAppInfo(@Param('idApp', ParseIntPipe) idApp: number){
+  //   return this.appService.getAppInfo(idApp);
+  // }
+
   @Get('/notifications/get')
   async getAllNotifications() 
   {

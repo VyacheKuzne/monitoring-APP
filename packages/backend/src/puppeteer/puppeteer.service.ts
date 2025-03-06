@@ -7,10 +7,22 @@ import axios from 'axios';
 import { HttpService } from '@nestjs/axios';
 import * as xml2js from 'xml2js';
 import pLimit from 'p-limit';
-
+// class setAppContext {
+//     constructor(public idApp: number) {}
+  
+//     setIdApp(idApp: number) {
+//       this.idApp = idApp;
+//     }
+  
+//     getIdApp() {
+//       return this.idApp;
+//     }
+//   }
+  
 @Injectable()
 export class PuppeteerService
 {
+    private idApp: number;  // Свойство для хранения idApp
     constructor(
         private readonly recordPage: RecordPageService, 
         private readonly httpService: HttpService
@@ -25,6 +37,10 @@ export class PuppeteerService
 
     private PageCount = 0;
     private failedPageCount = 0;
+  // Метод для установки idApp
+  setAppContext(idApp: number) {
+    this.idApp = idApp;
+  }
 
     async startPageMonitoring(domain: string)
     {
@@ -188,9 +204,13 @@ export class PuppeteerService
                         const requestTime = navigationEntry?.startTime ?? 0;
                         const responseTime = navigationEntry?.responseEnd ?? 0;
                         const responseRate = responseTime - requestTime;
-
                         this.logger.log(`Page loaded correctly`);
+                        if(!this.idApp){
+                            this.logger.log('idAPP НЕ РАБОТАЕТ, БЛЯТЬ!')
+                        }
+                        
                         const PageData: PageData = {
+                            parentApp: this.idApp, 
                             urlPage: url,
                             statusLoadPage,
                             statusLoadContent,
@@ -211,6 +231,7 @@ export class PuppeteerService
                 catch (error) {
                     this.logger.error(`Error load page: ${error.message}`);
                     const PageData: PageData = {
+                        parentApp: this.idApp, 
                         urlPage: url,
                         statusLoadPage: 'Error',
                         statusLoadContent: 'Failed',

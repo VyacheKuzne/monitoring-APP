@@ -1,4 +1,5 @@
 export interface PageData {
+    parentApp: number, 
     urlPage: string;
     statusLoadPage: string;
     statusLoadContent: string;

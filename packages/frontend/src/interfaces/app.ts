@@ -1,5 +1,5 @@
 export interface App {
-    idApp: number;
+    idApp: number | null;
     parentServer: number;
     parentDomain: number | null;
     name: string;

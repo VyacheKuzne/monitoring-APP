@@ -13,7 +13,8 @@ export class RecordPageService {
         if (pageData)
         {
             const result = await this.prisma.checkPage.create({
-                data: {
+                data: { 
+                    parentApp: pageData.parentApp, 
                     urlPage: pageData.urlPage,
                     statusLoadPage: pageData.statusLoadPage,
                     statusLoadContent: pageData.statusLoadContent,

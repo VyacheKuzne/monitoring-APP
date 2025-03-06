@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -8,6 +8,7 @@ import axios from 'axios';
 export class DomainService {
   private prisma = new PrismaClient(); // Инициализируем Prisma для взаимодействия с базой данных
   constructor(private readonly httpService: HttpService) {}
+  private readonly logger = new Logger(DomainService.name);
 
   // Этот метод будет отправлять запрос на получение данных Whois для указанного домена
   public async getWhoisData(domain: string): Promise<{ creationDate?: string }> {
@@ -36,11 +37,11 @@ export class DomainService {
   }
 
   // Этот метод будет отправлять запрос на получение данных о страницах домена
-  public async getPagesData(domain: string): Promise<{ creationDate?: string }> {
+  public async getPagesData(domain: string, idApp:number): Promise<{ creationDate?: string }> {
     try {
       // Отправляем запрос на получение информации о страницах домена
       const response = await firstValueFrom(
-        this.httpService.get(`http://localhost:3000/pages/${domain}`)
+        this.httpService.get(`http://localhost:3000/pages/${domain}/${idApp}`)
       );
       return response.data; // Возвращаем полученные данные
     } catch (error) {
@@ -85,8 +86,7 @@ export class DomainService {
     const whoisData = await this.getWhoisData(domain);
     // Получаем данные о SSL-сертификате домена
     const sslLabsData = await this.getSSLabsData(domain);
-    // Получаем данные о страницах домена
-    const getPagesData = await this.getPagesData(domain);
+    
 
     // Преобразуем идентификаторы в числа (для проверки)
     const parentCompanyId = Number(idCompany);
@@ -118,7 +118,10 @@ export class DomainService {
         parentDomain: existingDomain.idDomain,  // ID домена, с которым связано приложение
       },
     });
-
+    const idApp = createdApp.idApp
+    this.logger.log(`App created successfully with ID: ${idApp}`);
+    // Получаем данные о страницах домена
+    const getPagesData = await this.getPagesData(domain, idApp);
     // Возвращаем созданное приложение
     return createdApp;
   }

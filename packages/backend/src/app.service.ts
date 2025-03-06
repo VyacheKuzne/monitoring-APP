@@ -52,12 +52,20 @@ export class AppService
   async getApp(numberServer: number) 
   {
     return {
-      app: await this.prisma.app.findFirst({
+      app: await this.prisma.app.findMany({
         where: { parentServer: numberServer },
       }),
     };
   }
-
+  // // получаем данные по приложению
+  // async getAppInfo(numberServer: number) 
+  // {
+  //   return {
+  //     appInfo: await this.prisma.app.findMany({
+  //       where: { parentServer: numberServer },
+  //     }),
+  //   };
+  // }
   async getAllNotifications() 
   {
     return this.prisma.notification.findMany({
