@@ -214,16 +214,14 @@ return (
       {cpuInfo && cpuData.length > 0 && (
         <CpuInfoCard cpuInfo={cpuInfo} cpuData={cpuData} />
       )}
-<div className='grid grid-cols-4'>
+
+<div className='grid grid-cols-3 gap-[2%]'>
   {app?.filter(appItem => appItem && appItem.idApp).map(appItem => (
     <div key={appItem.idApp}>
       {/* Передаем сам объект app, чтобы в AppCard можно было получить доступ к его свойствам */}
       <AppCard appData={appItem} />
     </div>
   ))}
-
-
-
 
         <button onClick={showModal} className='flex justify-center items-center max-w-[400px] min-h-[200px] p-[30px] bg-white hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition'>
           <img src={PlusSvg} className='w-[30px] h-[30px] mx-3' alt="Закрыть модальное окно" />

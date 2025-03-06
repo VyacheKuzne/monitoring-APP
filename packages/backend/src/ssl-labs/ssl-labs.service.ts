@@ -13,6 +13,8 @@ export class SslLabsService {
   private readonly apiUrl = 'https://api.ssllabs.com/api/v3';
   private prisma = new PrismaClient();
 
+  private domain: string;
+
     constructor(private readonly httpService: HttpService) {}
 
     // Получение информации об API
@@ -41,6 +43,7 @@ export class SslLabsService {
   }
 
   getAnalysis(host: string): Observable<SSLInfo> {
+    this.domain = host;
       return this.analyze(host).pipe(
           switchMap(initialData => {
               if (initialData.status === 'READY') {
@@ -65,16 +68,21 @@ export class SslLabsService {
                   );
               }
           }),
-          switchMap(data => {
-            const sslData = this.transformToSslResult(data);
-            return from(this.recordSSL(sslData)).pipe(
-                map(() => data) // Возвращаем исходные данные после записи
-            );
-        })      
+          switchMap(data => 
+            from(this.transformToSslResult(data)).pipe(
+              switchMap(sslData => from(this.recordSSL(sslData))), map(() => data) // Возвращаем исходные данные
+            )
+          )
     );
   }
 
-  private transformToSslResult(data: SSLInfo): SSLData[] {
+  private async transformToSslResult(data: SSLInfo): Promise<SSLData[]> {
+
+    const idDomain = await this.prisma.domain.findFirst({
+      where: { name: this.domain },
+      select: { idDomain: true }
+    })
+
     // this.logger.debug('Данные из SSL Labs API:', JSON.stringify(data, null, 2));
     if (!data.certs || !Array.isArray(data.certs) || data.certs.length === 0) {
       this.logger.warn('No certificates found in response');
@@ -94,6 +102,7 @@ export class SslLabsService {
           publickey: '', 
           privatekey: '',
           version: versions,
+          parentDomain: idDomain?.idDomain
         };
       });
   }
@@ -110,52 +119,43 @@ export class SslLabsService {
         }
         
         this.logger.log('SSL data recorded successfully');
-        this.SslNotification(data);
+        this.sslNotification(data);
+
       } 
-    catch (error) 
-    {
+      catch (error) 
+      {
         this.logger.error(`SSL data recording error`);
             throw error;
         }
     }
 
     
-    async SslNotification(data: SSLData[])
+    async sslNotification(data: SSLData[])
     {
-      let daysToExpire: number[] = new Array(data.length);
+      let daysToExpire: number = 0;
 
       for (const [index, record] of data.entries()) {
 
-        if (record.expires) {
-          const now = new Date();
-          const expiry = new Date(record.expires);
+        const now = new Date();
+        const expiry = new Date(record.expires);
 
-          const nowUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-          const expiryUTC = Date.UTC(expiry.getUTCFullYear(), expiry.getUTCMonth(), expiry.getUTCDate());
+        const nowUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+        const expiryUTC = Date.UTC(expiry.getUTCFullYear(), expiry.getUTCMonth(), expiry.getUTCDate());
 
-          const diff = expiryUTC - nowUTC;
-          daysToExpire[index] = Math.ceil(diff / (1000 * 3600 * 24));
+        const diff = expiryUTC - nowUTC;
+        daysToExpire = Math.ceil(diff / (1000 * 3600 * 24));
+
+        if(daysToExpire <= 30)
+        {
+          const url = 'http://localhost:3000/notification/create';
+          const data = {
+                text: `Срок действия SSL сертификата по домену ${this.domain}, истекает через ${daysToExpire} дней`,
+                parentCompany: null,
+                parentServer: null,
+                parentApp: null,
+              };
+              await this.httpService.post(url, data).toPromise();
         }
-
-        this.logger.debug(`Expires days ssl ${record.serialNumber}: ${daysToExpire[index]}`);
       }
-    //   for (const [index, record] of data.entries()) {
-    //     await this.prisma.sSL.upsert({ 
-    //         where: { serialNumber: record.serialNumber  },
-    //         update: record,
-    //         create: record,
-    //     });
-    //   }
-    //     if(whoisData.daysToExpire && whoisData.daysToExpire <= 30)
-    //     {
-    //         const url = 'http://localhost:3000/notification/create';
-    //         const data = {
-    //             text: `Срок действия домена ${whoisData.domainName}, истекает через ${whoisData.daysToExpire} дней`,
-    //             parentCompany: null,
-    //             parentServer: null,
-    //             parentApp: null,
-    //           };
-    //           await this.httpService.post(url, data).toPromise();
-    //     }
     }
 }

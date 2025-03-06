@@ -16,7 +16,6 @@ useEffect(() => {
 }, []);
 
 const [companies, setCompanies] = useState<Company[]>([]);
-const [notificationsData, setNotificationsData] = useState<Notification[]>([]);
 const [modal, setModal] = useState<boolean>(false);
 const [notification, setNotification] = useState<boolean>(false);
 
@@ -25,12 +24,6 @@ const getInfo = async () => {
     .then(response => 
     {
         setCompanies(response.data);
-    });
-    axios.get('http://localhost:3000/notifications/get')
-    .then(response => 
-    {
-        setNotificationsData(response.data)
-        console.log(response.data);
     });
 }
 
@@ -43,7 +36,7 @@ const mainText = [
         modal ? <FormCreateCompany closeForm={() => setModal(false)}/> : null
     }
     {
-        notification ? <Notifications notificationData={notificationsData} /> : null
+        notification ? <Notifications /> : null
     }
     <div className='bg-white w-full h-screen p-[10%] shadow-xl flex flex-col justify-between'>
         <div>

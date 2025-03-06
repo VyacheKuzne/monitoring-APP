@@ -19,16 +19,20 @@ function AppCard({ appData }: AppCardProps) {
                 <div className="bg-[#2FBD12] w-[17px] h-[17px] rounded-full"></div>
             </div>
         </div>
-        <div className="grid grid-cols-2 text-[14px]">
-            <div className="flex flex-col gap-[15px] text-left ">
-                <span>Хост: {appData.parentServer}</span> {/* Выводим ID родительского сервера */}
-                <span>Домен: {appData.parentDomain}</span> {/* Выводим ID родительского домена */}
+        <div className='grid grid-cols-[1fr_auto] gap-[15px] text-[14px]'>
+            <div className='text-left'>
+                <span>Домен: {appData.domain?.name || 'Загрузка'}</span>
+            </div>
+            <div className='flex items-center justify-end auto text-[12px]'>
+                <span>до {appData.domain?.expires ? new Date(appData.domain.expires).toLocaleDateString() : 'Загрузка'}</span>
+            </div>
+            <div className='text-left'>
                 <span>SSL сертификат</span>
             </div>
-            <div className="flex flex-col gap-[15px] text-right">
-                <span>без срока</span>
-                <span>до: 17.04.2025</span>
-                <span>до: 17.04.2025</span>
+            <div className='flex items-center justify-end auto text-[12px]'>
+                <span>до 
+                    {/* {appData.appHasSSL.ssl.expires} */}
+                </span>
             </div>
         </div>
     </a>

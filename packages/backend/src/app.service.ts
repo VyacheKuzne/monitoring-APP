@@ -21,18 +21,15 @@ export class AppService
   async getServers(idCompany: number) {
     return this.prisma.server.findMany({
       where: { parentCompany: idCompany },
-      include: {
-        serverHasDomain: {
-          where: {
-            domain: {
-              name: { equals: 'host' },  // Filter for domain with name 'host'
-            },
-          },
-          include: {
-            domain: true,  // Include the domain details
-          },
-        },
-      },
+      // include: {
+      //   domain: {
+      //     where: {
+      //       domain: {
+      //         name: ,  // Filter for domain with name 'host'
+      //       },
+      //     },
+      //   },
+      // },
     });
   }
   
@@ -54,6 +51,16 @@ export class AppService
     return {
       app: await this.prisma.app.findMany({
         where: { parentServer: numberServer },
+        select: {
+          idApp: true,
+          name: true,
+          domain: {
+            select: { 
+              name: true,
+              expires: true
+            }
+          },
+        }
       }),
     };
   }

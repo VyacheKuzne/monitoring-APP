@@ -65,7 +65,7 @@ export class PuppeteerService
 
         if (sitemapLines.length > 0) {
             this.logger.log(`Found sitemaps: ${sitemapLines}`);
-            await this.findLinksInSitemap(sitemapLines);
+            await this.findLinksInSitemap(sitemapLines, domain);
         }
         else {
             this.logger.log(`Sitemaps not found. The beginning of the link search`);
@@ -73,7 +73,7 @@ export class PuppeteerService
         }
     }
 
-    async findLinksInSitemap(sitemapLines: [])
+    async findLinksInSitemap(sitemapLines: string[], domain: string)
     {
 
         for (const sitemapUrl of sitemapLines) {
@@ -93,26 +93,28 @@ export class PuppeteerService
                 const nestedSitemaps = parsedSitemap.sitemapindex.sitemap.map((entry: any) => entry.loc[0]);
                 this.logger.debug(`Found ${nestedSitemaps.length} nested sitemaps in ${sitemapUrl}`);
 
-                for (const nestedSitemapUrl of nestedSitemaps) {
-                    try {
-                        const nestedResponse = await axios.get(nestedSitemapUrl);
-                        const nestedParsed = await xml2js.parseStringPromise(nestedResponse.data);
-                        const nestedPageUrls = nestedParsed.urlset.url.map((entry: any) => entry.loc[0]);
-                        this.logger.debug(`Found ${nestedPageUrls.length} links in ${nestedSitemapUrl}`);
-                        this.PageCount = nestedPageUrls.length;
-                        
-                        await this.updatePageData(nestedPageUrls);
-                    } 
-                    catch (nestedError) {
-                        this.logger.error(`Sitemap load error ${nestedSitemapUrl}: ${nestedError.message}`);
+                    for (const nestedSitemapUrl of nestedSitemaps) {
+                        try {
+                            const nestedResponse = await axios.get(nestedSitemapUrl);
+                            const nestedParsed = await xml2js.parseStringPromise(nestedResponse.data);
+                            const nestedPageUrls = nestedParsed.urlset.url.map((entry: any) => entry.loc[0]);
+                            this.logger.debug(`Found ${nestedPageUrls.length} links in ${nestedSitemapUrl}`);
+                            this.PageCount = nestedPageUrls.length;
+                            
+                            await this.updatePageData(nestedPageUrls);
+                        } 
+                        catch (nestedError) {
+                            this.logger.error(`Sitemap load error ${nestedSitemapUrl}: ${nestedError.message}`);
+                        }
                     }
-                }
                 }
             }
             catch(sitemapError) {
                 this.logger.error(`Sitemap load error ${sitemapUrl}: ${sitemapError.message}`);
             }
         }
+
+        this.stopMonitoring(domain);
     }
 
     async findLinksViaPuppeteer(domain: string)
@@ -127,7 +129,7 @@ export class PuppeteerService
                 Array.from(document.querySelectorAll('a'))
                     .map(a => a.href.trim())
                     .filter(href => href.startsWith('/') || href.startsWith(`https://${domain}`))
-                    .map(href => href.startsWith('/') ? `https://${domain}${href}` : href)
+                    .map(href => href.startsWith('/') ? `https://${domain}` : href)
             ));
         }, domain);
         
@@ -135,6 +137,8 @@ export class PuppeteerService
 
         await page.close();
         await this.updatePageData(puppedLinks);
+        
+        this.stopMonitoring(domain);
     }
 
     async runParallel<T>(
@@ -256,8 +260,6 @@ export class PuppeteerService
         };
         // Запускаем параллельную обработку всех URL
         await this.runParallel(urls, processUrl, this.concurrency);
-        
-        this.stopMonitoring();
     }
 
     async getResourceStatus(page: puppeteer.Page) {
@@ -338,7 +340,7 @@ export class PuppeteerService
         }
     }
 
-    async stopMonitoring()
+    async stopMonitoring(domain: string)
     {
         this.logger.log(`Stop monitoring pages. Total pages: ${this.PageCount}, Failed pages: ${this.failedPageCount}`);
         if((this.failedPageCount / this.PageCount) >= 0.1)
@@ -346,7 +348,7 @@ export class PuppeteerService
             const url = 'http://localhost:3000/notification/create';
             const percent = Math.round((this.failedPageCount / this.PageCount) * 100);
             const data = {
-                text: `При проверке страниц приложения {}, количество провальных проверок достигло ${percent}%.`,
+                text: `При проверке страниц приложения ${domain}, количество провальных проверок достигло ${percent}%.`,
                 parentCompany: null,
                 parentServer: null,
                 parentApp: null,

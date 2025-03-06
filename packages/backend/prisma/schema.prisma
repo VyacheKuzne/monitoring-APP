@@ -17,7 +17,7 @@ model company {
   idCompany Int @id @default(autoincrement())
   name String @db.VarChar(50)
 
-  servers server[] // Связь с таблицей server один ко многим
+  server server[] // Связь с таблицей server один ко многим
   notification notification[] // Связь с таблицей notification один ко многим
 }
 
@@ -31,9 +31,9 @@ model server {
   created DateTime @default(now())
   updated DateTime @updatedAt
 
-  app app[]
-  checkServerStats checkServerStats[]
-  serverHasDomain serverHasDomain[]
+  app app[] // Связь с таблицей app один ко многим
+  domain domain[] // Связь с таблицей domain один ко многим
+  checkServerStats checkServerStats[] // Связь с таблицей checkServerStats один ко многим
   notification notification[] // Связь с таблицей notification один ко многим
 
   company company @relation(fields: [parentCompany], references: [idCompany]) // Связь с таблицей company один ко многим
@@ -45,9 +45,8 @@ model app {
   parentDomain Int
   name String @db.VarChar(50)
 
-  checkPage checkPage[]
+  checkPage checkPage[] // Связь с таблицей checkPage один ко многим
   notification notification[] // Связь с таблицей notification один ко многим
-  appHasSSL appHasSSL[] // Связь с таблицей appHasSSL многие ко многим
 
   server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
   domain domain? @relation(fields: [parentDomain], references: [idDomain]) // Связь с таблицей domain один ко многим
@@ -63,10 +62,12 @@ model domain {
   nameRegistar String? @db.VarChar(50)
   nameOwner String? @db.VarChar(50)
   access Boolean?
+  parentServer Int?
 
-  app app[]
-  serverHasDomain serverHasDomain[]
+  app app[] // Связь с таблицей app один ко многим
+  SSL SSL[] // Связь с таблицей SSL один ко многим
 
+  server server? @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
   status status? @relation(fields: [parentStatus], references: [idStatus]) // Связь с таблицей status один ко многим
 }
 
@@ -81,9 +82,9 @@ model SSL {
   publickey String @db.VarChar(50)
   privatekey String @db.VarChar(50)
   version String @db.VarChar(50)
+  parentDomain Int
 
-  appHasSSL appHasSSL[]
-
+  domain domain? @relation(fields: [parentDomain], references: [idDomain]) // Связь с таблицей ssl один ко многим
   status status? @relation(fields: [parentStatus], references: [idStatus]) // Связь с таблицей status один ко многим
 }
 
@@ -91,26 +92,8 @@ model status {
   idStatus Int @id @default(autoincrement())
   status String @db.VarChar(50)
 
-  domain domain[]
-  ssl SSL[]
-}
-
-model serverHasDomain { // Связь многие ко многим таблиц server и domain
-  manyServer Int
-  server server @relation(fields: [manyServer], references: [idServer])
-  manyDomain Int
-  domain domain @relation(fields: [manyDomain], references: [idDomain])
-
-  @@id([manyServer, manyDomain])
-}
-
-model appHasSSL { // Связь многие ко многим таблиц server и SSL
-  manyApp Int
-  app app @relation(fields: [manyApp], references: [idApp])
-  manySSL Int
-  ssl SSL @relation(fields: [manySSL], references: [idSSL])
-
-  @@id([manyApp, manySSL])
+  domain domain[] // Связь с таблицей domain один ко многим
+  SSL SSL[] // Связь с таблицей SSL один ко многим
 }
 
 model checkServerStats {
@@ -135,7 +118,7 @@ model checkServerStats {
   date DateTime
 
   server server? @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
-  disk disk[]
+  disk disk[] // Связь с таблицей disk один ко многим
 }
 
 model disk {

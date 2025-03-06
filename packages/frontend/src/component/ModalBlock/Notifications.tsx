@@ -2,11 +2,22 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Notification } from '../../interfaces/notification';
 
-interface getNotificationData {
-    notificationData: Notification[];
-}
+function Notifications() {
 
-function Notifications({ notificationData }: getNotificationData) {
+    useEffect(() => {
+        getInfo();
+    }, []);
+
+    const [notificationData, setNotificationData] = useState<Notification[]>([]);
+
+    const getInfo = async () => {
+        axios.get('http://localhost:3000/notifications/get')
+        .then(response => 
+        {
+            setNotificationData(response.data)
+            console.log(response.data);
+        });
+    }
 
     const formatDate = (dateString: string) => {
         const dateObject = new Date(dateString);
@@ -21,15 +32,17 @@ function Notifications({ notificationData }: getNotificationData) {
             <p className='text-[16px] font-montserrat'>Уведомления</p>
             <hr className='my-[5%] h-[2px] bg-slate-600'/>
             <div className='flex flex-col gap-[15px]'>
-                {notificationData.map((notification, index)=>(
-                    <div className='grid grid-cols-[10px_auto] gap-[15px]'>
-                        <div className='bg-red-600 w-[10px] h-[10px] mt-[5px] rounded-full'></div>
-                        <div className='flex flex-col gap-[5px] text-left'>
-                            <span className=' text-[14px]'>{notification.text}</span>
-                            <span className=' text-[12px]'>{formatDate(notification.date)}</span>
+                {notificationData ?
+                    notificationData.map((notification, index)=>(
+                        <div className='grid grid-cols-[10px_auto] gap-[15px]'>
+                            <div className='bg-red-600 w-[10px] h-[10px] mt-[5px] rounded-full'></div>
+                            <div className='flex flex-col gap-[5px] text-left'>
+                                <span className=' text-[14px]'>{notification.text}</span>
+                                <span className=' text-[12px]'>{formatDate(notification.date)}</span>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                : <div>Загрузка</div>}
             </div>
         </div>
         <div className='w-screen h-screen bg-black opacity-50'></div>
