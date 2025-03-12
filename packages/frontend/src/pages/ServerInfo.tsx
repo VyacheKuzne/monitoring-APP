@@ -201,19 +201,25 @@ return (
     <div className='flex flex-col gap-[3.5%] m-[2%]'>
       <InfoBlock page={company?.name} url={url} crumb={crumb} />
 
-      <div className='flex w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
+      <div className='flex justify-between w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
         <div className='flex flex-col gap-[10px] text-left text-[14px]'>
           <span>Ip адрес: {server?.ipAddress ?? ' Загрузка...'}</span>
           <span>Имя хоста: {server?.hostname ?? ' Загрузка...'}</span>
           <span>Местонахождение: {server?.location ?? ' Загрузка...'}</span>
           <span>Операц. система: {server?.os ?? ' Загрузка...'}</span>
         </div>
+        <div className='flex flex-col items-end'>
+          <div>
+          </div>
+          <div>
+            {/* Компонент для отображения данных процессора */}
+            {cpuInfo && cpuData.length > 0 && (
+              <CpuInfoCard cpuInfo={cpuInfo} cpuData={cpuData} />
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Компонент для отображения данных процессора */}
-      {cpuInfo && cpuData.length > 0 && (
-        <CpuInfoCard cpuInfo={cpuInfo} cpuData={cpuData} />
-      )}
 
 <div className='grid grid-cols-3 gap-[2%]'>
   {app?.filter(appItem => appItem && appItem.idApp).map(appItem => (

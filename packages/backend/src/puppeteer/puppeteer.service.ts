@@ -34,6 +34,7 @@ export class PuppeteerService
     private attempts = 3;
     private timeout = 30000;
     private concurrency = 5;
+    private recursionDepth = 10;
 
     private PageCount = 0;
     private failedPageCount = 0;
@@ -75,46 +76,54 @@ export class PuppeteerService
 
     async findLinksInSitemap(sitemapLines: string[], domain: string)
     {
-
-        for (const sitemapUrl of sitemapLines) {
+        const processSitemap = async (sitemapUrl: string, depth: number): Promise<string[]> => {
+            
+            if (depth > this.recursionDepth) {
+                console.warn(`The maximum recursion depth (${this.recursionDepth}) for ${sitemapUrl} has been reached`);
+                return [];
+            }
+            
             try {
                 const sitemapResponse = await axios.get(sitemapUrl);
                 const sitemapData = sitemapResponse.data;
                 const parsedSitemap = await xml2js.parseStringPromise(sitemapData);
 
                 if (parsedSitemap?.urlset?.url) {
-                const pageUrls = parsedSitemap.urlset.url.map((entry: any) => entry.loc[0]);
-                this.logger.debug(`Found ${pageUrls.length} links in ${sitemapUrl}`);
-
-                this.updatePageData(pageUrls);
+                    const pageUrls = parsedSitemap.urlset.url.map((entry: any) => entry.loc[0]);
+                    this.logger.debug(`Found ${pageUrls.length} links in ${sitemapUrl}`);
+                    return pageUrls;
                 }
-                else if(parsedSitemap?.sitemapindex?.sitemap)
-                {
-                const nestedSitemaps = parsedSitemap.sitemapindex.sitemap.map((entry: any) => entry.loc[0]);
-                this.logger.debug(`Found ${nestedSitemaps.length} nested sitemaps in ${sitemapUrl}`);
-
+                else if (parsedSitemap?.sitemapindex?.sitemap) {
+                    const nestedSitemaps = parsedSitemap.sitemapindex.sitemap.map((entry: any) => entry.loc[0]);
+                    this.logger.debug(`Found ${nestedSitemaps.length} nested sitemaps in ${sitemapUrl}`);
+    
+                    // Рекурсивно обрабатываем каждый вложенный sitemap
+                    const allNestedUrls: string[] = [];
                     for (const nestedSitemapUrl of nestedSitemaps) {
-                        try {
-                            const nestedResponse = await axios.get(nestedSitemapUrl);
-                            const nestedParsed = await xml2js.parseStringPromise(nestedResponse.data);
-                            const nestedPageUrls = nestedParsed.urlset.url.map((entry: any) => entry.loc[0]);
-                            this.logger.debug(`Found ${nestedPageUrls.length} links in ${nestedSitemapUrl}`);
-                            this.PageCount = nestedPageUrls.length;
-                            
-                            await this.updatePageData(nestedPageUrls);
-                        } 
-                        catch (nestedError) {
-                            this.logger.error(`Sitemap load error ${nestedSitemapUrl}: ${nestedError.message}`);
-                        }
+                        const nestedUrls = await processSitemap(nestedSitemapUrl, 1);
+                        allNestedUrls.push(...nestedUrls);
                     }
+                    return allNestedUrls;
                 }
+                return [];
             }
             catch(sitemapError) {
                 this.logger.error(`Sitemap load error ${sitemapUrl}: ${sitemapError.message}`);
+                return [];
             }
+        };
+
+        this.logger.debug(`Start search pages`);
+        const allPageUrls: string[] = [];
+        for (const sitemapUrl of sitemapLines) {
+            const pageUrls = await processSitemap(sitemapUrl, 1);
+            allPageUrls.push(...pageUrls);
         }
 
-        this.stopMonitoring(domain);
+        this.logger.debug(`Total pages found: ${allPageUrls.length}`);
+        this.PageCount = allPageUrls.length;
+        // await this.updatePageData(allPageUrls);
+        // this.stopMonitoring(domain);
     }
 
     async findLinksViaPuppeteer(domain: string)

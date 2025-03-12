@@ -8,8 +8,12 @@ import { Company } from '../interfaces/company';
 import { Notification } from '../interfaces/notification';
 import FormCreateCompany from '../component/ModalBlock/FormCreateCompany';
 import Notifications from '../component/ModalBlock/Notifications';
+import { useLocation } from "react-router-dom";
 
 const ModalBlock: React.FC = () => {
+
+const location = useLocation();
+const isDashboard = location.pathname === "/";
 
 useEffect(() => {
     getInfo();
@@ -48,7 +52,7 @@ const mainText = [
             <div className='flex-col text-left '>
                 {mainText.map((text, index)=>(
                     <div key={index} className='py-[5%] flex'>
-                        <div className='w-[5px] rounded-md bg-green-500 mx-[9px]' content=''></div>
+                        <div className={`w-[5px] rounded-md mx-[9px] ${isDashboard ? 'bg-green-500' : 'bg-gray-500'}`}  content=''></div>
                         <a className=' px-[5%]' href='/'>{text}</a>
                     </div>
                 ))}

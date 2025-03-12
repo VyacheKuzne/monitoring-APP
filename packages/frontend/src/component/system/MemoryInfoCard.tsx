@@ -38,6 +38,7 @@ const MemoryInfoCard: React.FC<Props> = ({ memoryInfo, ramData }) => {
         data={ramData} 
         dataKey="value" 
         strokeColor="#FF8042" 
+        strokeWidth={2}
       />
     </div>
   );
