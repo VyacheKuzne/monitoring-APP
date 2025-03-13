@@ -12,6 +12,7 @@ import CpuInfoCard, { DataPoint } from '../component/system/CpuInfoCard';
 import FormCreateServer from '../component/ModalBlock/FormCreateServer';
 import PlusSvg from '../img/Plus.svg'
 import AppCard from '../component/Card/AppCard';
+import OperationStatusChart from '../component/system/OperationStatusChart';
 
 function ServerInfo() {
 
@@ -65,7 +66,7 @@ function ServerInfo() {
   // Запрос для получения последних 10 значений loadCPU
   const getCpuStats = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/system/cpu-stats');
+      const response = await axios.get('http://localhost:3000/system/stats');
       const stats = response.data;
       setCpuStats(stats); // Устанавливаем последние 10 значений loadCPU
 
@@ -208,8 +209,9 @@ return (
           <span>Местонахождение: {server?.location ?? ' Загрузка...'}</span>
           <span>Операц. система: {server?.os ?? ' Загрузка...'}</span>
         </div>
-        <div className='flex flex-col items-end'>
+        <div className='flex flex-col items-end gap-[30px]'>
           <div>
+            <OperationStatusChart />
           </div>
           <div>
             {/* Компонент для отображения данных процессора */}

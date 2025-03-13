@@ -23,12 +23,12 @@ const CpuInfoCard: React.FC<Props> = ({ cpuInfo, cpuData }) => {
     <div className='flex flex-col gap-[10px] w-full'>
       {cpuInfo ? (
         <div className="grid grid-cols-2 gap-x-[30px] gap-y-[10px] text-[12px] text-left">
-          <span><strong>Модель:</strong> {cpuInfo.model}</span>
-          <span><strong>Ядер:</strong> {cpuInfo.cores}</span>
-          <span><strong>Частота:</strong> {cpuInfo.speed} GHz</span>
+          <span>Модель: {cpuInfo.model}</span>
+          <span>Ядер: {cpuInfo.cores}</span>
+          <span>Частота: {cpuInfo.speed} GHz</span>
           <div className='flex gap-[10px] items-center'>
             <span>
-              <strong>Текущая загрузка:</strong> 
+              Текущая загрузка: 
               {cpuInfo.currentLoad !== undefined 
                 ? cpuInfo.currentLoad.toFixed(2) 
                 : 'Данные отсутствуют'}
@@ -51,7 +51,7 @@ const CpuInfoCard: React.FC<Props> = ({ cpuInfo, cpuData }) => {
           strokeWidth={2}
         />
       )}
-      <strong><p className="text12-16px">Информация о процессоре</p></strong>
+      <p className="text12-16px">Информация о процессоре</p>
     </div>
   );
 };
