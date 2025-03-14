@@ -38,7 +38,8 @@ const DiskInfoCard: React.FC<Props> = ({ diskInfo, diskData }) => {
         title={`Использование диска ${diskInfo.device}`} 
         data={diskData} 
         dataKey="value" 
-        strokeColor="#FF8042" 
+        strokeColor="#FF8042"
+        strokeWidth={2}
       />
     </div>
   );

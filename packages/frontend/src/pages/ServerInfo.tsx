@@ -12,6 +12,7 @@ import CpuInfoCard, { DataPoint } from '../component/system/CpuInfoCard';
 import FormCreateServer from '../component/ModalBlock/FormCreateServer';
 import PlusSvg from '../img/Plus.svg'
 import AppCard from '../component/Card/AppCard';
+import OperationStatusChart from '../component/system/OperationStatusChart';
 
 function ServerInfo() {
 
@@ -65,7 +66,7 @@ function ServerInfo() {
   // Запрос для получения последних 10 значений loadCPU
   const getCpuStats = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/system/cpu-stats');
+      const response = await axios.get('http://localhost:3000/system/stats');
       const stats = response.data;
       setCpuStats(stats); // Устанавливаем последние 10 значений loadCPU
 
@@ -201,19 +202,26 @@ return (
     <div className='flex flex-col gap-[3.5%] m-[2%]'>
       <InfoBlock page={company?.name} url={url} crumb={crumb} />
 
-      <div className='flex w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
+      <div className='flex justify-between w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
         <div className='flex flex-col gap-[10px] text-left text-[14px]'>
           <span>Ip адрес: {server?.ipAddress ?? ' Загрузка...'}</span>
           <span>Имя хоста: {server?.hostname ?? ' Загрузка...'}</span>
           <span>Местонахождение: {server?.location ?? ' Загрузка...'}</span>
           <span>Операц. система: {server?.os ?? ' Загрузка...'}</span>
         </div>
+        <div className='flex flex-col items-end gap-[30px]'>
+          <div>
+            <OperationStatusChart />
+          </div>
+          <div>
+            {/* Компонент для отображения данных процессора */}
+            {cpuInfo && cpuData.length > 0 && (
+              <CpuInfoCard cpuInfo={cpuInfo} cpuData={cpuData} />
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Компонент для отображения данных процессора */}
-      {cpuInfo && cpuData.length > 0 && (
-        <CpuInfoCard cpuInfo={cpuInfo} cpuData={cpuData} />
-      )}
 
 <div className='grid grid-cols-3 gap-[2%]'>
   {app?.filter(appItem => appItem && appItem.idApp).map(appItem => (

@@ -20,21 +20,23 @@ interface Props {
 
 const CpuInfoCard: React.FC<Props> = ({ cpuInfo, cpuData }) => {
   return (
-    <div className="p-4 bg-gray-100 rounded-lg shadow-md">
-      <h2 className="text-lg font-semibold">Информация о процессоре</h2>
+    <div className='flex flex-col gap-[10px] w-full'>
       {cpuInfo ? (
-        <ul className="mt-2 text-sm">
-          <li><strong>Модель:</strong> {cpuInfo.model}</li>
-          <li><strong>Частота:</strong> {cpuInfo.speed} GHz</li>
-          <li><strong>Ядер:</strong> {cpuInfo.cores}</li>
-          <li>
-            <strong>Текущая загрузка:</strong> 
-            {cpuInfo.currentLoad !== undefined 
-              ? cpuInfo.currentLoad.toFixed(2) 
-              : 'Данные отсутствуют'}
-            %
-          </li>
-        </ul>
+        <div className="grid grid-cols-2 gap-x-[30px] gap-y-[10px] text-[12px] text-left">
+          <span>Модель: {cpuInfo.model}</span>
+          <span>Ядер: {cpuInfo.cores}</span>
+          <span>Частота: {cpuInfo.speed} GHz</span>
+          <div className='flex gap-[10px] items-center'>
+            <span>
+              Текущая загрузка: 
+              {cpuInfo.currentLoad !== undefined 
+                ? cpuInfo.currentLoad.toFixed(2) 
+                : 'Данные отсутствуют'}
+              %
+            </span>
+            <div className='min-w-[10px] w-[10px] min-h-[10px] h-[10px] bg-[#18A0FB] rounded-full' />
+          </div>
+        </div>
       ) : (
         <p>Загрузка данных...</p>
       )}
@@ -42,12 +44,14 @@ const CpuInfoCard: React.FC<Props> = ({ cpuInfo, cpuData }) => {
       {/* График загрузки процессора */}
       {cpuData.length > 0 && (
         <LineChartComponent 
-          title="Загрузка CPU"
+          title=""
           data={cpuData} // Передаем данные для графика
           dataKey="value" 
-          strokeColor="#8884d8" 
+          strokeColor="#18A0FB" 
+          strokeWidth={2}
         />
       )}
+      <p className="text12-16px">Информация о процессоре</p>
     </div>
   );
 };

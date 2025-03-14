@@ -6,7 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SystemModule } from './systeminformation/system.module'; // Import SystemModule
 import { testDBModule } from './testDB/testDB.module';
 import { SslLabsModule } from './ssl-labs/ssl-labs.module';
-import { CpuModule } from './dataForgGrafix/cpu/cpu.module';  // Убедитесь, что добавлен CpuModule
+import { GraphModule } from './dataForgGrafix/graph.module';
 import { DomainModule } from './create/createDomain/createDomain.module';
 import { PuppeteerModule } from './puppeteer/puppeteer.module';
 import { CreateServerModule } from './create/create-server/create-server.module';
@@ -21,7 +21,7 @@ import { CreateNotificationModule } from './create/create-notification/createNot
     CreateServerModule,
     SystemModule, 
     SslLabsModule, 
-    CpuModule, 
+    GraphModule, 
     PuppeteerModule, 
     ConfigModule.forRoot({ isGlobal: true }),
     CreateNotificationModule,

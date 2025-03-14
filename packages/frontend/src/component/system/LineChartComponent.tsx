@@ -12,20 +12,21 @@ interface LineChartComponentProps {
   data: DataPoint[];  // Массив с данными для графика
   dataKey: string;
   strokeColor: string;
+  strokeWidth: number;
 }
 
-const LineChartComponent: React.FC<LineChartComponentProps> = ({ title, data, dataKey, strokeColor }) => {
+const LineChartComponent: React.FC<LineChartComponentProps> = ({ title, data, dataKey, strokeColor, strokeWidth }) => {
   return (
-    <div className="w-full h-[300px]">
+    <div className="w-full h-[130px]">
       <h3 className="text-center">{title}</h3>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" reversed={true} /> {/* reversed для отображения данных с правой стороны */}
-          <YAxis />
+          <XAxis dataKey="time" reversed={true} tick={{ fontSize: 12 }} /> {/* reversed для отображения данных с правой стороны */}
+          <YAxis tick={{ fontSize: 12 }} />
           <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey={dataKey} stroke={strokeColor} />
+          {/* <Legend /> */}
+          <Line type="monotone" dataKey={dataKey} stroke={strokeColor} strokeWidth={strokeWidth} />
         </LineChart>
       </ResponsiveContainer>
     </div>
