@@ -210,7 +210,7 @@ export class PuppeteerService
                         const responseRate = responseTime - requestTime;
                         this.logger.log(`Page loaded correctly`);
                         if(!this.idApp){
-                            this.logger.log('idAPP НЕ РАБОТАЕТ, БЛЯТЬ!')
+                            this.logger.log('idAPP is error!')
                         }
                         
                         const PageData: PageData = {

@@ -10,7 +10,7 @@ function AppCard({ appData }: AppCardProps) {
     <a 
         className="flex flex-col gap-y-[25px] max-w-[400px] min-h-[200px] p-[30px] bg-white 
         hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition"
-        href={`server/`}
+        href={`app/${appData.idApp}`}
     >
         <div className="flex items-center justify-between">
             <span>{appData.name}</span> {/* Выводим название приложения */}

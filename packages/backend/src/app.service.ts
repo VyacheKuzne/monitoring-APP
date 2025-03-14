@@ -65,14 +65,17 @@ export class AppService
     };
   }
   // // получаем данные по приложению
-  // async getAppInfo(numberServer: number) 
-  // {
-  //   return {
-  //     appInfo: await this.prisma.app.findMany({
-  //       where: { parentServer: numberServer },
-  //     }),
-  //   };
-  // }
+  async getAppInfo( idApp: number) 
+  {
+    return {
+      appInfo: await this.prisma.app.findMany({
+        where: {idApp: idApp},
+      }),
+      pageInfo: await this.prisma.checkPage.findMany({
+        where: {parentApp: idApp}
+      })
+    };
+  }
   async getAllNotifications() 
   {
     return this.prisma.notification.findMany({

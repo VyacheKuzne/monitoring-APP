@@ -30,5 +30,20 @@ export interface Domain {
     updated: Date;
     domain?: Domain | null;  // Добавляем поле для данных о домене
   }
-  
+  export interface CheckPage {
+    idCheckPage: number;
+    parentApp?: number | null;
+    urlPage: string;
+    statusLoadPage: string;
+    statusLoadContent: string;
+    statusLoadDOM: string;
+    statusLoadMedia: string;
+    statusLoadStyles: string;
+    statusLoadScripts: string;
+    requestTime: number;
+    responseTime: number;
+    responseRate: number;
+    date: Date;
+    app?: App | null; // Связь с таблицей app (один ко многим)
+  }
 export type AppData = App | App[];
