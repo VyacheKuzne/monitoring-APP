@@ -128,7 +128,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/company/:idCompany/" element={<CompanyInfo />} />
             <Route path="/company/:idCompany/server/:idServer/" element={<ServerInfo />} />
-            <Route path="/company/:idCompany/server/app/:idApp" element={<AppInfo />} />
+            <Route path="/company/:idCompany/server/:idServer/app/:idApp" element={<AppInfo />} />
 
           {/* </ModalProvider> */}
         </Routes>

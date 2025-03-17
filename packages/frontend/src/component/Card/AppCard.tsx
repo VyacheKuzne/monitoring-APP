@@ -6,11 +6,12 @@ interface AppCardProps {
 }
 
 function AppCard({ appData }: AppCardProps) {
+
   return (
     <a 
         className="flex flex-col gap-y-[25px] max-w-[400px] min-h-[200px] p-[30px] bg-white 
         hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition"
-        href={`app/${appData.idApp}`}
+        href={`app/${appData.idApp}/`}
     >
         <div className="flex items-center justify-between">
             <span>{appData.name}</span> {/* Выводим название приложения */}
@@ -30,9 +31,7 @@ function AppCard({ appData }: AppCardProps) {
                 <span>SSL сертификат</span>
             </div>
             <div className='flex items-center justify-end auto text-[12px]'>
-                <span>до 
-                    {/* {appData.appHasSSL.ssl.expires} */}
-                </span>
+                <span>до {appData.domain?.SSL[0]?.expires ? new Date(appData.domain?.SSL[0]?.expires).toLocaleDateString() : 'Загрузка'}</span>
             </div>
         </div>
     </a>

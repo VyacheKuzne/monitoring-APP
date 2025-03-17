@@ -12,7 +12,7 @@ function Dashboard() {
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
       <ModalBlock/>
       <div className='flex flex-col gap-[3.5%] m-[2%]'>
-        <InfoBlock page="Главная" />
+        <InfoBlock crumb={['Главная']} />
         <ServerFilter/>
       </div>
     </div>

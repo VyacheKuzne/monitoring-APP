@@ -108,8 +108,8 @@ function ServerInfo() {
       console.error(e.message || 'An error occurred');
     }
   };
-  const url = [`/company/${company?.idCompany}/`];
-  const crumb = [`${server?.hostname}`];
+  const url = [`/company/${company?.idCompany}/`, ''];
+  const crumb = [`${company?.name}`, `${server?.hostname}`];
 
 
 
@@ -200,7 +200,7 @@ return (
   <div className="App font-montserrat grid grid-cols-[300px_auto]">
     <ModalBlock />
     <div className='flex flex-col gap-[3.5%] m-[2%]'>
-      <InfoBlock page={company?.name} url={url} crumb={crumb} />
+      <InfoBlock url={url} crumb={crumb} />
 
       <div className='flex justify-between w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
         <div className='flex flex-col gap-[10px] text-left text-[14px]'>

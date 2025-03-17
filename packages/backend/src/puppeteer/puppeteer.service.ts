@@ -122,8 +122,8 @@ export class PuppeteerService
 
         this.logger.debug(`Total pages found: ${allPageUrls.length}`);
         this.PageCount = allPageUrls.length;
-        // await this.updatePageData(allPageUrls);
-        // this.stopMonitoring(domain);
+        await this.updatePageData(allPageUrls);
+        this.stopMonitoring(domain);
     }
 
     async findLinksViaPuppeteer(domain: string)

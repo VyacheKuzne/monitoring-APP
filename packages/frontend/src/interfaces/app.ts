@@ -1,3 +1,5 @@
+import { Server } from './server'
+
 export interface App {
     idApp: number | null;
     parentServer: number;
@@ -17,19 +19,13 @@ export interface Domain {
     nameRegistar: string | null;
     nameOwner: string | null;
     access: boolean | null;
+    SSL: SSL[];
+  }
+
+  interface SSL {
+    expires: Date | null; // Или Date
   }
   
-  export interface Server {
-    idServer: number;
-    parentCompany: string;
-    ipAddress: string;
-    hostname: string;
-    location: string;
-    os: string;
-    created: Date;
-    updated: Date;
-    domain?: Domain | null;  // Добавляем поле для данных о домене
-  }
   export interface CheckPage {
     idCheckPage: number;
     parentApp?: number | null;

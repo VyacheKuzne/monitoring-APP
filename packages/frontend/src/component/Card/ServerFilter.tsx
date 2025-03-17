@@ -50,7 +50,11 @@ export default function ServerCard() {
                 </div>
                 <div className='mt-[4.5%]'>                        
                 {servers.map((server, index) =>(
-                    <a href={`/company/${server.idCompany}/`} className='flex gap-[15px] items-center mb-[4.5%]'>
+                    <a 
+                        href={`/company/${server.idCompany}/`} 
+                        className='flex gap-[15px] items-center mb-[4.5%]'
+                        key={index}
+                    >
                         <div className='min-w-[18px] w-[18px] min-h-[18px] h-[18px] bg-green-500 rounded-full' />
                         <span className='w-full text8-16px'>{server.name}</span>
                         <img src={transitArrow} alt="Перейти к серверам" />

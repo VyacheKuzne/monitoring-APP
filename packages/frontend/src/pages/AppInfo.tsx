@@ -6,38 +6,47 @@ import ModalBlock from '../block/ModalBlock';
 import InfoBlock from '../block/InfoBlock';
 import { assert } from 'console';
 import link from '../img/link.svg'
+import { Company } from '../interfaces/company';
+import { Server } from '../interfaces/server';
+import { App } from '../interfaces/app';
 
 import { CheckPage } from '../interfaces/app';
-// import { Server } from '../interfaces/server';
-// import { App } from '../interfaces/app';
 // import { WhoisData } from '../interfaces/whois';
 // import CpuInfoCard, { DataPoint } from '../component/system/CpuInfoCard';
 // import FormCreateServer from '../component/ModalBlock/FormCreateServer';
 // import PlusSvg from '../img/Plus.svg'
 // import AppCard from '../component/Card/AppCard';
 
-function AppInfo() {
+function AppInfo() { 
+
   useEffect(()=>{
     getAppInfo()
   },[])
-  const { idCompany, idApp } = useParams<{ idCompany: string; idApp: string }>();
 
-  // Преобразуем параметры в числа
-  const companyId = useMemo(() => Number(idCompany), [idCompany]);
-  const appId = useMemo(() => Number(idApp), [idApp]);
+  const { idCompany, idServer, idApp } = useParams<{ idCompany: string; idServer: string; idApp: string }>();
+  const [company, setCompany] = useState<Company | null>(null);
+  const [server, setServer] = useState<Server | null>(null);
+  const [app, setApp] = useState<App | null>(null);
+  
+  const url = [`/company/${idCompany}/`, `/company/${idCompany}/server/${idServer}/`, ''];
+  const crumb = [`${company?.name}`, `${server?.hostname}`, `${app?.name}`];
 
   const [appPage, setAppPage] = useState<CheckPage[]>([]);
 
   const getAppInfo = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/company/${companyId}/server/app/${appId}`);
+      const response = await axios.get(`http://localhost:3000/company/${idCompany}/server/${idServer}/app/${idApp}/get`);
       console.log(response);
+      console.log(typeof(idServer));
 
       if (!response.data.pageInfo) {
         console.log("Отсутствуют данные о страницах");
       } else {
         console.log("Данные успешно получены");
+        setApp(response.data.app);
         setAppPage(response.data.pageInfo); // Обновляем состояние
+        setCompany(response.data.company);
+        setServer(response.data.server);
       }
     } catch (error) {
       console.error("Ошибка запроса:", error);
@@ -52,17 +61,12 @@ return (
   <div className="App font-montserrat grid grid-cols-[300px_auto]">
     <ModalBlock />
     <div className='flex flex-col gap-[3.5%] m-[2%]'>
-      <InfoBlock/>
-
-      <div className='flex w-auto h-auto my-[30px] p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
-        <div className='flex flex-col gap-[10px] text-left text-[14px]'>
-          Приложение №{idApp}
-        </div>
-      </div>
+      <InfoBlock url={url} crumb={crumb} />
       {/* отображение данных о страницах */}
       <div className="bg-white rounded-[10px]">
         {appPage.length > 0 ? (
           <table className='w-full'>
+            <tbody>
             {/* Заголовки таблицы */}
               <tr className='border'>
                 {headers.map((header, index) => (
@@ -119,6 +123,7 @@ return (
                 </td>
               </tr>
             ))}
+            </tbody>
           </table>
         ) : (
           <p>Нет данных</p>
