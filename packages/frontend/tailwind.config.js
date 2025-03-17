@@ -10,6 +10,7 @@ module.exports = {
       },
       colors: {
         'color-fon': 'rgba(89, 89, 89, 0.77)',
+        'color-bg': 'rgba(243, 241, 241, 1)',
       },
     },
   },

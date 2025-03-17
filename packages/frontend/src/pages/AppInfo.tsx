@@ -76,8 +76,7 @@ return (
 
             {/* Данные таблицы */}
             {appPage.map((page, index) => (
-              <tr key={page.idCheckPage} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-200'}>
-                <td className='p-[30px]'>{page.idCheckPage}</td>
+                <tr key={page.idCheckPage} className={index % 2 === 0 ? 'bg-white' : 'bg-color-bg'}>                <td className='p-[30px]'>{page.idCheckPage}</td>
                 <td className='p-[30px]'>
                   {page.statusLoadContent === 'Content fully loaded' ? (
                     <p className="text-green-500">Страница успешно загружена</p>
