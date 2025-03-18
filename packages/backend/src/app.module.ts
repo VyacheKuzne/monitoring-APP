@@ -12,6 +12,7 @@ import { PuppeteerModule } from './puppeteer/puppeteer.module';
 import { CreateServerModule } from './create/create-server/create-server.module';
 import { CreateCompanyModule } from './create/create-company/create-company.module';
 import { CreateNotificationModule } from './create/create-notification/createNotification.module';
+import { FrequencyTestModule } from './frequency-test/frequency-test.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { CreateNotificationModule } from './create/create-notification/createNot
     PuppeteerModule, 
     ConfigModule.forRoot({ isGlobal: true }),
     CreateNotificationModule,
-    testDBModule
+    testDBModule,
+    FrequencyTestModule
   ],
   controllers: [AppController],
   providers: [AppService],

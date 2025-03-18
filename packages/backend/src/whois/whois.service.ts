@@ -96,7 +96,6 @@ export class WhoisService {
                                         expiresDate: undefined,
                                         registrarName: undefined,
                                         organization: undefined,
-
                                         daysToExpire: undefined 
                                     });
                                     return;

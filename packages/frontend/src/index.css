@@ -16,3 +16,7 @@
 .text6-12px{
   @apply text-[6px] md:text-[8px] xl:text-[10] 2xl:text-[12px]
 }
+
+.class-td{
+  @apply p-[15px] text8-16px
+}

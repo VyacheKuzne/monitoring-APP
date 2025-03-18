@@ -49,7 +49,7 @@ model app {
   notification notification[] // Связь с таблицей notification один ко многим
 
   server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
-  domain domain? @relation(fields: [parentDomain], references: [idDomain]) // Связь с таблицей domain один ко многим
+  domain domain @relation(fields: [parentDomain], references: [idDomain]) // Связь с таблицей domain один ко многим
 }
 
 model domain {

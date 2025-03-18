@@ -70,54 +70,53 @@ return (
             {/* Заголовки таблицы */}
               <tr className='border'>
                 {headers.map((header, index) => (
-                  <td className='p-[30px]' key={index}>{header}</td>
+                  <td className='class-td' key={index}>{header}</td>
                 ))}
               </tr>
 
             {/* Данные таблицы */}
             {appPage.map((page, index) => (
-                <tr key={page.idCheckPage} className={index % 2 === 0 ? 'bg-white' : 'bg-color-bg'}>                <td className='p-[30px]'>{page.idCheckPage}</td>
-                <td className='p-[30px]'>
+                <tr key={page.idCheckPage} className={index % 2 === 0 ? 'bg-white' : 'bg-color-bg'}>                <td className='class-td'>{page.idCheckPage}</td>
+                <td className='class-td'>
                   {page.statusLoadContent === 'Content fully loaded' ? (
                     <p className="text-green-500">Страница успешно загружена</p>
                   ) : (
                     <p className="text-slate-600">При загрузке страницы возникли проблемы</p>
                   )}
                 </td>
-                <td className='p-[30px]'>
+                <td className='class-td'>
                   {page.statusLoadMedia === 'Failed' ? (
                     <p className="text-red-500">Ошибка загрузки медиа</p>
                   ) : (
                     <p className="text-slate-600">Медиа загружены</p>
                   )}
                 </td>
-                <td className='p-[30px]'>
+                <td className='class-td'>
                   {page.statusLoadDOM === 'Failed' ? (
                     <p className="text-red-500">Ошибка загрузки DOM</p>
                   ) : (
                     <p className="text-slate-600">DOM загружен</p>
                   )}
                 </td>
-                <td className='p-[30px]'>
+                <td className='class-td'>
                   {page.statusLoadStyles === 'Failed' ? (
                     <p className="text-red-500">Ошибка загрузки стилей</p>
                   ) : (
                     <p className="text-slate-600">Стили загружены</p>
                   )}
                 </td>
-                <td className='p-[30px]'>
+                <td className='class-td'>
                   {page.statusLoadScripts === 'Failed' ? (
                     <p className="text-red-500">Ошибка загрузки скриптов</p>
                   ) : (
                     <p className="text-slate-600">Скрипты загружены</p>
                   )}
                 </td>
-                <td className='p-[30px]'>{page.responseTime}мс.</td>
-                <td className='p-[30px] max-w-fit relative'>
-                  <button>
-                    <p>Подробнее
-                      <img src={link} alt="подробнее" className='absolute right-[10%] top-[38%]'/>
-                    </p>
+                <td className='class-td'>{page.responseTime}мс.</td>
+                <td className='class-td max-w-fit relative'>
+                  <button className='flex'>
+                    <p>Подробнее</p>
+                    <img src={link} alt="подробнее" className='absolute right-[5%]'/>
                   </button>
                 </td>
               </tr>

@@ -32,7 +32,7 @@ export class PuppeteerService
     private browser: puppeteer.Browser;
     private isMonitoring: boolean = false;
     private attempts = 3;
-    private timeout = 30000;
+    private timeout = 60000;
     private concurrency = 5;
     private recursionDepth = 10;
 
@@ -351,7 +351,7 @@ export class PuppeteerService
 
     async stopMonitoring(domain: string)
     {
-        this.logger.log(`Stop monitoring pages. Total pages: ${this.PageCount}, Failed pages: ${this.failedPageCount}`);
+        this.logger.log(`Мониторинг ${domain} завершен. Всего страниц: ${this.PageCount}, Количество страниц со статусом error: ${this.failedPageCount}`);
         if((this.failedPageCount / this.PageCount) >= 0.1)
         {
             const url = 'http://localhost:3000/notification/create';
