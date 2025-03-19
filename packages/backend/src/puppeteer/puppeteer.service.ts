@@ -33,7 +33,7 @@ export class PuppeteerService
     private isMonitoring: boolean = false;
     private attempts = 3;
     private timeout = 60000;
-    private concurrency = 5;
+    private concurrency = 3;
     private recursionDepth = 10;
 
     private PageCount = 0;
@@ -45,10 +45,10 @@ export class PuppeteerService
 
     async startPageMonitoring(domain: string)
     {
-        if (this.isMonitoring) {
-            this.logger.log(`Monitoring already in progress for domain: ${domain}`);
-            return;
-        }
+        // if (this.isMonitoring) {
+        //     this.logger.log(`Monitoring already in progress for domain: ${domain}`);
+        //     return;
+        // }
 
         this.isMonitoring = true;
         this.logger.log(`Starting the Domain page test: ${domain}`);

@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 // Интервалы для различных задач
 const INTERVALS = {
   daily: 24 * 60 * 60 * 1000, // 1 день
-  hourly: 60 * 2 * 1000, // 2 минута
+  hourly: 60 * 10 * 1000, // 10 минут
 };
 
 @Injectable()
@@ -28,8 +28,8 @@ export class FrequencyTestService implements OnModuleInit, OnModuleDestroy {
 
   // Метод для запуска всех задач с интервалами
   private startTasks() {
-    this.runTaskWithInterval('updateWhoisData', INTERVALS.daily);
-    this.runTaskWithInterval('updateSSLabsData', INTERVALS.daily);
+    // this.runTaskWithInterval('updateWhoisData', INTERVALS.daily);
+    // this.runTaskWithInterval('updateSSLabsData', INTERVALS.daily);
     this.runTaskWithInterval('updatePagesData', INTERVALS.hourly);
   }
 
@@ -38,12 +38,12 @@ export class FrequencyTestService implements OnModuleInit, OnModuleDestroy {
     try {
       // Запускаем задачу
       switch (taskName) {
-        case 'updateWhoisData':
-          await this.updateWhoisData();
-          break;
-        case 'updateSSLabsData':
-          await this.updateSSLabsData();
-          break;
+        // case 'updateWhoisData':
+        //   await this.updateWhoisData();
+        //   break;
+        // case 'updateSSLabsData':
+        //   await this.updateSSLabsData();
+        //   break;
         case 'updatePagesData':
           await this.updatePagesData();
           break;
