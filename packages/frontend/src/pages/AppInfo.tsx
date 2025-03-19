@@ -136,11 +136,7 @@ return (
                   )}
                 </td>
                 <td className='class-td'>
-                  {page.statusLoadStyles === 'Failed' ? (
-                    <p className="text-red-500">Ошибка загрузки стилей</p>
-                  ) : (
-                    <p className="text-slate-600">Стили загружены</p>
-                  )}
+                  {page.statusLoadStyles}
                 </td>
                 <td className='class-td'>
                   {page.statusLoadScripts === 'Failed' ? (

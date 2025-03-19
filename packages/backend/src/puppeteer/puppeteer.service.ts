@@ -7,17 +7,7 @@ import axios from 'axios';
 import { HttpService } from '@nestjs/axios';
 import * as xml2js from 'xml2js';
 import pLimit from 'p-limit';
-// class setAppContext {
-//     constructor(public idApp: number) {}
-  
-//     setIdApp(idApp: number) {
-//       this.idApp = idApp;
-//     }
-  
-//     getIdApp() {
-//       return this.idApp;
-//     }
-//   }
+
   
 @Injectable()
 export class PuppeteerService
@@ -30,7 +20,7 @@ export class PuppeteerService
 
     private readonly logger = new Logger(PuppeteerService.name);
     private browser: puppeteer.Browser;
-    private isMonitoring: boolean = false;
+
     private attempts = 3;
     private timeout = 60000;
     private concurrency = 3;
@@ -38,24 +28,17 @@ export class PuppeteerService
 
     private PageCount = 0;
     private failedPageCount = 0;
-  // Метод для установки idApp
   setAppContext(idApp: number) {
     this.idApp = idApp;
   }
-
+//   Запустить мониторинг страниц сайта, начиная с проверки sitemap.xml
     async startPageMonitoring(domain: string)
     {
-        // if (this.isMonitoring) {
-        //     this.logger.log(`Monitoring already in progress for domain: ${domain}`);
-        //     return;
-        // }
-
-        this.isMonitoring = true;
         this.logger.log(`Starting the Domain page test: ${domain}`);
         this.browser = await puppeteer.launch({ args: ['--disable-web-security'] });
         await this.checkSitemap(domain);
     }
-
+// Определить, где искать страницы сайта — через sitemap.xml или обходя вручную с помощью Puppeteer
     async checkSitemap(domain: string)
     {
         const { data } = await axios.get('https://' + domain + '/robots.txt');
@@ -73,7 +56,7 @@ export class PuppeteerService
             await this.findLinksViaPuppeteer(domain);
         }
     }
-
+// Найти все страницы сайта через sitemap.xml, включая вложенные sitemaps
     async findLinksInSitemap(sitemapLines: string[], domain: string)
     {
         const processSitemap = async (sitemapUrl: string, depth: number): Promise<string[]> => {
@@ -125,7 +108,7 @@ export class PuppeteerService
         await this.updatePageData(allPageUrls);
         this.stopMonitoring(domain);
     }
-
+// Найти все внутренние ссылки на сайте, если sitemap.xml недоступен
     async findLinksViaPuppeteer(domain: string)
     {
         const startUrl = `https://${domain}`;
@@ -159,7 +142,7 @@ export class PuppeteerService
         const limit = pLimit(concurrency);
         await Promise.all(items.map(item => limit(() => task(item))));
     }
-
+// самая большая, Проверить доступность страниц, собрать данные о загрузке и зафиксировать результаты
     async updatePageData(urls: string[]): Promise<void> {
 
         const processUrl = async (url: string): Promise<void> => {
@@ -270,76 +253,110 @@ export class PuppeteerService
         // Запускаем параллельную обработку всех URL
         await this.runParallel(urls, processUrl, this.concurrency);
     }
-
+    async clearCaches(page: puppeteer.Page) {
+        await page.evaluate(() => {
+            // Очистка cookies
+            document.cookie.split(";").forEach(function(c) {
+                document.cookie = c.trim().replace(/^.+$/, "") + ";expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            });
+    
+            // Очистка localStorage и sessionStorage
+            localStorage.clear();
+            sessionStorage.clear();
+        });
+    }
+    
     async getResourceStatus(page: puppeteer.Page) {
         try {
-            return await page.evaluate(() => {
-                // Медиа (Картинки, видео, аудио)
-                const mediaLoaded = [
-                    ...Array.from(document.querySelectorAll('img')).filter(img => img.hasAttribute('src')),
-                    ...Array.from(document.querySelectorAll('video')).filter(video => video.hasAttribute('src')),
-                    ...Array.from(document.querySelectorAll('audio')).filter(audio => audio.hasAttribute('src'))
-                ].every(media => {
-                    if (media instanceof HTMLImageElement) {
-                        return media.complete && media.naturalWidth > 0;
-                    }
-                    if (media instanceof HTMLVideoElement || media instanceof HTMLAudioElement) {
-                        return media.readyState >= 3; // 3 — достаточно данных для воспроизведения
-                    }
-                    return false;
-                });
-
-                const mediaStatus = mediaLoaded ? "Loaded" : "Failed";
+            const networkStatus = {
+                mediaStatus: "Loaded",
+                styleStatus: "Failed",
+                scriptStatus: "Loaded",
+            };
     
-                // Стили (<link>, <style>, инлайн, @import)
-                const styleElements = [
-                    ...Array.from(document.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[],
-                    ...Array.from(document.querySelectorAll('style')) as HTMLStyleElement[],
-                ];
-                
-                let styleLoaded = true;
-                const importedSheets: CSSStyleSheet[] = [];
-
-                styleElements.forEach(element => {
-                    const sheet = element.sheet;
-                    if (!sheet) {
-                        styleLoaded = false;
-                        return;
-                    }
-
-                    try {
-                        const rules = Array.from(sheet.cssRules);
-                        const importRules = rules.filter(rule => rule instanceof CSSImportRule) as CSSImportRule[];
-                        importRules.forEach(importRule => {
-                          if (importRule.styleSheet) {
-                            importedSheets.push(importRule.styleSheet);
-                          }
-                        });
-                    }
-                    catch (error) {
-                        this.logger.error(`Error accessing cssRules:`, error);
-                        styleLoaded = false;
-                    }
-                });
-                const styleStatus = styleLoaded ? "Loaded" : "Failed";
+            const responses: Set<string> = new Set();
+            const failedRequests: string[] = [];
+            const failedRequestDetails: string[] = [];
+            let cssLoaded = false; // Флаг успешной загрузки CSS
     
-                // Скрипты
-                const scriptLoaded = Array.from(document.querySelectorAll('script[src]'))
-                    .every(script => script.hasAttribute('async') || script.hasAttribute('defer') || document.readyState === 'complete');
-                const scriptStatus = scriptLoaded ? "Loaded" : "Failed";
+            const pageDomain = new URL(page.url()).hostname;
     
-                const allLoaded = mediaLoaded && styleLoaded && scriptLoaded;
+            const hasScripts = await page.$$eval('script[src]', scripts => scripts.length > 0);
+            const hasStyles = await page.$$eval('link[rel="stylesheet"], style', styles => styles.length > 0);
     
-                return {
-                    allLoaded,
-                    mediaStatus,
-                    styleStatus,
-                    scriptStatus,
-                };
+            if (!hasScripts) networkStatus.scriptStatus = "Not required";
+            if (!hasStyles) networkStatus.styleStatus = "Not required";
+    
+            // Перехватываем запросы перед загрузкой страницы
+            await page.setRequestInterception(true);
+            page.on('request', (request) => {
+                if (request.resourceType() === 'stylesheet') {
+                    responses.add('style');
+                }
+                request.continue();
             });
-        } 
-        catch (error) {
-            this.logger.error(`Resource acquisition error`);
+    
+            page.on('response', (response) => {
+                const url = response.url();
+                const status = response.status();
+                const contentType = response.headers()['content-type'];
+                const fromCache = response.fromCache();
+    
+                const resourceDomain = new URL(url).hostname;
+                if (resourceDomain !== pageDomain) return;
+    
+                if (contentType?.includes('stylesheet')) {
+                    responses.add('style');
+                    cssLoaded = true;
+                    this.logger.debug(`✅ CSS loaded: ${url} (fromCache: ${fromCache})`);
+                }
+    
+                if (contentType?.includes('image')) responses.add('media');
+                if (contentType?.includes('javascript')) responses.add('script');
+    
+                if (status < 200 || status > 304) {
+                    failedRequests.push(url);
+                    failedRequestDetails.push(`Failed request: ${url} with status: ${status}`);
+                    this.logger.error(`Failed request: ${url} with status: ${status}`);
+                }
+            });
+    
+            page.on('requestfailed', (request) => {
+                const url = request.url();
+                const resourceDomain = new URL(url).hostname;
+                if (resourceDomain !== pageDomain) return;
+    
+                this.logger.error(`❌ Request failed: ${url}`);
+                failedRequests.push(url);
+                failedRequestDetails.push(`Request failed: ${url} with error: ${request.failure()?.errorText}`);
+            });
+    
+            await this.clearCaches(page);
+            await page.goto(page.url(), { waitUntil: 'networkidle2' });
+    
+            // Проверяем inline-стили в DOM
+            const inlineStyles = await page.evaluate(() => document.styleSheets.length > 0);
+            if (inlineStyles) responses.add('style');
+    
+            this.logger.debug(`🔍 Final collected responses: ${[...responses].join(', ')}`);
+    
+            networkStatus.mediaStatus = responses.has('media') ? "Loaded" : "Failed";
+            networkStatus.styleStatus = responses.has('style') ? "Loaded" : (hasStyles ? "Failed" : "Not required");
+            networkStatus.scriptStatus = responses.has('script') ? "Loaded" : (hasScripts ? "Failed" : "Not required");
+    
+            if (failedRequests.length > 0) {
+                this.logger.error(`🚨 Failed resource requests: ${failedRequests.join(', ')}`);
+                this.logger.error(`📌 Detailed failed requests: ${failedRequestDetails.join('; ')}`);
+            }
+    
+            return {
+                allLoaded: responses.has('media') && responses.has('style') && responses.has('script'),
+                mediaStatus: networkStatus.mediaStatus,
+                styleStatus: networkStatus.styleStatus,
+                scriptStatus: networkStatus.scriptStatus,
+            };
+        } catch (error) {
+            this.logger.error(`🔥 Resource acquisition error: ${error.message}`);
             return {
                 allLoaded: false,
                 mediaStatus: "Failed",
@@ -348,7 +365,19 @@ export class PuppeteerService
             };
         }
     }
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+// Завершить мониторинг, зафиксировать статистику и оповестить о критических ошибках.
     async stopMonitoring(domain: string)
     {
         this.logger.log(`Мониторинг ${domain} завершен. Всего страниц: ${this.PageCount}, Количество страниц со статусом error: ${this.failedPageCount}`);
@@ -369,6 +398,5 @@ export class PuppeteerService
         await this.browser.close();
         this.PageCount = 0;
         this.failedPageCount= 0;
-        this.isMonitoring = false;
     }
 }
