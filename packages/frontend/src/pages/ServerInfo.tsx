@@ -8,11 +8,14 @@ import { Company } from '../interfaces/company';
 import { Server } from '../interfaces/server';
 import { App } from '../interfaces/app';
 import { WhoisData } from '../interfaces/whois';
-import CpuInfoCard, { DataPoint } from '../component/system/CpuInfoCard';
+import CpuInfoCard from '../component/system/CpuInfoCard';
 import FormCreateServer from '../component/ModalBlock/FormCreateServer';
 import PlusSvg from '../img/Plus.svg'
 import AppCard from '../component/Card/AppCard';
 import OperationStatusChart from '../component/system/OperationStatusChart';
+import MemoryInfoCard from '../component/system/MemoryInfoCard';
+import NetworkInfoCard from '../component/system/NetworkInfoCard';
+import { DataPoint } from '../interfaces/dataPoints';
 
 function ServerInfo() {
 
@@ -21,9 +24,12 @@ function ServerInfo() {
   const [app, setApp] = useState<App[]>([]);
   const [domain, setDomain] = useState('');
   const [whoisData, setWhoisData] = useState<WhoisData | null>(null);
-  const [cpuInfo, setCpuInfo] = useState<any>(null); // Данные процессора
-  const [cpuData, setCpuData] = useState<DataPoint[]>([]); // Данные для графика
-  const [cpuStats, setCpuStats] = useState<any[]>([]); // Данные последних 10 значений loadCPU
+
+  const [systemInfo, setSystemInfo] = useState<any>(null); // Все текущие данные
+  const [cpuData, setCpuData] = useState<DataPoint[]>([]);
+  const [ramData, setRamData] = useState<DataPoint[]>([]);
+  const [networkReceivedData, setNetworkReceivedData] = useState<DataPoint[]>([]);
+  const [networkSentData, setNetworkSentData] = useState<DataPoint[]>([]);
 
   // Получаем информацию о сервере
   const getServerInfo = async () => {
@@ -35,62 +41,64 @@ function ServerInfo() {
   };
 
   // Запрос на получение данных о процессоре и обновление cpuData для графика
-  const getCpuInfo = async () => {
+  const updateSystemData = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/system/all`);
-      const cpuData = response.data.cpu; // Извлекаем данные о процессоре
+      // Получаем текущие данные
+      const currentResponse = await axios.get(`http://localhost:3000/system/all`);
+      const systemData = currentResponse.data; // Сохраняем все данные системы
+      setSystemInfo(systemData); // Устанавливаем все текущие данные
 
-      setCpuInfo(cpuData); // Устанавливаем данные о процессоре
+      // Object.entries(systemData).map(([key, value]) => {
+      //   console.log(`${key}:`, value);
+      // });
+  
+      // Получаем статистику
+      const statsResponse = await axios.get('http://localhost:3000/system/stats');
+      const stats = statsResponse.data;
+      // console.log(statsResponse.data);
+  
+      // Обновляем данные для всех метрик
+      setCpuData(createDataPoints(stats, systemData.cpu.currentLoad, 'loadCPU'));
+      setRamData(createDataPoints(stats, systemData.memory.used, 'usedRAM'));
+      setNetworkReceivedData(createDataPoints(stats, systemData.network[0].received, 'received'));
+      setNetworkSentData(createDataPoints(stats, systemData.network[0].sent, 'sent'));
 
-      // Обновляем данные для графика
-      const newDataPoint: DataPoint = {
-        time: new Date().toLocaleTimeString(),
-        value: cpuData.currentLoad, // Используем данные текущей загрузки
-      };
-
-      // Добавляем новое значение в график
-      setCpuData((prevData) => {
-        const updatedData = [...prevData, newDataPoint];
-
-        // Оставляем только последние 10 данных для графика
-        if (updatedData.length > 10) {
-          updatedData.shift(); // Убираем первое значение, если данных больше 10
-        }
-
-        return updatedData;
-      });
     } catch (error) {
-      console.error('Error fetching CPU data', error);
+      console.error('Error fetching system data', error);
     }
   };
-  // Запрос для получения последних 10 значений loadCPU
-  const getCpuStats = async () => {
-    try {
-      const response = await axios.get('http://localhost:3000/system/stats');
-      const stats = response.data;
-      setCpuStats(stats); // Устанавливаем последние 10 значений loadCPU
 
-      // Обновляем данные для графика на основе cpuStats
-      const newCpuDataPoints = stats.map((stat: any) => ({
-        time: new Date(stat.date).toLocaleTimeString(),
-        value: stat.loadCPU, // Загрузка CPU
-      }));
-
-      setCpuData(newCpuDataPoints); // Обновляем массив данных для графика
-    } catch (error) {
-      console.error('Error fetching CPU stats', error);
-    }
+  const createDataPoints = (
+    stats: any[],
+    currentValue: number,
+    statKey: string
+  ): DataPoint[] => {
+    const statsPoints = stats.map((stat) => ({
+      time: new Date(stat.date).toLocaleTimeString(),
+      value: stat[statKey],
+    }));
+    const currentPoint = {
+      time: new Date().toLocaleTimeString(),
+      value: currentValue,
+    };
+    const allPoints = [...statsPoints, currentPoint];
+    // if(statKey === "received" || statKey === "sent")
+    // {
+    //   return allPoints.slice(-12);
+    // }
+    // else
+    // {
+      return allPoints.slice(-10);
+    // }
   };
 
   useEffect(() => {
     getServerInfo();
-    getCpuInfo(); // Запрашиваем данные о процессоре при монтировании компонента
-    getCpuStats(); // Запрашиваем последние 10 значений loadCPU
+    updateSystemData(); // Запрашиваем последние 10 значений loadCPU
 
     // Устанавливаем интервал для обновления данных каждую 10 секунд
     const interval = setInterval(() => {
-      getCpuInfo(); // Получаем новые данные каждые 10 секунд
-      getCpuStats(); // Получаем последние 10 значений loadCPU каждые 10 секунд
+      updateSystemData(); // Получаем последние 10 значений loadCPU каждые 10 секунд
     }, 10000); // 10 секунд
     // Очищаем интервал при размонтировании компонента
     return () => clearInterval(interval);
@@ -123,7 +131,7 @@ const getAppInfo = async () => {
     const AppResponse = await axios.get(`http://localhost:3000/company/${idCompany}/server/${idServer}/app/get`);
 
     // Выводим в консоль все данные, полученные от сервера
-    console.log('Полученные данные приложения:', AppResponse.data);
+    // console.log('Полученные данные приложения:', AppResponse.data);
 
     // Если данные не в виде массива, оборачиваем их в массив
     setApp(Array.isArray(AppResponse.data.app) ? AppResponse.data.app : [AppResponse.data.app]);
@@ -213,10 +221,16 @@ return (
           <div>
             <OperationStatusChart />
           </div>
-          <div>
+          <div className='flex gap-[30px]'>
             {/* Компонент для отображения данных процессора */}
-            {cpuInfo && cpuData.length > 0 && (
-              <CpuInfoCard cpuInfo={cpuInfo} cpuData={cpuData} />
+            {systemInfo && cpuData.length > 0 && (
+              <CpuInfoCard cpuInfo={systemInfo.cpu} cpuData={cpuData} />
+            )}
+            {systemInfo && ramData.length > 0 && (
+              <MemoryInfoCard ramInfo={systemInfo.memory} ramData={ramData} />
+            )}
+            {systemInfo && networkReceivedData.length && networkSentData.length > 0 && (
+              <NetworkInfoCard networkInfo={systemInfo.network} receivedData={networkReceivedData} sentData={networkSentData} />
             )}
           </div>
         </div>

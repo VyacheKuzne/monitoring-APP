@@ -17,7 +17,7 @@ export class SystemController {
           res.status(200).json(systemData);  // Ответ отправлен
         } else {
           // Отправляем ошибку, если данные отсутствуют
-          res.status(500).json({ message: 'Failed to retrieve system information' });  // Ответ отправлен
+          res.status(500).json({ message: 'Failed to retrieve system ' });  // Ответ отправлен
         }
         return; // Возвращаем `void`, завершая выполнение
       }),

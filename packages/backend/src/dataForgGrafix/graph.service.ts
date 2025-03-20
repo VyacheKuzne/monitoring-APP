@@ -12,6 +12,8 @@ export class GraphService {
         select: {
           loadCPU: true,
           usedRAM: true,
+          received: true,
+          sent: true,
           date: true,
         },
         orderBy: {
@@ -23,6 +25,8 @@ export class GraphService {
       return stats.map(stat => ({
         ...stat,
         usedRAM: stat.usedRAM?.toString(), // Преобразуем BigInt в строку
+        received: stat.received?.toString(),
+        sent: stat.sent?.toString()
       }));
     } catch (error) {
       console.error('Error fetching server stats:', error);

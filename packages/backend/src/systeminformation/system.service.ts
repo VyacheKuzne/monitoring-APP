@@ -26,6 +26,8 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private readonly pollingInterval = 60000;
   private DelayTime = 5000;
 
+  private previousStats: { [iface: string]: Pick<NetworkData, 'received' | 'sent'> } = {};
+
   onModuleInit() {
     this.startMonitoring();
   }
@@ -71,7 +73,6 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
         this.systemData$.next(systemData); // Публикуем данные для вывода на страницу
       });
   }
-  
 
   stopMonitoring() {
     this.logger.log('Stopping system monitoring');
@@ -159,13 +160,24 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
             map((stats) => {
               return interfacesArray.map((iface) => {
                 const matchingStat = stats.find((stat) => stat.iface === iface.iface);
+
+                const currentReceived = matchingStat ? matchingStat.rx_bytes : 0;
+                const currentSent = matchingStat ? matchingStat.tx_bytes : 0;
+                const previousReceived = this.previousStats[iface.iface]?.received ?? 0n;
+                const previousSent = this.previousStats[iface.iface]?.sent ?? 0n;
+                
+                this.previousStats[iface.iface] = {
+                  received: currentReceived,
+                  sent: currentSent,
+                };
+                
                 return {
                   iface: iface.iface,
                   ip4: iface.ip4,
                   ip6: iface.ip6,
                   speed: iface.speed !== null ? iface.speed : 0,
-                  received: matchingStat ? matchingStat.rx_bytes : 0,
-                  sent: matchingStat ? matchingStat.tx_bytes : 0,
+                  received: currentReceived - previousReceived, // Разница между нынешним и предыдущим значением
+                  sent: currentSent - previousSent,
                 };
               });
             }),

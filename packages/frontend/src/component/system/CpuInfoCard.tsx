@@ -1,16 +1,12 @@
 import React from 'react';
 import LineChartComponent from './LineChartComponent'; // Импортируем компонент LineChart
+import { DataPoint } from '../../interfaces/dataPoints';
 
 interface CpuInfo {
   model: string;
   speed: number;
   cores: number;
   currentLoad: number;
-}
-
-export interface DataPoint {
-  time: string;
-  value: number;
 }
 
 interface Props {
@@ -28,12 +24,8 @@ const CpuInfoCard: React.FC<Props> = ({ cpuInfo, cpuData }) => {
           <span>Частота: {cpuInfo.speed} GHz</span>
           <div className='flex gap-[10px] items-center'>
             <span>
-              Текущая загрузка: 
-              {cpuInfo.currentLoad !== undefined 
-                ? cpuInfo.currentLoad.toFixed(2) 
-                : 'Данные отсутствуют'}
-              %
-            </span>
+              Текущая загрузка: {cpuInfo.currentLoad !== undefined ? cpuInfo.currentLoad.toFixed(2) : 'Данные отсутствуют'}%
+              </span>
             <div className='min-w-[10px] w-[10px] min-h-[10px] h-[10px] bg-[#18A0FB] rounded-full' />
           </div>
         </div>
