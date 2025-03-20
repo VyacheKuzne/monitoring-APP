@@ -277,17 +277,17 @@ export class PuppeteerService
             const responses: Set<string> = new Set();
             const failedRequests: string[] = [];
             const failedRequestDetails: string[] = [];
-            let cssLoaded = false; // Флаг успешной загрузки CSS
+            let cssLoaded = false;
     
             const pageDomain = new URL(page.url()).hostname;
     
             const hasScripts = await page.$$eval('script[src]', scripts => scripts.length > 0);
             const hasStyles = await page.$$eval('link[rel="stylesheet"], style', styles => styles.length > 0);
+            const hasMedia = await page.$$eval('img, [style*="background-image"]', elements => elements.length > 0);
     
             if (!hasScripts) networkStatus.scriptStatus = "Not required";
             if (!hasStyles) networkStatus.styleStatus = "Not required";
     
-            // Перехватываем запросы перед загрузкой страницы
             await page.setRequestInterception(true);
             page.on('request', (request) => {
                 if (request.resourceType() === 'stylesheet') {
@@ -311,8 +311,20 @@ export class PuppeteerService
                     this.logger.debug(`✅ CSS loaded: ${url} (fromCache: ${fromCache})`);
                 }
     
-                if (contentType?.includes('image')) responses.add('media');
-                if (contentType?.includes('javascript')) responses.add('script');
+                if (
+                    contentType?.startsWith('image/') || 
+                    contentType?.includes('svg+xml') || 
+                    contentType?.startsWith('text/html') ||  
+                    contentType?.startsWith('application/octet-stream') || // Добавляем octet-stream
+                    /\.(svg|webp|png|jpe?g|gif|bmp|avif|html)$/i.test(url) 
+                ) {
+                    responses.add('media'); // Или другой соответствующий тип ресурса, если нужно
+                }
+                
+    
+                if (contentType?.includes('javascript')) {
+                    responses.add('script');
+                }
     
                 if (status < 200 || status > 304) {
                     failedRequests.push(url);
@@ -334,13 +346,27 @@ export class PuppeteerService
             await this.clearCaches(page);
             await page.goto(page.url(), { waitUntil: 'networkidle2' });
     
-            // Проверяем inline-стили в DOM
+            await page.evaluate(async () => {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            });
+    
             const inlineStyles = await page.evaluate(() => document.styleSheets.length > 0);
             if (inlineStyles) responses.add('style');
     
+            const hasInlineImages = await page.evaluate(() => {
+                return [...document.images].some(img => img.src.startsWith('data:image'));
+            });
+            if (hasInlineImages) responses.add('media');
+    
             this.logger.debug(`🔍 Final collected responses: ${[...responses].join(', ')}`);
     
-            networkStatus.mediaStatus = responses.has('media') ? "Loaded" : "Failed";
+            // Определяем статус медиафайлов
+            if (!hasMedia && !responses.has('media')) {
+                networkStatus.mediaStatus = "Not required";
+            } else {
+                networkStatus.mediaStatus = responses.has('media') ? "Loaded" : "Failed";
+            }
+    
             networkStatus.styleStatus = responses.has('style') ? "Loaded" : (hasStyles ? "Failed" : "Not required");
             networkStatus.scriptStatus = responses.has('script') ? "Loaded" : (hasScripts ? "Failed" : "Not required");
     
@@ -349,11 +375,19 @@ export class PuppeteerService
                 this.logger.error(`📌 Detailed failed requests: ${failedRequestDetails.join('; ')}`);
             }
     
+            // Логика определения итогового статуса
+            const requiredResources = [networkStatus.mediaStatus, networkStatus.styleStatus, networkStatus.scriptStatus]
+                .filter(status => status !== "Not required"); // Оставляем только нужные ресурсы
+    
+            const allLoaded = requiredResources.every(status => status === "Loaded");
+            const finalStatus = allLoaded ? "Content fully loaded" : "Some resources not loaded";
+    
             return {
-                allLoaded: responses.has('media') && responses.has('style') && responses.has('script'),
+                allLoaded,
                 mediaStatus: networkStatus.mediaStatus,
                 styleStatus: networkStatus.styleStatus,
                 scriptStatus: networkStatus.scriptStatus,
+                finalStatus, // Итоговый статус загрузки
             };
         } catch (error) {
             this.logger.error(`🔥 Resource acquisition error: ${error.message}`);
@@ -362,9 +396,12 @@ export class PuppeteerService
                 mediaStatus: "Failed",
                 styleStatus: "Failed",
                 scriptStatus: "Failed",
+                finalStatus: "Some resources not loaded",
             };
         }
     }
+    
+
     
     
     

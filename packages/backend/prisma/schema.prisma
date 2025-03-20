@@ -78,7 +78,7 @@ model SSL {
   registered DateTime
   expires DateTime
   parentStatus Int?
-  fingerprint String @db.VarChar(100)
+  fingerprint String @db.VarChar(50)
   publickey String @db.VarChar(50)
   privatekey String @db.VarChar(50)
   version String @db.VarChar(50)
