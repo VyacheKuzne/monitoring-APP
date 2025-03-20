@@ -53,7 +53,7 @@ function AppInfo() {
     }
   };
   // обьявяляем масив для работы с заголовками таблицы
-  const headers = ["Статус загрузки контента", "Статус загрузки медиа", "Статус загрузки DOM", 'Статус загрузки стилей', 'Статус загрузки скриптов', "Время ответа", 'Приложение',  'URL', 'История'];
+  const headers = ["Статус загрузки контента", "Статус загрузки медиа", 'Статус загрузки стилей', 'Статус загрузки скриптов', "Время ответа", 'Приложение',  'URL', 'История'];
   
   const timeOutRef = useRef<NodeJS.Timeout | null>(null); // Ссылка на тайм-аут
   const [isVisibleMessage, setIsVisibleMessage] = useState(false); // Состояние видимости сообщения
@@ -126,13 +126,6 @@ return (
                     <p className="text-red-500">Ошибка загрузки медиа</p>
                   ) : (
                     <p className="text-slate-600">Медиа загружены</p>
-                  )}
-                </td>
-                <td className='class-td'>
-                  {page.statusLoadDOM === 'Failed' ? (
-                    <p className="text-red-500">Ошибка загрузки DOM</p>
-                  ) : (
-                    <p className="text-slate-600">DOM загружен</p>
                   )}
                 </td>
                 <td className='class-td'>
