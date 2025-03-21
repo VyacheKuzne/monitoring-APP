@@ -16,7 +16,7 @@ import OperationStatusChart from '../component/system/OperationStatusChart';
 import MemoryInfoCard from '../component/system/MemoryInfoCard';
 import NetworkInfoCard from '../component/system/NetworkInfoCard';
 import { DataPoint } from '../interfaces/dataPoints';
-
+import ProgressBar from '../ProgressBar';
 function ServerInfo() {
 
   const { idCompany, idServer } = useParams<{ idCompany: string, idServer: string }>();  const [server, setServer] = useState<Server | null>(null);
@@ -261,28 +261,29 @@ return (
                 </button>
               </div>
               {/* форма для запоолнения */}
-              <form className='flex flex-col gap-5 items-center w-[450px] h-[150px]' onSubmit={createDomain}>
+              <form className='flex flex-col gap-5 items-center w-[450px] h-fit' onSubmit={createDomain}>
                 <div className='flex flex-col'>
                   <span className='text-left text-[20px] mb-[5px]'>Введите Домейн приложения</span>
                   <input
-                    className='bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]'
+                    className='bg-gray-200 rounded-2xl text-[16px] my-[5px] p-[10px] pr-[30px] placeholder:text-[12px]'
                     type="text"
                     placeholder='Введите Домейн приложения'
                     value={domainData}
                     onChange={handleChange}
                   />
                   <input
-                    className='bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]'
+                    className='bg-gray-200 rounded-2xl text-[16px] my-[5px] p-[10px] pr-[30px] placeholder:text-[12px]'
                     type="text"
                     placeholder='Введите название приложения'
                     value={appName}
                     onChange={handleChangeName}
                   />
                 </div>
-                <button className="w-[50%] p-[5px] bg-slate-300 hover:bg-slate-400 rounded-[5px] text-[14px] font-montserrat transition" type="submit">
+                <button className="w-[50%] p-[5px] bg-slate-300 my-[5px] hover:bg-slate-400 rounded-[5px] text-[14px] font-montserrat transition" type="submit">
                   <p>Создать</p>
                 </button>
               </form>
+              <ProgressBar domain={domain}/>
             </div>
           </div>
         )}

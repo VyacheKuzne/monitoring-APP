@@ -28,7 +28,9 @@
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.0.12",
     "@nestjs/schedule": "^5.0.1",
+    "@nestjs/websockets": "^11.0.12",
     "@prisma/client": "^6.3.1",
     "@types/jsdom": "^21.1.7",
     "axios": "^1.7.9",
@@ -37,6 +39,7 @@
     "puppeteer": "^24.2.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.1",
     "systeminformation": "^5.25.11",
     "whois": "^2.14.2",
     "xml2js": "^0.6.2"
