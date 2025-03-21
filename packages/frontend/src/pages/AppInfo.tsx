@@ -86,7 +86,7 @@ function AppInfo() {
 return (
   <div className="App font-montserrat grid grid-cols-[300px_auto]">
     <ModalBlock />
-    <div className='flex flex-col gap-[3.5%] m-[2%] relative'>
+    <div className='flex flex-col sm:gap-[3.5vh] m-[2%]'>
       <InfoBlock url={url} crumb={crumb} />
       {isVisibleMessage && (
         <div
@@ -102,17 +102,18 @@ return (
       <div className="bg-white rounded-[10px]">
         {appPage.length > 0 ? (
           <table className='w-full'>
-            <tbody>
             {/* Заголовки таблицы */}
-              <tr className='border'>
+            <thead>
+              <tr className='border-0'>
                 {headers.map((header, index) => (
                   <td className='class-td' key={index}>{header}</td>
                 ))}
               </tr>
-
+            </thead>
             {/* Данные таблицы */}
+            <tbody>
             {appPage.map((page, index) => (
-                <tr key={page.idCheckPage} className={index % 2 === 0 ? 'bg-white' : 'bg-color-bg'}>                
+                <tr key={page.idCheckPage} className={index % 2 === 0 ? 'bg-color-bg' : 'bg-white'}>                
                 {/* <td className='class-td'>{page.idCheckPage}</td> */}
                 <td className='class-td'>
                   {page.statusLoadContent === 'Content fully loaded' ? (

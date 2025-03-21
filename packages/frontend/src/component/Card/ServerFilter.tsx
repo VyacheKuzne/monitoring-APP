@@ -27,7 +27,7 @@ export default function ServerCard() {
                 <p className='text8-16px'>Статус работы серверов</p>
                 <div className='h-[1px] bg-gray-500 my-[4.5%]' content=''></div>
                 <div className='h-[35px]'>
-                    <div className='flex content-center gap-[15px] relative w-auto h-full'>
+                    <div className='flex content-center gap-[15px] w-auto h-full z-10'>
                         <input
                             type="text"
                             className='bg-gray-200 rounded-2xl text-[12px] w-3/4 pl-[30px] p-[2%] pr-[3em]' /* pr - padding right */
@@ -39,7 +39,7 @@ export default function ServerCard() {
                             <img
                                 src={SearchSvg}
                                 alt="Кнопка поиска"
-                                className='h-[1.2em] w-[1.2em]' /* устанавливаем высоту и ширину картинки в em*/
+                                className='h-[1.2em] w-[1.2em] z-20' /* устанавливаем высоту и ширину картинки в em*/
                             />
                         </div>
                         <div className='flex h-full items-center gap-[10px]'>

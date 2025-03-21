@@ -35,35 +35,37 @@ const mainText = [
     'Главная'
 ]
   return (
-    <>
-    {
-        modal ? <FormCreateCompany closeForm={() => setModal(false)}/> : null
-    }
-    {
-        notification ? <Notifications /> : null
-    }
-    <div className='bg-white w-full h-screen p-[10%] shadow-xl flex flex-col justify-between'>
-        <div>
-            <div className='flex justify-between'>
-                <NotificationButton  closeForm={() => setNotification(!notification)}/>
-                <ExitButton/>
-            </div>
-            <hr className='my-[5%] h-[2px] bg-slate-600'/>
-            <div className='flex-col text-left '>
-                {mainText.map((text, index)=>(
-                    <div key={index} className='py-[5%] flex'>
-                        <div className={`w-[5px] rounded-md mx-[9px] ${isDashboard ? 'bg-green-500' : 'bg-gray-500'}`}  content=''></div>
-                        <a className=' px-[5%]' href='/'>{text}</a>
+    <div className='pl-[300px]'>
+        <div className='fixed top-0 left-0 w-[300px]'>
+            {
+                modal ? <FormCreateCompany closeForm={() => setModal(false)}/> : null
+            }
+            {
+                notification ? <Notifications /> : null
+            }
+            <div className=' bg-white min-w-full h-screen p-[10%] shadow-xl flex flex-col justify-between'>
+                <div>
+                    <div className='flex justify-between'>
+                        <NotificationButton  closeForm={() => setNotification(!notification)}/>
+                        <ExitButton/>
                     </div>
-                ))}
-            </div>
-            <div>
-                <ClientButton companiesData={companies} />
+                    <hr className='my-[5%] h-[2px] bg-slate-600'/>
+                    <div className='flex-col text-left '>
+                        {mainText.map((text, index)=>(
+                            <div key={index} className='py-[5%] flex'>
+                                <div className={`w-[5px] rounded-md mx-[9px] ${isDashboard ? 'bg-green-500' : 'bg-gray-500'}`}  content=''></div>
+                                <a className=' px-[5%]' href='/'>{text}</a>
+                            </div>
+                        ))}
+                    </div>
+                    <div>
+                        <ClientButton companiesData={companies} />
+                    </div>
+                </div>
+                <CreateCompanyButton openForm={() => setModal(true)} />
             </div>
         </div>
-        <CreateCompanyButton openForm={() => setModal(true)} />
     </div>
-    </>
   )
 }
 export default ModalBlock;
