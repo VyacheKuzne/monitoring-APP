@@ -7,7 +7,7 @@ import { SystemModule } from './systeminformation/system.module'; // Import Syst
 import { testDBModule } from './testDB/testDB.module';
 import { SslLabsModule } from './ssl-labs/ssl-labs.module';
 import { GraphModule } from './dataForgGrafix/graph.module';
-import { DomainModule } from './create/createDomain/createDomain.module';
+import { DomainModule } from './create/createDomain/createDomain.module'; // Import DomainModule here
 import { PuppeteerModule } from './puppeteer/puppeteer.module';
 import { CreateServerModule } from './create/create-server/create-server.module';
 import { CreateCompanyModule } from './create/create-company/create-company.module';
@@ -17,19 +17,19 @@ import { FrequencyTestModule } from './frequency-test/frequency-test.module';
 @Module({
   imports: [
     WhoisModule, 
-    DomainModule, 
+    DomainModule,  // DomainModule is imported here, which includes ProgressGateway
     CreateCompanyModule, 
     CreateServerModule,
-    SystemModule, 
+    // SystemModule, 
     SslLabsModule, 
     GraphModule, 
     PuppeteerModule, 
     ConfigModule.forRoot({ isGlobal: true }),
     CreateNotificationModule,
     testDBModule,
-    FrequencyTestModule
+    // FrequencyTestModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService],  // ProgressGateway is automatically provided by DomainModule, so no need to add it here
 })
 export class AppModule {}
