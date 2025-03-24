@@ -34,7 +34,7 @@ function CompanyInfo() {
   
   const createServer = async (event: React.FormEvent) => {
     event.preventDefault();
-    const domainName = domainData.replace("https://", "");
+    const domainName = domainData;
   
     try {
       // Выполняем POST-запрос для создания сервера и ждём его завершения
@@ -61,14 +61,10 @@ function CompanyInfo() {
     return company.name;
   };
 
-const [domainData, setCompanyData] = useState('https://');
+const [domainData, setCompanyData] = useState('');
 
 const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
   const inputValue = event.target.value;
-
-  if (!inputValue.startsWith("https://")) {
-    return;
-  }
   setCompanyData(inputValue);
 };
 
@@ -107,7 +103,7 @@ const closeModal = () => {
                 {/* форма для запоолнения */}
                 <form className='flex flex-col gap-5 items-center w-[450px] h-[150px' onSubmit={createServer}>
                  <div className='flex flex-col'>
-                   <span className='text-left text-[20px] mb-[5px]'>Введите Домейн компании</span>
+                   <span className='text-left text-[20px] mb-[5px]'>Введите название хоста</span>
                    <input 
                          className='bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]' 
                          type="text" 

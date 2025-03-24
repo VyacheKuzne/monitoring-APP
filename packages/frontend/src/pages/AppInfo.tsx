@@ -12,6 +12,7 @@ import { App } from '../interfaces/app';
 import CopySvg from '../img/Copy.svg'
 import { CheckPage } from '../interfaces/app';
 import './AppInfo.css'
+import { getActiveElement } from '@testing-library/user-event/dist/utils';
 // import { WhoisData } from '../interfaces/whois';
 // import CpuInfoCard, { DataPoint } from '../component/system/CpuInfoCard';
 // import FormCreateServer from '../component/ModalBlock/FormCreateServer';
@@ -58,7 +59,7 @@ function AppInfo() {
   const timeOutRef = useRef<NodeJS.Timeout | null>(null); // Ссылка на тайм-аут
   const [isVisibleMessage, setIsVisibleMessage] = useState(false); // Состояние видимости сообщения
   const [messageKey, setMessageKey] = useState(0); // Ключ для принудительного перерисовывания
-
+  const [isUrlMessage, setisUrlMessage] = useState<boolean>(false)
   const copyUrl = (urlPage: string) => {
     navigator.clipboard.writeText(urlPage);
 
@@ -81,8 +82,21 @@ function AppInfo() {
       setTimeout(() => setIsVisibleMessage(false), 2000);
     }, 10); // Задержка для сброса анимации
   };
-
-
+  function showFullUrl(index:number) {
+    let showFullUrlBlock: HTMLElement|null;
+    showFullUrlBlock = document.querySelector(`[data-key = "${index}"]`);
+    if(showFullUrlBlock) {
+      showFullUrlBlock.style.display = 'block';
+    }
+  } 
+  function closeFullUrl(index:number) {
+    let showFullUrlBlock: HTMLElement|null;
+    showFullUrlBlock = document.querySelector(`[data-key = "${index}"]`);
+    if(showFullUrlBlock) {
+      showFullUrlBlock.style.display = 'none';
+    }
+  } 
+  
 return (
   <div className="App font-montserrat grid grid-cols-[300px_auto]">
     <ModalBlock />
@@ -145,9 +159,14 @@ return (
                 <td className='class-td'>{page.responseTime}мс.</td>
                 <td className='class-td'>{page.responseTime}мс.</td>
                 <td className="class-td relative">
-                  <p className="w-[100px] overflow-x-auto whitespace-nowrap">
+                  <p className="w-[100px]  overflow-x-hidden whitespace-nowrap cursor-pointer" onMouseEnter ={() => showFullUrl(index)} onMouseLeave={() => closeFullUrl(index)}>
                     {page.urlPage}
                   </p>
+                  <div className='hidden absolute bg-white rounded-md p-4 w-[200px]  z-20 shadow-xl' data-key={index}>
+                    <p className='break-all'>
+                      {page.urlPage}
+                    </p>
+                  </div>
                   <button onClick={() => copyUrl(page.urlPage)} className='absolute right-0 top-[35%]'>
                     <img src={CopySvg} alt="Копировать url" />
                   </button>

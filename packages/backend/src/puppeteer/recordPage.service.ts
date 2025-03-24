@@ -30,7 +30,7 @@ export class RecordPageService {
                 },
             });
 
-            this.logger.log(`Page data recorded successfully`);
+            this.logger.log(`Данные успешно сохранены, url: ${pageData.urlPage}`);
             return result;
         }
         else

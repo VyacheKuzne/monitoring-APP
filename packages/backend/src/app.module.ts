@@ -27,7 +27,7 @@ import { FrequencyTestModule } from './frequency-test/frequency-test.module';
     ConfigModule.forRoot({ isGlobal: true }),
     CreateNotificationModule,
     testDBModule,
-    // FrequencyTestModule
+    FrequencyTestModule
   ],
   controllers: [AppController],
   providers: [AppService],  // ProgressGateway is automatically provided by DomainModule, so no need to add it here
