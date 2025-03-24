@@ -79,7 +79,7 @@ const closeModal = () => {
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
       <ModalBlock/>
-      <div className='flex flex-col gap-y-[3.5vh] m-[2%]'>
+      <div className='flex flex-col sm:gap-y-[3.5vh] m-[2%]'>
         <InfoBlock crumb={[getCompanyName()]} />
         <div className='grid grid-cols-3 gap-x-[2%] gap-y-[3.5vh] w-auto h-auto'>
           {server.map((serverItem, index) => (

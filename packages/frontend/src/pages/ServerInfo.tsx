@@ -8,15 +8,12 @@ import { Company } from '../interfaces/company';
 import { Server } from '../interfaces/server';
 import { App } from '../interfaces/app';
 import { WhoisData } from '../interfaces/whois';
-import CpuInfoCard from '../component/system/CpuInfoCard';
-import FormCreateServer from '../component/ModalBlock/FormCreateServer';
 import PlusSvg from '../img/Plus.svg'
 import AppCard from '../component/Card/AppCard';
-import OperationStatusChart from '../component/system/OperationStatusChart';
-import MemoryInfoCard from '../component/system/MemoryInfoCard';
-import NetworkInfoCard from '../component/system/NetworkInfoCard';
 import { DataPoint } from '../interfaces/dataPoints';
+import ServerGraphs from '../component/system/ServerGraphs';
 import ProgressBar from '../ProgressBar';
+
 function ServerInfo() {
 
   const { idCompany, idServer } = useParams<{ idCompany: string, idServer: string }>();  const [server, setServer] = useState<Server | null>(null);
@@ -25,11 +22,10 @@ function ServerInfo() {
   const [domain, setDomain] = useState('');
   const [whoisData, setWhoisData] = useState<WhoisData | null>(null);
 
-  const [systemInfo, setSystemInfo] = useState<any>(null); // Все текущие данные
-  const [cpuData, setCpuData] = useState<DataPoint[]>([]);
-  const [ramData, setRamData] = useState<DataPoint[]>([]);
-  const [networkReceivedData, setNetworkReceivedData] = useState<DataPoint[]>([]);
-  const [networkSentData, setNetworkSentData] = useState<DataPoint[]>([]);
+  useEffect(() => {
+    getServerInfo();
+    getAppInfo();
+  });
 
   // Получаем информацию о сервере
   const getServerInfo = async () => {
@@ -40,69 +36,7 @@ function ServerInfo() {
       });
   };
 
-  // Запрос на получение данных о процессоре и обновление cpuData для графика
-  const updateSystemData = async () => {
-    try {
-      // Получаем текущие данные
-      const currentResponse = await axios.get(`http://localhost:3000/system/all`);
-      const systemData = currentResponse.data; // Сохраняем все данные системы
-      setSystemInfo(systemData); // Устанавливаем все текущие данные
-
-      // Object.entries(systemData).map(([key, value]) => {
-      //   console.log(`${key}:`, value);
-      // });
-  
-      // Получаем статистику
-      const statsResponse = await axios.get('http://localhost:3000/system/stats');
-      const stats = statsResponse.data;
-      // console.log(statsResponse.data);
-  
-      // Обновляем данные для всех метрик
-      setCpuData(createDataPoints(stats, systemData.cpu.currentLoad, 'loadCPU'));
-      setRamData(createDataPoints(stats, systemData.memory.used, 'usedRAM'));
-      setNetworkReceivedData(createDataPoints(stats, systemData.network[0].received, 'received'));
-      setNetworkSentData(createDataPoints(stats, systemData.network[0].sent, 'sent'));
-
-    } catch (error) {
-      console.error('Error fetching system data', error);
-    }
-  };
-
-  const createDataPoints = (
-    stats: any[],
-    currentValue: number,
-    statKey: string
-  ): DataPoint[] => {
-    const statsPoints = stats.map((stat) => ({
-      time: new Date(stat.date).toLocaleTimeString(),
-      value: stat[statKey],
-    }));
-    const currentPoint = {
-      time: new Date().toLocaleTimeString(),
-      value: currentValue,
-    };
-    const allPoints = [...statsPoints, currentPoint];
-    // if(statKey === "received" || statKey === "sent")
-    // {
-    //   return allPoints.slice(-12);
-    // }
-    // else
-    // {
-      return allPoints.slice(-10);
-    // }
-  };
-
-  useEffect(() => {
-    getServerInfo();
-    updateSystemData(); // Запрашиваем последние 10 значений loadCPU
-
-    // Устанавливаем интервал для обновления данных каждую 10 секунд
-    const interval = setInterval(() => {
-      updateSystemData(); // Получаем последние 10 значений loadCPU каждые 10 секунд
-    }, 10000); // 10 секунд
-    // Очищаем интервал при размонтировании компонента
-    return () => clearInterval(interval);
-  }, []); // Пустой массив зависимостей, чтобы использовать setInterval только один раз при монтировании
+  // Пустой массив зависимостей, чтобы использовать setInterval только один раз при монтировании
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDomain(event.target.value);
   };
@@ -118,13 +52,6 @@ function ServerInfo() {
   };
   const url = [`/company/${company?.idCompany}/`, ''];
   const crumb = [`${company?.name}`, `${server?.hostname}`];
-
-
-
-// получаем данные о приложении на сервере 
-useEffect(() => {
-  getAppInfo();
-}, []);
 
 const getAppInfo = async () => {
   try {
@@ -194,7 +121,6 @@ const handleChangeName = (event: React.ChangeEvent<HTMLInputElement>) => {
   setappName(inputValue);
 };
 
-
 const [Modal, setModal] = useState<boolean>(false)
 const showModal = () => {
   setModal(true)
@@ -207,7 +133,7 @@ const closeModal = () => {
 return (
   <div className="App font-montserrat grid grid-cols-[300px_auto]">
     <ModalBlock />
-    <div className='flex flex-col gap-[3.5%] m-[2%]'>
+    <div className='flex flex-col sm:gap-[3.5vh] m-[2%]'>
       <InfoBlock url={url} crumb={crumb} />
 
       <div className='flex justify-between w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl'>
@@ -217,23 +143,7 @@ return (
           <span>Местонахождение: {server?.location ?? ' Загрузка...'}</span>
           <span>Операц. система: {server?.os ?? ' Загрузка...'}</span>
         </div>
-        <div className='flex flex-col items-end gap-[30px]'>
-          <div>
-            <OperationStatusChart />
-          </div>
-          <div className='flex gap-[30px]'>
-            {/* Компонент для отображения данных процессора */}
-            {systemInfo && cpuData.length > 0 && (
-              <CpuInfoCard cpuInfo={systemInfo.cpu} cpuData={cpuData} />
-            )}
-            {systemInfo && ramData.length > 0 && (
-              <MemoryInfoCard ramInfo={systemInfo.memory} ramData={ramData} />
-            )}
-            {systemInfo && networkReceivedData.length && networkSentData.length > 0 && (
-              <NetworkInfoCard networkInfo={systemInfo.network} receivedData={networkReceivedData} sentData={networkSentData} />
-            )}
-          </div>
-        </div>
+        <ServerGraphs />
       </div>
 
 
