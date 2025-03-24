@@ -22,12 +22,6 @@ function ServerInfo() {
   const [domain, setDomain] = useState('');
   const [whoisData, setWhoisData] = useState<WhoisData | null>(null);
 
-  const [systemInfo, setSystemInfo] = useState<any>(null); // Все текущие данные
-  const [cpuData, setCpuData] = useState<DataPoint[]>([]);
-  const [ramData, setRamData] = useState<DataPoint[]>([]);
-  const [networkReceivedData, setNetworkReceivedData] = useState<DataPoint[]>([]);
-  const [networkSentData, setNetworkSentData] = useState<DataPoint[]>([]);
-
   useEffect(() => {
     getServerInfo();
     getAppInfo();

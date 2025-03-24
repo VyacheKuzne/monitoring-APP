@@ -20,7 +20,7 @@ import { FrequencyTestModule } from './frequency-test/frequency-test.module';
     DomainModule,  // DomainModule is imported here, which includes ProgressGateway
     CreateCompanyModule, 
     CreateServerModule,
-    // SystemModule, 
+    SystemModule, 
     SslLabsModule, 
     GraphModule, 
     PuppeteerModule, 

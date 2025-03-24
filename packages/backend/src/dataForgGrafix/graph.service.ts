@@ -9,6 +9,11 @@ export class GraphService {
   async getStats(): Promise<{ loadCPU: number; usedRAM: string; date: Date }[]> {
     try {
       const stats = await this.prisma.checkServerStats.findMany({
+        where: {
+          date: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // >= текущей даты минус 24 часа
+          },
+        },
         select: {
           loadCPU: true,
           usedRAM: true,
@@ -19,7 +24,6 @@ export class GraphService {
         orderBy: {
           date: 'desc',
         },
-        take: 10,
       });
   
       return stats.map(stat => ({
@@ -32,5 +36,5 @@ export class GraphService {
       console.error('Error fetching server stats:', error);
       throw new Error('Could not fetch server stats');
     }
-  }  
+  }
 }

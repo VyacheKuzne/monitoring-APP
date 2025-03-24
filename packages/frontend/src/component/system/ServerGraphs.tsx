@@ -7,12 +7,16 @@ import NetworkInfoCard from '../../component/system/NetworkInfoCard';
 import { DataPoint } from '../../interfaces/dataPoints';
 
 function ServerGraphs() {
-
+  
   const [systemInfo, setSystemInfo] = useState<any>(null); // Все текущие данные
+  const [allData, setAllData] = useState<DataPoint[]>([]);
   const [cpuData, setCpuData] = useState<DataPoint[]>([]);
   const [ramData, setRamData] = useState<DataPoint[]>([]);
   const [networkReceivedData, setNetworkReceivedData] = useState<DataPoint[]>([]);
   const [networkSentData, setNetworkSentData] = useState<DataPoint[]>([]);
+
+  const newInterval = 60000;
+  const countPoint = 10;
 
   useEffect(() => {
     updateSystemData(); // Запрашиваем последние 10 значений loadCPU
@@ -20,7 +24,7 @@ function ServerGraphs() {
     // Устанавливаем интервал для обновления данных каждую 10 секунд
     const interval = setInterval(() => {
       updateSystemData(); // Получаем последние 10 значений loadCPU каждые 10 секунд
-    }, 10000); // 10 секунд
+    }, newInterval); // 10 секунд
     return () => clearInterval(interval);
   }, []);
 
@@ -47,6 +51,7 @@ function ServerGraphs() {
       // console.log(statsResponse.data);
   
       // Обновляем данные для всех метрик
+      setAllData(stats);
       setCpuData(createDataPoints(stats, systemData.cpu.currentLoad, 'loadCPU'));
       setRamData(createDataPoints(stats, systemData.memory.used, 'usedRAM'));
 
@@ -57,8 +62,9 @@ function ServerGraphs() {
 
       setNetworkReceivedData(createDataPoints(stats, systemData.network[0].received, 'received'));
       setNetworkSentData(createDataPoints(stats, systemData.network[0].sent, 'sent'));
-
-    } catch (error) {
+      
+    } 
+    catch (error) {
       console.error('Error fetching system data', error);
     }
   };
@@ -78,22 +84,25 @@ function ServerGraphs() {
       value: currentValue,
     };
     const allPoints = [...statsPoints, currentPoint];
-    return allPoints.slice(-10);
+    return allPoints.slice(0, countPoint);
   };
 
     return (
-        <div className='flex flex-col items-end sm:gap-[3.5vh]'>
-            <div>
-              <OperationStatusChart />
-            </div>
+        <div>
             {systemInfo && cpuData.length > 0 && ramData.length > 0 && 
-            networkReceivedData.length > 0 && networkSentData.length > 0 ?
-            <div className='flex gap-[30px]'>
-                <CpuInfoCard cpuInfo={systemInfo.cpu} cpuData={cpuData} />
-                <MemoryInfoCard ramInfo={systemInfo.memory} ramData={ramData} />
-                <NetworkInfoCard networkInfo={systemInfo.network} receivedData={networkReceivedData} sentData={networkSentData} />
-            </div>
-            : <p className='text8-12px'>Загрузка...</p>
+              networkReceivedData.length > 0 && networkSentData.length > 0 ?
+              <div className='flex flex-col items-end sm:gap-[3.5vh]'>
+                <div>
+                  <OperationStatusChart allData={allData} />
+                </div>
+
+                <div className='flex gap-[30px]'>
+                    <CpuInfoCard cpuInfo={systemInfo.cpu} cpuData={cpuData} />
+                    <MemoryInfoCard ramInfo={systemInfo.memory} ramData={ramData} />
+                    <NetworkInfoCard networkInfo={systemInfo.network} receivedData={networkReceivedData} sentData={networkSentData} />
+                </div>
+              </div>
+              : <p className='text8-12px'>Загрузка графиков...</p>
             }
         </div>
     );
