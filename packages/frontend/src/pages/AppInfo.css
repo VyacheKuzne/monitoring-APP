@@ -1,31 +1,28 @@
+.progress-bar {
+  width: 0;
+  height: 4px;
+  background: rgb(181, 181, 226);
+  border-radius: 100px;
+}
 
-  
-  .progress-bar {
-    width: 0;
-    height: 4px;
-    background: rgb(181, 181, 226);
-    border-radius: 100px;
+.animate-progress {
+  animation: fillBar 1.9s linear forwards;
+}
+
+@keyframes fillBar {
+  from {
+    width: 0%;
   }
-  
-  .animate-progress {
-    animation: fillBar 1.9s linear forwards;
+  to {
+    width: 100%;
   }
-  
-  @keyframes fillBar {
-    from {
-      width: 0%;
-    }
-    to {
-      width: 100%;
-    }
-  }
-  
-  .btn {
-    padding: 10px 20px;
-    background: blue;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  
+}
+
+.btn {
+  padding: 10px 20px;
+  background: blue;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}

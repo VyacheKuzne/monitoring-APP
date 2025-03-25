@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { PrismaClient } from '@prisma/client';
-import { NotificationData } from './notification'
+import { NotificationData } from './notification';
 import axios from 'axios';
 
 @Injectable()
@@ -10,10 +10,8 @@ export class NotificationService {
   constructor(private readonly httpService: HttpService) {}
   private readonly logger = new Logger(NotificationService.name);
 
-  async createNotification(notificationData: NotificationData)
-  {
-    if(notificationData)
-    {
+  async createNotification(notificationData: NotificationData) {
+    if (notificationData) {
       await this.prisma.notification.create({
         data: {
           text: notificationData.text,
@@ -24,11 +22,8 @@ export class NotificationService {
         },
       });
       this.logger.log(`Notification recorded successfully`);
-    }
-    else
-    {
+    } else {
       this.logger.error(`Error recording the notification`);
     }
   }
-
 }

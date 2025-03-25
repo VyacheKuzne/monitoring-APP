@@ -1,5 +1,13 @@
 // src/app.controller.ts
-import { Controller, Get, Post, Patch, Delete, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+} from '@nestjs/common';
 import { testDBService } from './testDB.service';
 
 @Controller('company')
@@ -15,7 +23,10 @@ export class testDBController {
     return this.testDBService.getCompany();
   }
   @Patch('/testedit/:idCompany')
-  async editCompany(@Param('idCompany') idCompany: number, @Body() body: { name: string }) {
+  async editCompany(
+    @Param('idCompany') idCompany: number,
+    @Body() body: { name: string },
+  ) {
     return this.testDBService.editCompany(idCompany, body.name);
   }
   // @Delete('/testdestroy/:idCompany')

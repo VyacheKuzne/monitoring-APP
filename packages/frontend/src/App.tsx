@@ -1,18 +1,18 @@
 // src/App.tsx
-import React, { useState, useEffect } from 'react';
-import axios, { AxiosResponse } from 'axios';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios, { AxiosResponse } from "axios";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 // import { ModalProvider } from './component/ModalBlock/ModalContext';
-import Dashboard from './pages/Dashboard';
-import CompanyInfo from './pages/CompanyInfo';
-import ServerInfo from './pages/ServerInfo';
-import AppInfo from './pages/AppInfo';
+import Dashboard from "./pages/Dashboard";
+import CompanyInfo from "./pages/CompanyInfo";
+import ServerInfo from "./pages/ServerInfo";
+import AppInfo from "./pages/AppInfo";
 
 // // src/App.tsx
 // import React, { useState, useEffect } from 'react';
 // import axios from 'axios';
 
-// function App() {  
+// function App() {
 
 //   useEffect(() => {
 //     getData();
@@ -29,7 +29,7 @@ import AppInfo from './pages/AppInfo';
 
 //     axios.post('http://localhost:3000/company/create', {
 //       name: companyData
-//     }).then(response => 
+//     }).then(response =>
 //     {
 //       console.log('Компания создана:', response.data);
 //       getData();
@@ -44,7 +44,7 @@ import AppInfo from './pages/AppInfo';
 //   const [companies, setCompanies] = useState<Company[]>([]);
 
 //   const getData = async () => {
-//     axios.get('http://localhost:3000/company/get').then(response => 
+//     axios.get('http://localhost:3000/company/get').then(response =>
 //     {
 //       console.log('Данные получены:', response.data);
 //       setCompanies(response.data);
@@ -79,11 +79,11 @@ import AppInfo from './pages/AppInfo';
 //   return (
 //     <div>
 //       <form onSubmit={createCompany}>
-//         <input 
-//           className='w-[350px] border-2' 
-//           type="text" 
-//           placeholder="Название компании" 
-//           value={companyData} 
+//         <input
+//           className='w-[350px] border-2'
+//           type="text"
+//           placeholder="Название компании"
+//           value={companyData}
 //           onChange={handleChange}
 //         />
 //         <button type="submit">Внести данные инпута</button>
@@ -104,7 +104,7 @@ import AppInfo from './pages/AppInfo';
 //               <td>{company.idCompany}</td> {/* Используем idCompany */}
 //               <td>{company.name}</td> {/* Используем name */}
 //               <td>
-              
+
 //                 <button type="submit" onClick={() => updateData(company.idCompany)}>Изменить</button>
 //               </td>
 //               <td><button>Удалить</button></td>
@@ -120,20 +120,25 @@ import AppInfo from './pages/AppInfo';
 // export default App;
 
 function App() {
-
   return (
-      <Router>
-        <Routes>
-          {/* <ModalProvider> */}
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/company/:idCompany/" element={<CompanyInfo />} />
-            <Route path="/company/:idCompany/server/:idServer/" element={<ServerInfo />} />
-            <Route path="/company/:idCompany/server/:idServer/app/:idApp" element={<AppInfo />} />
+    <Router>
+      <Routes>
+        {/* <ModalProvider> */}
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/company/:idCompany/" element={<CompanyInfo />} />
+        <Route
+          path="/company/:idCompany/server/:idServer/"
+          element={<ServerInfo />}
+        />
+        <Route
+          path="/company/:idCompany/server/:idServer/app/:idApp"
+          element={<AppInfo />}
+        />
 
-          {/* </ModalProvider> */}
-        </Routes>
-      </Router>
-    );
+        {/* </ModalProvider> */}
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

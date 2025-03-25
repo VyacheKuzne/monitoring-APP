@@ -4,19 +4,19 @@
 
 /* размеры шрифтов */
 
-.text12-24px{
-  @apply text-[12px] md:text-[16px] xl:text-[20] 2xl:text-[24px]
+.text12-24px {
+  @apply text-[12px] md:text-[16px] xl:text-[20] 2xl:text-[24px];
 }
-.text10-20px{
-  @apply text-[10px] md:text-[14px] xl:text-[16] 2xl:text-[20px]
+.text10-20px {
+  @apply text-[10px] md:text-[14px] xl:text-[16] 2xl:text-[20px];
 }
-.text8-16px{
-  @apply text-[8px] md:text-[10px] xl:text-[12] 2xl:text-[16px]
+.text8-16px {
+  @apply text-[8px] md:text-[10px] xl:text-[12] 2xl:text-[16px];
 }
-.text6-12px{
-  @apply text-[6px] md:text-[8px] xl:text-[10] 2xl:text-[12px]
+.text6-12px {
+  @apply text-[6px] md:text-[8px] xl:text-[10] 2xl:text-[12px];
 }
 
-.class-td{
-  @apply p-[15px] text8-16px
+.class-td {
+  @apply p-[15px] text8-16px;
 }

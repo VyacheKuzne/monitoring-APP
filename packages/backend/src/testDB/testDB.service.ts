@@ -5,12 +5,11 @@ import axios from 'axios';
 
 @Injectable()
 export class testDBService {
-
   private prisma = new PrismaClient(); // Создаём Prisma клиент
 
   async createCompany(name: string) {
     return this.prisma.company.create({
-      data: {name},
+      data: { name },
     });
   }
   async getCompany() {

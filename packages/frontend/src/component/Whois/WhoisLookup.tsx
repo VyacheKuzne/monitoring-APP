@@ -1,24 +1,26 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 
 const WhoisLookup = () => {
-  const [domain, setDomain] = useState('');
-  const [result, setResult] = useState('');
-  const [error, setError] = useState('');
+  const [domain, setDomain] = useState("");
+  const [result, setResult] = useState("");
+  const [error, setError] = useState("");
 
   const handleLookup = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/whois/lookup?domain=${domain}`);
+      const response = await axios.get(
+        `http://localhost:3000/whois/lookup?domain=${domain}`,
+      );
       if (response.data.error) {
         setError(response.data.error);
-        setResult('');
+        setResult("");
       } else {
         setResult(response.data.data);
-        setError('');
+        setError("");
       }
     } catch (err) {
-      setError('Failed to fetch WHOIS data');
-      setResult('');
+      setError("Failed to fetch WHOIS data");
+      setResult("");
     }
   };
 
@@ -33,7 +35,7 @@ const WhoisLookup = () => {
       />
       <button onClick={handleLookup}>Lookup</button>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
       {result && (
         <pre>
           <code>{result}</code>

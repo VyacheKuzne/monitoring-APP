@@ -4,7 +4,7 @@ import { ServerService } from './create-server.service';
 import { ServerController } from './create-server.controller';
 import { HttpModule } from '@nestjs/axios'; // Импортируем HttpModule
 @Module({
-  imports: [HttpModule], 
+  imports: [HttpModule],
   controllers: [ServerController],
   providers: [ServerService],
 })

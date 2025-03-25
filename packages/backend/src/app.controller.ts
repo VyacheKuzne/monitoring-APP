@@ -56,7 +56,8 @@ export class AppController {
   async getAppInfo(
     @Param('idApp', ParseIntPipe) idApp: number,
     @Param('idServer', ParseIntPipe) idServer: number,
-    @Param('idCompany', ParseIntPipe) idCompany: number){
+    @Param('idCompany', ParseIntPipe) idCompany: number,
+  ) {
     return this.appService.getAppInfo(idApp, idServer, idCompany);
   }
 

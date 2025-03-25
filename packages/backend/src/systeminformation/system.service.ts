@@ -1,6 +1,20 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import * as si from 'systeminformation';
-import { Observable, from, catchError, of, switchMap, interval, BehaviorSubject, combineLatest } from 'rxjs';
+import {
+  Observable,
+  from,
+  catchError,
+  of,
+  switchMap,
+  interval,
+  BehaviorSubject,
+  combineLatest,
+} from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CpuData } from './interfaces/cpu.interface';
 import { DiskData } from './interfaces/disk.interface';
@@ -26,7 +40,9 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private readonly pollingInterval = 60000;
   private DelayTime = 5000;
 
-  private previousStats: { [iface: string]: Pick<NetworkData, 'received' | 'sent'> } = {};
+  private previousStats: {
+    [iface: string]: Pick<NetworkData, 'received' | 'sent'>;
+  } = {};
 
   onModuleInit() {
     this.startMonitoring();
@@ -37,16 +53,18 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   }
 
   startMonitoring() {
-    this.logger.log(`Starting system monitoring with interval: ${this.pollingInterval}ms`);
-    
+    this.logger.log(
+      `Starting system monitoring with interval: ${this.pollingInterval}ms`,
+    );
+
     // 1. Запускаем интервал для обновления данных
     this.intervalSubscription = interval(this.pollingInterval).subscribe(() => {
-      this.updateCpuData();  // Обновляем данные процессора
+      this.updateCpuData(); // Обновляем данные процессора
       this.updateDiskData(); // Обновляем данные диска
       this.updateNetworkData(); // Обновляем данные сети
       this.updateMemoryData(); // Обновляем данные памяти
     });
-  
+
     // 2. Объединяем все данные и обрабатываем их
     combineLatest([
       this.cpuData$,
@@ -63,12 +81,12 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
           disk,
           network,
           memory,
-        }))
+        })),
       )
       .subscribe((systemData) => {
         // 3. Сохраняем данные в базе
         this.recordStats.recordStats(systemData); // Передаем в сервис базы данных
-  
+
         // 4. Отправляем данные на клиентскую сторону (например, через WebSocket или другие механизмы)
         this.systemData$.next(systemData); // Публикуем данные для вывода на страницу
       });
@@ -85,7 +103,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private updateCpuData() {
     this.logger.debug('Getting CPU information...');
     from(si.cpuCurrentSpeed())
-      .pipe(  
+      .pipe(
         switchMap((speed) =>
           from(si.cpu()).pipe(
             map((cpu) => ({
@@ -120,7 +138,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private updateDiskData() {
     this.logger.debug('Getting Disk information...');
     from(si.fsSize())
-      .pipe(  
+      .pipe(
         map((disks) =>
           disks.map((disk) => {
             // Use type assertion to tell TypeScript that disk has a device property
@@ -152,25 +170,33 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private updateNetworkData() {
     this.logger.debug('Getting Network information...');
     from(si.networkInterfaces())
-      .pipe(  
+      .pipe(
         switchMap((interfaces) => {
-          const interfacesArray = Array.isArray(interfaces) ? interfaces : [interfaces];
+          const interfacesArray = Array.isArray(interfaces)
+            ? interfaces
+            : [interfaces];
 
           return from(si.networkStats()).pipe(
             map((stats) => {
               return interfacesArray.map((iface) => {
-                const matchingStat = stats.find((stat) => stat.iface === iface.iface);
+                const matchingStat = stats.find(
+                  (stat) => stat.iface === iface.iface,
+                );
 
-                const currentReceived = matchingStat ? matchingStat.rx_bytes : 0;
+                const currentReceived = matchingStat
+                  ? matchingStat.rx_bytes
+                  : 0;
                 const currentSent = matchingStat ? matchingStat.tx_bytes : 0;
-                const previousReceived = this.previousStats[iface.iface]?.received ?? 0n;
-                const previousSent = this.previousStats[iface.iface]?.sent ?? 0n;
-                
+                const previousReceived =
+                  this.previousStats[iface.iface]?.received ?? 0n;
+                const previousSent =
+                  this.previousStats[iface.iface]?.sent ?? 0n;
+
                 this.previousStats[iface.iface] = {
                   received: currentReceived,
                   sent: currentSent,
                 };
-                
+
                 return {
                   iface: iface.iface,
                   ip4: iface.ip4,
@@ -199,7 +225,7 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
   private updateMemoryData() {
     this.logger.debug('Getting memory information...');
     from(si.mem())
-      .pipe(  
+      .pipe(
         map((memory) => ({
           total: memory.total,
           free: memory.free,

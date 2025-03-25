@@ -7,9 +7,6 @@ import { HttpModule } from '@nestjs/axios';
 @Module({
   imports: [HttpModule],
   controllers: [DomainController],
-  providers: [
-    DomainService,
-    ProgressGateway,
-  ],
+  providers: [DomainService, ProgressGateway],
 })
 export class DomainModule {}

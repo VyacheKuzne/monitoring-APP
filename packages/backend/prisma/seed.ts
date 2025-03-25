@@ -15,7 +15,7 @@ async function main() {
 
   await prisma.server.createMany({
     data: [
-      { 
+      {
         parentCompany: 1,
         ipAddress: '192.168.3.124',
         hostname: 'forest.com',

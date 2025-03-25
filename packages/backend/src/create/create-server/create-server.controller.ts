@@ -7,9 +7,11 @@ export class ServerController {
   constructor(private readonly domainService: ServerService) {}
 
   @Post('create')
-  async createDomain(@Body() Body:{name: string, idCompany: number} ) {
+  async createDomain(@Body() Body: { name: string; idCompany: number }) {
     // Создаем сервер и связываем его с доменом
-    return this.domainService.createServerAndLinkDomain(Body.name, Body.idCompany);
+    return this.domainService.createServerAndLinkDomain(
+      Body.name,
+      Body.idCompany,
+    );
   }
 }
-  

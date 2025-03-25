@@ -16,7 +16,9 @@ describe('AppService', () => {
   });
 
   it('should create a company', async () => {
-    const newCompany = await appService.createCompany('LLC "Test organization"');
+    const newCompany = await appService.createCompany(
+      'LLC "Test organization"',
+    );
 
     // Сохраняем id созданной компании для дальнейшего удаления
     createdCompanyId = newCompany.idCompany;

@@ -1,8 +1,7 @@
 export interface ModalBlockProps {
-    closeForm: (modalAction: boolean) => void;
-    children?: React.ReactNode;
+  closeForm: (modalAction: boolean) => void;
+  children?: React.ReactNode;
 }
-
 
 // export interface ModalBlockProps {
 //     openModal: (id: string, component: React.ReactNode) => void;

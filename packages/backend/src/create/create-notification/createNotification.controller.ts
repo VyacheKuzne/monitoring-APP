@@ -10,4 +10,3 @@ export class NotificationController {
     return this.notificationService.createNotification(data);
   }
 }
-  

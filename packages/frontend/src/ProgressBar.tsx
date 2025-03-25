@@ -2,15 +2,15 @@ import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 
 const socket = io("http://localhost:3000");
-interface  ProgressBarProps {
-    domain: string
+interface ProgressBarProps {
+  domain: string;
 }
-const ProgressBar: React.FC<ProgressBarProps> = ({domain}) => {
+const ProgressBar: React.FC<ProgressBarProps> = ({ domain }) => {
   const [progress, setProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    socket.on("progress", (data: { progress: number}) => {
+    socket.on("progress", (data: { progress: number }) => {
       setProgress(data.progress);
       if (data.progress >= 100) {
         setIsProcessing(false);
@@ -30,7 +30,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({domain}) => {
 
   return (
     <div className="flex flex-col items-center">
-        Процесс создания приложения: {progress}%
+      Процесс создания приложения: {progress}%
       <div className="w-full bg-gray-300 rounded-full h-3 mt-4">
         <div
           className="bg-violet-300 h-3 rounded-full transition-all duration-500"

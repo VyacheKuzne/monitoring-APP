@@ -1,17 +1,26 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  SubscribeMessage,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Injectable, forwardRef, Inject, Logger } from '@nestjs/common';
 import { DomainService } from './createDomain.service';
 
 @WebSocketGateway({ cors: true })
 @Injectable()
-export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() server: Server;  // Ссылка на сервер WebSocket
-  private logger: Logger = new Logger('ProgressGateway');  // Логгер для отслеживания соединений
+export class ProgressGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  @WebSocketServer() server: Server; // Ссылка на сервер WebSocket
+  private logger: Logger = new Logger('ProgressGateway'); // Логгер для отслеживания соединений
 
   constructor(
     @Inject(forwardRef(() => DomainService)) // Используем forwardRef
-    private readonly domainService: DomainService
+    private readonly domainService: DomainService,
   ) {}
 
   // Когда клиент подключается, записываем это в лог
@@ -26,8 +35,16 @@ export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   // Метод, который будет слушать сообщения от клиента и запускать соответствующую обработку
   @SubscribeMessage('startProgress')
-  async handleStartProgress(@MessageBody() data: { domain: string; appName: string; idCompany: number; serverId: number }) {
-    let progress = 0;  // Начальный прогресс
+  async handleStartProgress(
+    @MessageBody()
+    data: {
+      domain: string;
+      appName: string;
+      idCompany: number;
+      serverId: number;
+    },
+  ) {
+    let progress = 0; // Начальный прогресс
     this.logger.log(`Progress started for domain: ${data.domain}`);
 
     // Таймер для имитации прогресса
@@ -36,21 +53,33 @@ export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect
       this.server.emit('progress', { progress });
 
       if (progress >= 100) {
-        clearInterval(interval);  // Останавливаем таймер, когда прогресс достиг 100%
+        clearInterval(interval); // Останавливаем таймер, когда прогресс достиг 100%
       }
     }, 1000);
 
     try {
       // Вызываем функцию из DomainService для создания домена и приложения
       const createdApp = await this.domainService.createDomainAndLinkDomain(
-        data.domain, data.appName, data.idCompany, data.serverId
+        data.domain,
+        data.appName,
+        data.idCompany,
+        data.serverId,
       );
 
       // Когда прогресс завершен, отправляем финальное сообщение
-      this.server.emit('progress', { progress: 100, message: 'Приложение успешно созданно', app: createdApp });
-    } catch (error) {
-      this.logger.error(`Error processing domain ${data.domain}: ${error.message}`);
-      this.server.emit('progress', { progress, error: error.message });
+      this.server.emit('progress', {
+        progress: 100,
+        message: 'Приложение успешно созданно',
+        app: createdApp,
+      });
+    } catch (error: any) {
+      if (error instanceof Error) {
+        this.logger.error(
+          `Error processing domain ${data.domain}: ${error.message}`,
+        );
+        this.server.emit('progress', { progress, error: error.message });
+      } else {
+      }
     }
   }
 

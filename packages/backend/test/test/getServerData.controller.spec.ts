@@ -34,7 +34,7 @@ describe('RecordStatsService', () => {
         available: 8000,
 
         free: 3000,
-        active: 4000
+        active: 4000,
       },
       network: [
         {

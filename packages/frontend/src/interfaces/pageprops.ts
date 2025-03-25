@@ -1,4 +1,4 @@
 export interface pageProps {
-    url?: string | string[];
-    crumb?: string | string[];
+  url?: string | string[];
+  crumb?: string | string[];
 }
