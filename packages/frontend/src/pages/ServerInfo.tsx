@@ -28,7 +28,7 @@ function ServerInfo() {
   useEffect(() => {
     getServerInfo();
     getAppInfo();
-  });
+  }, []);
 
   // Получаем информацию о сервере
   const getServerInfo = async () => {

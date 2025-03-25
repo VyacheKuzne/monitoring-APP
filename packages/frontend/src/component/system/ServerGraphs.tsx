@@ -8,7 +8,7 @@ import { DataPoint } from "../../interfaces/dataPoints";
 
 function ServerGraphs() {
   const [systemInfo, setSystemInfo] = useState<any>(null); // Все текущие данные
-  const [allData, setAllData] = useState<DataPoint[]>([]);
+  const [workStatusData, setWorkStatusData] = useState<[]>([]);
   const [cpuData, setCpuData] = useState<DataPoint[]>([]);
   const [ramData, setRamData] = useState<DataPoint[]>([]);
   const [networkReceivedData, setNetworkReceivedData] = useState<DataPoint[]>(
@@ -49,20 +49,24 @@ function ServerGraphs() {
         return;
       }
       setSystemInfo(systemData); // Устанавливаем все текущие данные
-
-      Object.entries(systemData).map(([key, value]) => {
-        console.log(`${key}:`, value);
-      });
-
+      // Object.entries(systemData).map(([key, value]) => {
+      //   console.log(`${key}:`, value);
+      // });
+      
       // Получаем статистику
       const statsResponse = await axios.get(
         "http://localhost:3000/system/stats",
       );
-      const stats = statsResponse.data;
-      // console.log(statsResponse.data);
+      const stats = statsResponse.data.stats;
+      const workStatus = statsResponse.data.workStatus;
 
       // Обновляем данные для всех метрик
-      setAllData(stats);
+      setWorkStatusData(workStatus);
+
+      Object.entries(workStatusData).map(([key, value]) => {
+        console.log(`${key}:`, value);
+      });
+
       setCpuData(
         createDataPoints(stats, systemData.cpu.currentLoad, "loadCPU"),
       );
@@ -111,7 +115,7 @@ function ServerGraphs() {
       networkSentData.length > 0 ? (
         <div className="flex flex-col items-end sm:gap-[3.5vh]">
           <div>
-            <OperationStatusChart allData={allData} />
+            <OperationStatusChart workStatusData={workStatusData} />
           </div>
 
           <div className="flex gap-[30px]">

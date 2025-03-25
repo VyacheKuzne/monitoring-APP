@@ -1,7 +1,7 @@
 import React from "react";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -35,7 +35,15 @@ const ManyLineChartComponent: React.FC<ManyLineChartComponentProps> = ({
     <div className="w-full h-[130px]">
       <h3 className="text-center">{title}</h3>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
+        <AreaChart data={data}>
+          <defs>
+            {dataKeys.map((_, index) => (
+              <linearGradient id={strokeColor[index]} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={strokeColor[index]} stopOpacity={0.85} />
+                <stop offset="75%" stopColor={strokeColor[index]} stopOpacity={0} />
+              </linearGradient>
+            ))}
+          </defs>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="time" reversed={true} tick={{ fontSize: 12 }} />{" "}
           {/* reversed для отображения данных с правой стороны */}
@@ -43,15 +51,16 @@ const ManyLineChartComponent: React.FC<ManyLineChartComponentProps> = ({
           <Tooltip />
           {/* <Legend /> */}
           {dataKeys.map((key, index) => (
-            <Line
+            <Area
               key={key}
               type="monotone"
               dataKey={key}
               stroke={strokeColor[index]}
               strokeWidth={strokeWidth}
+              fill={`url(#${strokeColor[index]})`}
             />
           ))}
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

@@ -9,8 +9,8 @@ export class GraphController {
   @Get('stats')
   async getStats() {
     try {
-      const stats = await this.graphService.getStats(); // Получаем данные из сервиса
-      return stats; // Отправляем данные в ответе
+      const { stats, workStatus } = await this.graphService.getStats(); 
+      return { stats, workStatus }; // Отправляем данные в ответе
     } catch (error) {
       console.error('Error fetching server stats:', error);
       return { message: 'Error fetching server stats' }; // Возвращаем ошибку, если не удалось получить данные
