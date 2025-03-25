@@ -35,6 +35,7 @@ export class ProgressGateway
 
   // Метод, который будет слушать сообщения от клиента и запускать соответствующую обработку
   @SubscribeMessage('startProgress')
+  // метод старта
   async handleStartProgress(
     @MessageBody()
     data: {
@@ -43,7 +44,9 @@ export class ProgressGateway
       idCompany: number;
       serverId: number;
     },
-  ) {
+  ) 
+  // обьявляем данные
+  {
     let progress = 0; // Начальный прогресс
     this.logger.log(`Progress started for domain: ${data.domain}`);
 
@@ -65,7 +68,6 @@ export class ProgressGateway
         data.idCompany,
         data.serverId,
       );
-
       // Когда прогресс завершен, отправляем финальное сообщение
       this.server.emit('progress', {
         progress: 100,
@@ -78,7 +80,6 @@ export class ProgressGateway
           `Error processing domain ${data.domain}: ${error.message}`,
         );
         this.server.emit('progress', { progress, error: error.message });
-      } else {
       }
     }
   }

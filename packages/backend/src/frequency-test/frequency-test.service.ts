@@ -11,7 +11,7 @@ import { firstValueFrom } from 'rxjs';
 // Интервалы для различных задач
 const INTERVALS = {
   daily: 24 * 60 * 60 * 1000, // 1 день
-  hourly: 60 * 10 * 1000, // 10 минут
+  hourly: 60 * 60 * 1000, // 10 минут
 };
 
 @Injectable()

@@ -112,34 +112,109 @@ export class PuppeteerService {
     await this.updatePageData(allPageUrls);
     this.stopMonitoring(domain);
   }
-  // Найти все внутренние ссылки на сайте, если sitemap.xml недоступен
+  
   async findLinksViaPuppeteer(domain: string) {
     const startUrl = `https://${domain}`;
     const page = await this.browser.newPage();
 
-    await page.goto(startUrl, { waitUntil: 'networkidle2' });
+    // Множество для хранения всех уникальных ссылок
+    const visitedLinks = new Set<string>(); // Указываем, что это множество строк
+    const toVisit = [`https://${domain}`];
 
-    const puppedLinks = await page.evaluate((domain) => {
-      return Array.from(
-        new Set(
-          Array.from(document.querySelectorAll('a'))
-            .map((a) => a.href.trim())
-            .filter(
-              (href) =>
-                href.startsWith('/') || href.startsWith(`https://${domain}`),
-            )
-            .map((href) => (href.startsWith('/') ? `https://${domain}` : href)),
-        ),
-      );
-    }, domain);
+    // Переменные для отслеживания ошибок
+    const errorLinks = new Set<string>();
 
-    this.PageCount = puppedLinks.length;
+    // Функция для нормализации ссылок (удаление якоря)
+    const normalizeUrl = (url: string): string => {
+        // Убираем якорь, если он есть
+        return url.split('#')[0];
+    };
 
-    await page.close();
-    await this.updatePageData(puppedLinks);
+    // Обработчик ответов для проверки статусов
+    page.on('response', (response) => {
+        const status = response.status();
+        const url = response.url();
 
-    this.stopMonitoring(domain);
-  }
+        // Если статус 404 или другие ошибки, добавляем ссылку в errorLinks
+        if (status >= 400) {
+            console.log(`Ошибка для ресурса: ${url}, Статус: ${status}`);
+            errorLinks.add(url);
+        }
+
+        // Проверка загрузки стилей, JS и картинок
+        if (url.endsWith('.css') || url.endsWith('.js') || url.endsWith('.jpg') || url.endsWith('.png')) {
+            if (status >= 400) {
+                console.log(`Ошибка при загрузке ресурса: ${url}`);
+                errorLinks.add(url);
+            }
+        }
+    });
+
+    // Функция для извлечения ссылок с текущей страницы
+    const getLinks = async (url: string) => {
+        try {
+            await page.goto(url, { waitUntil: 'networkidle2' });
+
+            // Извлекаем ссылки с текущей страницы
+            const links = await page.evaluate((domain: string) => {
+                return Array.from(document.querySelectorAll('a'))
+                    .map(a => a.href.trim())
+                    .filter(href => href.startsWith('/') || href.startsWith(`https://${domain}`))
+                    .map(href => href.startsWith('/') ? `https://${domain}${href}` : href);
+            }, domain);
+
+            return links;
+        } catch (error) {
+            console.error(`Ошибка при загрузке страницы ${url}:`, error);
+            return [];
+        }
+    };
+
+    // Рекурсивная функция для обхода всех ссылок
+    const exploreLinks = async () => {
+        // Пока есть страницы для обработки
+        while (toVisit.length > 0) {
+            const currentUrl = toVisit.shift()!; // Берем следующую страницу
+
+            // Нормализуем текущий URL перед проверкой
+            const normalizedUrl = normalizeUrl(currentUrl);
+
+            // Если эту ссылку уже посетили, пропускаем её
+            if (visitedLinks.has(normalizedUrl)) continue;
+
+            visitedLinks.add(normalizedUrl); // Помечаем ссылку как посещенную
+
+            // Получаем все ссылки с текущей страницы
+            const newLinks = await getLinks(currentUrl);
+
+            // Добавляем новые ссылки в очередь для дальнейшей обработки
+            newLinks.forEach(link => {
+                const normalizedLink = normalizeUrl(link);
+                if (!visitedLinks.has(normalizedLink)) {
+                    toVisit.push(normalizedLink);
+                }
+            });
+
+            // Выводим количество найденных ссылок
+            console.log(`На странице ${currentUrl} найдено ${newLinks.length} ссылок.`);
+        }
+
+        // Завершаем процесс, обновляем данные
+        await this.updatePageData(Array.from(visitedLinks) as string[]); // Приводим к типу string[]
+
+        // Добавляем в отчет ошибки 404 и другие ошибки с ресурсами
+        console.log('Ошибки (404 и другие):', Array.from(errorLinks));
+
+        this.PageCount = visitedLinks.size; // Обновляем количество страниц
+        this.stopMonitoring(domain); // Завершаем мониторинг
+    };
+
+    // Запускаем функцию обхода ссылок  
+    await exploreLinks();
+}
+
+
+
 
   async runParallel<T>(
     items: T[],

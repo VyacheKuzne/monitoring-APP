@@ -180,7 +180,7 @@ function ServerInfo() {
           {Modal && (
             <div className="w-screen h-screen absolute flex justify-center items-center bg-color-fon z-10 top-0 left-0">
               {/* блок контента */}
-              <div className="bg-white rounded-[5px] p-2 flex flex-col">
+              <div className="bg-white rounded-[5px] p-2 flex flex-col w-[500px]">
                 {/* верхняя часть дива с кнопкой для закрытия блока */}
                 <div className="flex flex-row-reverse">
                   <button

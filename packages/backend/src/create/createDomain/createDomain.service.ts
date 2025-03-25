@@ -130,7 +130,7 @@ export class DomainService {
       },
     });
 
-    this.sendProgress(90, 'Приложение создано');
+    this.sendProgress(90, 'Проверяем станицы приложения');
     const idApp = createdApp.idApp;
 
     // Получаем данные о страницах домена

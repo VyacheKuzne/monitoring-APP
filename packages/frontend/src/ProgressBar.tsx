@@ -7,11 +7,13 @@ interface ProgressBarProps {
 }
 const ProgressBar: React.FC<ProgressBarProps> = ({ domain }) => {
   const [progress, setProgress] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [message, setMessage] = useState <string> ('')
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   useEffect(() => {
-    socket.on("progress", (data: { progress: number }) => {
+    socket.on("progress", (data: { progress: number, message: string }) => {
       setProgress(data.progress);
+      setMessage(data.message)
       if (data.progress >= 100) {
         setIsProcessing(false);
       }
@@ -30,7 +32,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ domain }) => {
 
   return (
     <div className="flex flex-col items-center">
-      Процесс создания приложения: {progress}%
+      Процесс создания приложения: {progress}% <p className="whitespace-nowrap">{message}</p> 
       <div className="w-full bg-gray-300 rounded-full h-3 mt-4">
         <div
           className="bg-violet-300 h-3 rounded-full transition-all duration-500"
