@@ -24,29 +24,27 @@ export default function ServerCard() {
         <p className="text8-16px">Статус работы серверов</p>
         <div className="h-[1px] bg-gray-500 my-[4.5%]" content=""></div>
         <div className="h-[35px]">
-          <div className="flex content-center gap-[15px] w-auto h-full z-10">
-            <input
-              type="text"
-              className="bg-gray-200 rounded-2xl text-[12px] w-3/4 pl-[30px] p-[2%] pr-[3em]" /* pr - padding right */
-              placeholder="Найти сервер"
-            />
-            <div
-              className="absolute top-1/2 left-[0.5em] transform -translate-y-1/2" /* top-1/2, left, выравнивание по центру по вертикали, левый отступ */
-            >
+          <div className="flex content-center gap-[15px] w-auto h-full">
+            <div className="relative flex items-center w-auto z-[100]">
+              <input
+                type="text"
+                className="bg-gray-200 w-full h-[35px] rounded-full text-[12px] pl-[35px] pr-[3em]"
+                placeholder="Найти сервер"
+              />
               <img
-                src={SearchSvg}
-                alt="Кнопка поиска"
-                className="h-[1.2em] w-[1.2em] z-20" /* устанавливаем высоту и ширину картинки в em*/
+                  src={SearchSvg}
+                  alt="Кнопка поиска"
+                  className="absolute h-[20px] w-[1.2em] ml-[10px]"
               />
             </div>
             <div className="flex h-full items-center gap-[10px]">
               <button
                 content=""
-                className="border-[2px] border-green-500 min-h-[17px] h-[17px] min-w-[17px] w-[17px] rounded-full"
+                className="border-[2px] border-custom-green min-h-[17px] h-[17px] min-w-[17px] w-[17px] rounded-full"
               />
               <button
                 content=""
-                className="border-[2px] border-red-500 min-h-[17px] h-[17px] min-w-[17px] w-[17px] rounded-full"
+                className="border-[2px] border-custom-red min-h-[17px] h-[17px] min-w-[17px] w-[17px] rounded-full"
               />
             </div>
           </div>
@@ -58,7 +56,7 @@ export default function ServerCard() {
               className="flex gap-[15px] items-center mb-[4.5%]"
               key={index}
             >
-              <div className="min-w-[18px] w-[18px] min-h-[18px] h-[18px] bg-green-500 rounded-full" />
+              <div className="min-w-[18px] w-[18px] min-h-[18px] h-[18px] bg-custom-green rounded-full" />
               <span className="w-full text8-16px">{server.name}</span>
               <img src={transitArrow} alt="Перейти к серверам" />
             </a>

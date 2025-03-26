@@ -62,21 +62,10 @@ function ServerGraphs() {
 
       // Обновляем данные для всех метрик
       setWorkStatusData(workStatus);
-
-      Object.entries(workStatusData).map(([key, value]) => {
-        console.log(`${key}:`, value);
-      });
-
       setCpuData(
         createDataPoints(stats, systemData.cpu.currentLoad, "loadCPU"),
       );
       setRamData(createDataPoints(stats, systemData.memory.used, "usedRAM"));
-
-      //   const networkData = systemData.network && systemData.network[0]
-      //   ? systemData.network[0] : { received: 0, sent: 0 };
-      //   setNetworkReceivedData(createDataPoints(stats, networkData.received, 'received'));
-      //   setNetworkSentData(createDataPoints(stats, networkData.sent, 'sent'));
-
       setNetworkReceivedData(
         createDataPoints(stats, systemData.network[0].received, "received"),
       );
@@ -100,7 +89,7 @@ function ServerGraphs() {
     }));
     const currentPoint = {
       time: new Date().toLocaleTimeString(),
-      value: currentValue,
+      value: currentValue.toFixed(2),
     };
     const allPoints = [...statsPoints, currentPoint];
     return allPoints.slice(0, countPoint);

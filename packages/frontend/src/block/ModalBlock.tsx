@@ -47,7 +47,7 @@ const ModalBlock: React.FC = () => {
               {mainText.map((text, index) => (
                 <div key={index} className="py-[5%] flex">
                   <div
-                    className={`w-[5px] rounded-md mx-[9px] ${isDashboard ? "bg-green-500" : "bg-gray-500"}`}
+                    className={`w-[5px] rounded-md mx-[9px] ${isDashboard ? "bg-custom-green" : "bg-gray-500"}`}
                     content=""
                   ></div>
                   <a className=" px-[5%]" href="/">

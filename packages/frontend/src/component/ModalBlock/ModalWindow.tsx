@@ -6,7 +6,7 @@ const ModalWindow: React.FC<ModalBlockProps> = ({ closeForm, children }) => {
   return (
     <>
       <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-40">
-        <div className="bg-white rounded-[15px] max-w-[80%] h-auto relative">
+        <div className="bg-white rounded-[15px] max-w-[80%] h-auto">
           <div className="flex justify-end p-[10px]">
             <button
               className="rotate-45 select-none"

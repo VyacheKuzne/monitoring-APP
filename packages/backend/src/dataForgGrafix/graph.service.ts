@@ -16,13 +16,21 @@ export class GraphService {
       const now = new Date();
       now.setSeconds(0, 0); // Убираем секунды и миллисекунды
 
-      const realTime = 60 * 1000; // Реальное время
-      const fiveMinutes = 5 * 60 * 1000; // 5 минут в миллисекундах
+      const realTime = 60000; // 1 минута в миллисекундах
+      const fiveMinutes = 300000; // 5 минут в миллисекундах
 
       const timestamps: Date[] = [];
       for (let i = 0; i < 298; i++) {
-        const time = i < 10 ? realTime : fiveMinutes;
-        const timestamp = new Date(now.getTime() - i * time);
+        let offset;
+        if (i < 10) {
+          // Первые 10 элементов с интервалом 1 минута
+          offset = i * realTime;
+        } else {
+          // После 10-го элемента: 9 минут уже прошли, затем 5-минутные шаги
+          const fiveMinuteSteps = i - 8; // Сдвиг на 8
+          offset = 8 * realTime + (fiveMinuteSteps - 1) * fiveMinutes;
+        }
+        const timestamp = new Date(now.getTime() - offset);
         timestamps.push(timestamp);
       }
 
@@ -45,7 +53,6 @@ export class GraphService {
         LIMIT ${288 + 10};
       `;
 
-      console.log(timestamps);
       const workStatus = await this.workStatus(stats, hours, now);
 
       return {
@@ -82,9 +89,10 @@ export class GraphService {
   
       if (hourDiff >= 0 && hourDiff < hours) {
         hourlyStats[hourDiff] = hourlyStats[hourDiff] || { total: 0, zeros: 0 };
+        // console.log(stat.date);
         hourlyStats[hourDiff].total += 1;
   
-        if ((stat.loadCPU || stat.usedRAM || stat.received || stat.sent) === 0) {
+        if ((stat.loadCPU || stat.usedRAM || (stat.received && stat.sent)) === 0) {
           hourlyStats[hourDiff].zeros += 1;
         }
       }

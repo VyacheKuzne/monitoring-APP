@@ -16,7 +16,7 @@ function AppCard({ appData }: AppCardProps) {
         <span>{appData.name}</span> {/* Выводим название приложения */}
         <div className="flex items-center gap-[10px]">
           <span className="text-[12px]">Статус: Активен</span>
-          <div className="bg-[#2FBD12] w-[17px] h-[17px] rounded-full"></div>
+          <div className="bg-custom-green w-[17px] h-[17px] rounded-full"></div>
         </div>
       </div>
       <div className="grid grid-cols-[1fr_auto] gap-[15px] text-[14px]">

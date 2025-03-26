@@ -35,17 +35,17 @@ const ManyLineChartComponent: React.FC<ManyLineChartComponentProps> = ({
     <div className="w-full h-[130px]">
       <h3 className="text-center">{title}</h3>
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
+        <AreaChart data={data} margin={{ left: -35 }}>
           <defs>
-            {dataKeys.map((_, index) => (
-              <linearGradient id={strokeColor[index]} x1="0" y1="0" x2="0" y2="1">
+            {dataKeys.map((key, index) => (
+              <linearGradient key={key} id={strokeColor[index]} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={strokeColor[index]} stopOpacity={0.85} />
                 <stop offset="75%" stopColor={strokeColor[index]} stopOpacity={0} />
               </linearGradient>
             ))}
           </defs>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" reversed={true} tick={{ fontSize: 12 }} />{" "}
+          <XAxis dataKey="time" tickFormatter={(time) => time.slice(0, 5)} reversed={true} tick={{ fontSize: 12 }} />{" "}
           {/* reversed для отображения данных с правой стороны */}
           <YAxis tick={{ fontSize: 12 }} />
           <Tooltip />

@@ -155,7 +155,7 @@ function ServerInfo() {
           <ServerGraphs />
         </div>
 
-        <div className="grid grid-cols-3 gap-[2%]">
+        <div className="grid grid-cols-3 sm:gap-[3.5vh]">
           {app
             ?.filter((appItem) => appItem && appItem.idApp)
             .map((appItem) => (

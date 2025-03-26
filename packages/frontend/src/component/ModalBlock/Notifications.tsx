@@ -32,7 +32,7 @@ function Notifications() {
             {notificationData.length !== 0 ? (
               notificationData.map((notification, index) => (
                 <div className="grid grid-cols-[10px_auto] gap-[15px]">
-                  <div className="bg-red-600 w-[10px] h-[10px] mt-[5px] rounded-full"></div>
+                  <div className="bg-custom-red w-[10px] h-[10px] mt-[5px] rounded-full"></div>
                   <div className="flex flex-col gap-[5px] text-left">
                     <span className=" text-[14px]">{notification.text}</span>
                     <span className=" text-[12px]">

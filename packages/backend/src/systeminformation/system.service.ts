@@ -182,10 +182,8 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
                 const matchingStat = stats.find(
                   (stat) => stat.iface === iface.iface,
                 );
-
                 const currentReceived = matchingStat
-                  ? matchingStat.rx_bytes
-                  : 0;
+                  ? matchingStat.rx_bytes : 0;
                 const currentSent = matchingStat ? matchingStat.tx_bytes : 0;
                 const previousReceived =
                   this.previousStats[iface.iface]?.received ?? 0n;
@@ -202,8 +200,8 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
                   ip4: iface.ip4,
                   ip6: iface.ip6,
                   speed: iface.speed !== null ? iface.speed : 0,
-                  received: currentReceived - previousReceived, // Разница между нынешним и предыдущим значением
-                  sent: currentSent - previousSent,
+                  received: Number(currentReceived) - Number(previousReceived), // Разница между нынешним и предыдущим значением
+                  sent: Number(currentSent) - Number(previousSent),
                 };
               });
             }),

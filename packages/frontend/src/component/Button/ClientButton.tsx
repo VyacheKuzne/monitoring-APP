@@ -62,7 +62,7 @@ export default function ClientButton({ companiesData }: ModalBlockProps) {
                 key={index}
               >
                 {client.idCompany === Number(idCompany) ? (
-                  <div className="absolute left-[-14px] min-w-[11px] w-[11px] min-h-[11px] h-[11px] bg-green-500 border-[2px] border-white rounded-full" />
+                  <div className="absolute left-[-14px] min-w-[11px] w-[11px] min-h-[11px] h-[11px] bg-custom-green border-[2px] border-white rounded-full" />
                 ) : null}
                 <a href={`/company/${client.idCompany}/`}>{client.name}</a>
               </li>
