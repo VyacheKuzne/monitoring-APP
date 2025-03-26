@@ -13,6 +13,7 @@ import { CreateServerModule } from './create/create-server/create-server.module'
 import { CreateCompanyModule } from './create/create-company/create-company.module';
 import { CreateNotificationModule } from './create/create-notification/createNotification.module';
 import { FrequencyTestModule } from './frequency-test/frequency-test.module';
+import { FilterModule } from './filter/filter.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FrequencyTestModule } from './frequency-test/frequency-test.module';
     CreateNotificationModule,
     testDBModule,
     // FrequencyTestModule,
+    FilterModule
   ],
   controllers: [AppController],
   providers: [AppService], // ProgressGateway is automatically provided by DomainModule, so no need to add it here

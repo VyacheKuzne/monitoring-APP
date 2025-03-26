@@ -2,20 +2,39 @@ import React, { useEffect, useState } from "react";
 import SearchSvg from "../../img/SearchSvg.svg";
 import transitArrow from "../../img/transitArrow.svg";
 import axios from "axios";
-import { Company } from "../../interfaces/company";
+import { Company, CompanyData } from "../../interfaces/company";
 
 export default function ServerCard() {
   useEffect(() => {
-    getInfo();
+    filterServers();
   }, []);
 
+  const [filterName, setFilterName] = useState<string|null>();
+  const [filterStatus, setFilterStatus] = useState<boolean|null>();
   const [servers, setServers] = useState<Company[]>([]);
+  const [serversStatus, setServersStatus] = useState<boolean[]>([]);
 
-  const getInfo = async () => {
-    axios.get(`http://localhost:3000/companies/get`).then((response) => {
-      setServers(response.data);
-      // console.log(response.data);
-    });
+  const filterServers = async () => {
+      // Получаем список серверов
+      const filterData = await axios.get(`http://localhost:3000/companies/filter`, 
+      {
+          params: {
+            name: filterName,
+            status: filterStatus
+          }
+      });
+      
+      // setServers(companyData);
+
+      // // Ждём, пока все запросы завершатся
+      // const statuses = await Promise.all(
+      //   companyData.map(async (server) => {
+      //     const response = await axios.get<boolean>(`http://localhost:3000/system/status/${server.idServer}`);
+      //     return response.data;
+      //   })
+      // );
+
+      // setServersStatus(statuses); // Устанавливаем статусы серверов
   };
 
   return (
@@ -56,10 +75,11 @@ export default function ServerCard() {
               className="flex gap-[15px] items-center mb-[4.5%]"
               key={index}
             >
-              <div className="min-w-[18px] w-[18px] min-h-[18px] h-[18px] bg-custom-green rounded-full" />
+              <div className={`min-w-[18px] w-[18px] min-h-[18px] h-[18px] rounded-full ${serversStatus[index] ? `bg-custom-green` : `bg-custom-red`}`} />
               <span className="w-full text8-16px">{server.name}</span>
               <img src={transitArrow} alt="Перейти к серверам" />
             </a>
+
           ))}
         </div>
       </div>

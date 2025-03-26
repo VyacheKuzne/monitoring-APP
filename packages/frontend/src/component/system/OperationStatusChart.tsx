@@ -14,8 +14,6 @@ const OperationStatusChart: React.FC<Props> = ({ workStatusData }) => {
     const now = new Date();
     now.setMinutes(0, 0, 0); // Устанавливаем минуты и секунды в 0
 
-    const reversedWorkStatus = [...workStatusData].reverse(); // Переворачиваем массив
-
     const getHourLabel = (hourOffset: number) => {
         const hourDate = new Date(now.getTime() + hourOffset * 60 * 60 * 1000);
         return hourDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -44,7 +42,7 @@ const OperationStatusChart: React.FC<Props> = ({ workStatusData }) => {
                                                 <div
                                                     key={`status-${hourIndex}`}
                                                     className={`w-[12px] h-[40px] rounded-full ${
-                                                        reversedWorkStatus[hourIndex - 1] ? 'bg-green-500' : 'bg-red-600'
+                                                        workStatusData[hourIndex - 1] ? 'bg-custom-green' : 'bg-custom-red'
                                                     }`}
                                                     title={`Период с ${getHourLabel(hourIndex)} по ${getHourLabel(hourIndex + 1)}`}
                                                 />

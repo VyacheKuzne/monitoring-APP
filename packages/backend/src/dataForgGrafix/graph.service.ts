@@ -53,7 +53,13 @@ export class GraphService {
         LIMIT ${288 + 10};
       `;
 
-      const workStatus = await this.workStatus(stats, hours, now);
+      const filteredStats = stats.filter(stat => {
+        const statDate = new Date(stat.date);
+        const now = new Date();
+        return statDate >= new Date(now.getTime() - hours * 60 * 60 * 1000);
+      });
+
+      const workStatus = await this.workStatus(filteredStats, hours, now);
 
       return {
         stats: stats.map((stat) => ({
@@ -71,6 +77,11 @@ export class GraphService {
   }
 
   async workStatus(stats: any[], hours: number, now: Date) {
+    
+    // Лог 2: Проверяем данные из базы
+    console.log('Fetched stats:', stats.map(stat => ({
+      date: stat.date.toISOString().slice(0, 16),
+    })));
 
     const threshold = 2; // Порог количества "нулевых" записей для считать час "плохим"
 
@@ -88,12 +99,17 @@ export class GraphService {
       );
   
       if (hourDiff >= 0 && hourDiff < hours) {
-        hourlyStats[hourDiff] = hourlyStats[hourDiff] || { total: 0, zeros: 0 };
+        
+        const invertedIndex = hours - 1 - hourDiff;
+        hourlyStats[invertedIndex] = hourlyStats[invertedIndex] || { total: 0, zeros: 0 };
+        hourlyStats[invertedIndex].total += 1;
+
+        // hourlyStats[hourDiff] = hourlyStats[hourDiff] || { total: 0, zeros: 0 };
         // console.log(stat.date);
-        hourlyStats[hourDiff].total += 1;
+        // hourlyStats[hourDiff].total += 1;
   
         if ((stat.loadCPU || stat.usedRAM || (stat.received && stat.sent)) === 0) {
-          hourlyStats[hourDiff].zeros += 1;
+          hourlyStats[invertedIndex].zeros += 1;
         }
       }
     });

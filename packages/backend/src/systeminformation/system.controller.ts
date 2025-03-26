@@ -1,12 +1,16 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Param, Res } from '@nestjs/common';
 import { SystemService } from './system.service';
 import { Observable, map, catchError } from 'rxjs';
 import { Response } from 'express';
 import { SystemData } from './interfaces/system-data.interface'; // Импортировать интерфейс, если он используется
+import { SystemStatusService } from './systemStatus.service';
 
 @Controller('system')
 export class SystemController {
-  constructor(private readonly systemService: SystemService) {}
+  constructor(
+    private readonly systemService: SystemService, 
+    private readonly SystemStatusService: SystemStatusService
+  ) {}
 
   @Get('all')
   getSystemInfo(@Res() res: Response): Observable<void> {
@@ -31,5 +35,9 @@ export class SystemController {
         return new Observable<void>(); // Завершаем поток
       }),
     );
+  }
+  @Get('status/:idServer')
+  getSystemStatus(@Param('idServer') idServer: number,) {
+    return this.SystemStatusService.getSystemStatus(idServer)
   }
 }
