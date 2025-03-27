@@ -1,29 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import { PrismaClient } from '@prisma/client';
 import { NotificationData } from './notification';
-import axios from 'axios';
 
 @Injectable()
 export class NotificationService {
   private prisma = new PrismaClient();
-  constructor(private readonly httpService: HttpService) {}
   private readonly logger = new Logger(NotificationService.name);
+  constructor() {}
 
   async createNotification(notificationData: NotificationData) {
-    if (notificationData) {
+    try {
       await this.prisma.notification.create({
         data: {
           text: notificationData.text,
           parentCompany: notificationData.parentCompany,
           parentServer: notificationData.parentServer,
           parentApp: notificationData.parentApp,
-          date: new Date(),
+          status: notificationData.status,
+          date: notificationData.date,
         },
       });
-      this.logger.log(`Notification recorded successfully`);
-    } else {
-      this.logger.error(`Error recording the notification`);
+      this.logger.log(`Уведмоление создано успешно`);
+    } catch (error) {
+      this.logger.error(`Ошибка при поптыке создать уведомелние: ${error.message}`);
     }
   }
 }

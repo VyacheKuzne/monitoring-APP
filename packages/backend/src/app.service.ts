@@ -104,7 +104,7 @@ export class AppService {
   }
   async getAllNotifications() {
     return this.prisma.notification.findMany({
-      orderBy: { date: 'asc' },
+      orderBy: { date: 'desc' },
       take: 20,
     });
   }

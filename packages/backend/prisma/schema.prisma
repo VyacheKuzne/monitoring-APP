@@ -159,6 +159,7 @@ model notification {
   text String
   parentCompany Int?
   parentServer Int?
+  status String?
   parentApp Int?
   date DateTime
 

@@ -4,12 +4,13 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import axios from 'axios';
 import { ProgressGateway } from './progress.gateway'; // Импортируем ProgressGateway
-
+import { NotificationService } from '../create-notification/createNotification.service';
 @Injectable()
 export class DomainService {
   private prisma = new PrismaClient(); // Инициализируем Prisma для взаимодействия с базой данных
   constructor(
     private readonly httpService: HttpService,
+    private readonly NotificationService: NotificationService,
     @Inject(forwardRef(() => ProgressGateway))
     private readonly progressGateway: ProgressGateway, // Используем forwardRef
   ) {}
@@ -28,6 +29,14 @@ export class DomainService {
       const response = await firstValueFrom(
         this.httpService.get(`http://localhost:3000/whois?domain=${domain}`),
       );
+      this.NotificationService.createNotification({
+        text: `успешно получены данные по домейну ${domain}`,
+        parentCompany: null,
+        parentServer: null,
+        parentApp: null,
+        status: 'notification',
+        date: new Date(),
+      });
       return response.data;
     } catch (error) {
       console.error('Ошибка при получении информации о домене:', error);
@@ -107,7 +116,7 @@ export class DomainService {
 
     this.sendProgress(30, 'Данные WHOIS получены');
     this.sendProgress(40, 'Запрос данных SSL...');
-    const sslLabsData = await this.getSSLabsData(domain);
+    const  sslLabsData = await this.getSSLabsData(domain);
 
     this.sendProgress(60, 'Данные SSL получены');
 

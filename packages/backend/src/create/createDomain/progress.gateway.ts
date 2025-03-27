@@ -36,7 +36,7 @@ export class ProgressGateway
   // Метод, который будет слушать сообщения от клиента и запускать соответствующую обработку
   @SubscribeMessage('startProgress')
   // метод старта
-  async handleStartProgress(
+  async StartProgress(
     @MessageBody()
     data: {
       domain: string;
@@ -48,12 +48,12 @@ export class ProgressGateway
   // обьявляем данные
   {
     let progress = 0; // Начальный прогресс
-    this.logger.log(`Progress started for domain: ${data.domain}`);
+    this.logger.log(`начал работать прогресс бар: ${data.domain}`);
 
     // Таймер для имитации прогресса
     const interval = setInterval(() => {
       progress += 20;
-      this.server.emit('progress', { progress });
+      this.server.emit('прогресс создания приложения', { progress });
 
       if (progress >= 100) {
         clearInterval(interval); // Останавливаем таймер, когда прогресс достиг 100%
