@@ -79,9 +79,9 @@ export class GraphService {
   async workStatus(stats: any[], hours: number, now: Date) {
     
     // Лог 2: Проверяем данные из базы
-    console.log('Fetched stats:', stats.map(stat => ({
-      date: stat.date.toISOString().slice(0, 16),
-    })));
+    // console.log('Fetched stats:', stats.map(stat => ({
+    //   date: stat.date.toISOString().slice(0, 16),
+    // })));
 
     const threshold = 2; // Порог количества "нулевых" записей для считать час "плохим"
 
