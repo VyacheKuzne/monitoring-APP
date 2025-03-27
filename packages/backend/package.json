@@ -35,6 +35,7 @@
     "@types/jsdom": "^21.1.7",
     "axios": "^1.7.9",
     "jsdom": "^26.0.0",
+    "node-cron": "^3.0.3",
     "p-limit": "^6.2.0",
     "puppeteer": "^24.2.1",
     "reflect-metadata": "^0.2.2",
