@@ -13,15 +13,15 @@ function ServerCard({ serverData }: getServerData) {
   const newInterval = 60000;
 
   useEffect(() => {
-    getStatus();
+    checkStatus();
 
     const interval = setInterval(() => {
-      getStatus();
+      checkStatus();
     }, newInterval);
     return () => clearInterval(interval);
   }, [])
 
-  const getStatus = async () => {
+  const checkStatus = async () => {
     try {
       const responseStatus = await axios.get(`http://localhost:3000/system/status/${serverData.idServer}`);
       setStatus(responseStatus.data);
