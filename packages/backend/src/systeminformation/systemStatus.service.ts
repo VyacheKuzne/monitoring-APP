@@ -13,7 +13,7 @@ export class SystemStatusService {
 
         const serverStat = await this.prisma.checkServerStats.findFirst({
             where: {
-                // parentServer: idServer
+                // parentServer: idServer // Расскоментировать, когда появятся тексты на каждый сервер 
             },
             orderBy: { date: 'desc', },
         });

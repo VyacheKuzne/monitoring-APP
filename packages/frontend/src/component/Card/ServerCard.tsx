@@ -23,7 +23,7 @@ function ServerCard({ serverData }: getServerData) {
 
   const checkStatus = async () => {
     try {
-      const responseStatus = await axios.get(`http://localhost:3000/system/status/${serverData.idServer}`);
+      const responseStatus = await axios.get(`http://localhost:3000/system/status/server/${serverData.idServer}`);
       setStatus(responseStatus.data);
     }
     catch {

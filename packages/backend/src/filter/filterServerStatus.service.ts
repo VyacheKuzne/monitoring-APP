@@ -41,7 +41,7 @@ export class FilterServerStatusService {
                 if (company.server.length > 0 && company.server[0]?.idServer) {
                     await Promise.all(
                         company.server.map(async (server) => {
-                            const url = `http://localhost:3000/system/status/${server.idServer}`;
+                            const url = `http://localhost:3000/system/status/server/${server.idServer}`;
                             const response = await this.httpService.get(url).toPromise();
                             if (response) {
                               okay++;  // Увеличиваем if статус успешный
