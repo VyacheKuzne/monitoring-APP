@@ -60,7 +60,7 @@ export default function ServerFilter() {
           await Promise.all(
             company.server.map(async (server) => {
               try {
-                const response = await axios.get(`http://localhost:3000/system/status/${server.idServer}`);
+                const response = await axios.get(`http://localhost:3000/system/status/server/${server.idServer}`);
                 okay++;
                 return response.data;
               } 

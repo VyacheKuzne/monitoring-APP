@@ -1,10 +1,14 @@
 // puppeteer.controller.ts
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { PuppeteerService } from './puppeteer.service';
+import { PageStatusService } from './pageStatus.service';
 
 @Controller('pages')
 export class PuppeteerController {
-  constructor(private readonly puppeteerService: PuppeteerService) {}
+  constructor(
+    private readonly puppeteerService: PuppeteerService,
+    private readonly PageStatusService: PageStatusService
+  ) {}
 
   @Get('/:domain/:idApp')
   async getPageLoadInfo(
@@ -16,5 +20,10 @@ export class PuppeteerController {
 
     // Теперь только передаем domain
     return this.puppeteerService.startPageMonitoring(domain);
+  }
+
+  @Get('status/app/:idApp')
+  getPageStatus(@Param('idApp', ParseIntPipe) idApp: number,) {
+    return this.PageStatusService.getPageStatus(idApp)
   }
 }

@@ -36,7 +36,7 @@ export class SystemController {
       }),
     );
   }
-  @Get('status/:idServer')
+  @Get('status/server/:idServer')
   getSystemStatus(@Param('idServer') idServer: number,) {
     return this.SystemStatusService.getSystemStatus(idServer)
   }

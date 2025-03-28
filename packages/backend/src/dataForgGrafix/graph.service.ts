@@ -77,12 +77,6 @@ export class GraphService {
   }
 
   async workStatus(stats: any[], hours: number, now: Date) {
-    
-    // Лог 2: Проверяем данные из базы
-    // console.log('Fetched stats:', stats.map(stat => ({
-    //   date: stat.date.toISOString().slice(0, 16),
-    // })));
-
     const threshold = 2; // Порог количества "нулевых" записей для считать час "плохим"
 
     // Инициализируем массив статусов для 24 часов
@@ -93,9 +87,11 @@ export class GraphService {
  
     // Обрабатываем все данные
     stats.forEach((stat) => {
-      const statDate = new Date(stat.date);
+      const nowHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0);
+      const statHour = new Date(stat.date.getFullYear(), stat.date.getMonth(), stat.date.getDate(), stat.date.getHours(), 0, 0);
+      
       const hourDiff = Math.floor(
-        (now.getTime() - statDate.getTime()) / (60 * 60 * 1000),
+        (nowHour.getTime() - statHour.getTime()) / (60 * 60 * 1000),
       );
   
       if (hourDiff >= 0 && hourDiff < hours) {
@@ -103,10 +99,6 @@ export class GraphService {
         const invertedIndex = hours - 1 - hourDiff;
         hourlyStats[invertedIndex] = hourlyStats[invertedIndex] || { total: 0, zeros: 0 };
         hourlyStats[invertedIndex].total += 1;
-
-        // hourlyStats[hourDiff] = hourlyStats[hourDiff] || { total: 0, zeros: 0 };
-        // console.log(stat.date);
-        // hourlyStats[hourDiff].total += 1;
   
         if ((stat.loadCPU || stat.usedRAM || (stat.received && stat.sent)) === 0) {
           hourlyStats[invertedIndex].zeros += 1;
