@@ -89,6 +89,8 @@ export class SslLabsService {
   }
 
   private async transformToSslResult(data: SSLInfo): Promise<SSLData[]> {
+    const ipAddress = data.endpoints[0]?.ipAddress;
+    this.logger.log(`ip: ${ipAddress}`);
     const idDomain = await this.prisma.domain.findFirst({
       where: { name: this.domain },
       select: { idDomain: true },
@@ -139,6 +141,7 @@ export class SslLabsService {
           update: record,
           create: record,
         });
+        this.logger.log(data); 
       }
 
       this.logger.log('SSL data recorded successfully');

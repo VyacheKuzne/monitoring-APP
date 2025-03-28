@@ -80,28 +80,32 @@ export default function ServerFilter() {
 
   return (
     <>
-      <div className="min-w-[250px] max-w-[380px] max-h-[500px] bg-white rounded-md text-left p-[1.5%] shadow-lg">
+      <div className="absolute -z-10 top-[15%] min-w-[250px] max-w-[380px] max-h-[500px] bg-white rounded-md text-left p-[1.5%] shadow-lg">
         <p className="text8-16px">Статус работы серверов</p>
         <div className="h-[1px] bg-gray-500 my-[4.5%]" content=""></div>
         <div className="h-[35px]">
           <div className="flex content-center gap-[15px] w-auto h-full">
-          <form className="relative flex items-center w-auto z-[100]" 
+          <form className="items-center w-auto" 
           onSubmit={(event) => {
             event.preventDefault(); // Чтобы не перезагружалась страница
             filterServers(greenChecked, redChecked); // Перезапускаем фильтрацию только по кнопке отправки
           }}>
+            <div className="flex items-center">
               <input
-                type="text"
-                className="bg-gray-200 w-full h-[35px] rounded-full text-[12px] pl-[35px] pr-[3em]"
-                placeholder="Найти сервер"
-                value={filterName}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setFilterName(event.target.value)}
-              />
-              <img
-                  src={SearchSvg}
-                  alt="Кнопка поиска"
-                  className="absolute h-[20px] w-[1.2em] ml-[10px]"
-              />
+                  type="text"
+                  className="bg-gray-200 w-full h-[35px]  rounded-full text-[12px] pl-[35px] pr-[3em]"
+                  placeholder="Найти сервер"
+                  value={filterName}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => setFilterName(event.target.value)}
+                />
+                <div className="absolute">
+                  <img
+                      src={SearchSvg}
+                      alt="Кнопка поиска"
+                      className="h-[20px] w-[1.2em] ml-[10px]"
+                  />
+                </div>
+            </div>
             </form>
             <div className="flex h-full items-center gap-[10px]">
               <label className={`border-[2px] border-custom-green min-h-[17px] h-[17px] min-w-[17px] w-[17px] rounded-full ${greenChecked ? 'bg-custom-green' : null}`}>

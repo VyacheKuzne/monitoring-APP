@@ -145,7 +145,7 @@ function ServerInfo() {
       <div className="flex flex-col sm:gap-[3.5vh] m-[2%]">
         <InfoBlock url={url} crumb={crumb} />
 
-        <div className="flex justify-between w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl">
+        <div className="flex relative -z-10 justify-between w-auto h-auto p-[1.5%] bg-white rounded-[5px] text-[16px] font-montserrat shadow-xl">
           <div className="flex flex-col gap-[10px] text-left text-[14px]">
             <span>Ip адрес: {server?.ipAddress ?? " Загрузка..."}</span>
             <span>Имя хоста: {server?.hostname ?? " Загрузка..."}</span>

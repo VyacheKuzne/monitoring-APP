@@ -126,7 +126,7 @@ function CompanyInfo() {
                     <input
                       className="bg-gray-200 rounded-2xl text-[16px] p-[10px] pr-[30px] placeholder:text-[12px]"
                       type="text"
-                      placeholder="Введите Домейн компании"
+                      placeholder="Название хоста"
                       value={domainData}
                       onChange={handleChange}
                     />

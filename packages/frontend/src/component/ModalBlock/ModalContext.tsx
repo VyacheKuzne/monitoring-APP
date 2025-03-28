@@ -44,7 +44,7 @@
 //             left: 0,
 //             width: '100%',
 //             height: '100%',
-//             zIndex: 100 + index, // Увеличиваем z-index для каждого окна
+//             zIndex: 100 + index, // 
 //             background: 'rgba(0, 0, 0, 0.5)', // Полупрозрачный фон
 //           }}
 //         >

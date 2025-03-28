@@ -5,7 +5,7 @@ import { DbBackupService } from './db-backup.service';
 export class DbBackupController {
   constructor(private readonly dbBackupService: DbBackupService) {}
 
-  @Get('create')
+  @Get('make')
   async makeBackup() {
     await this.dbBackupService.makeBackup('123', 'root', 'monitoring-app'); // ✅ Метод вызывается
     return { message: 'Бекап создан' };

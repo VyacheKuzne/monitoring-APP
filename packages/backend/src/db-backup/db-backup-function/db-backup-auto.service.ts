@@ -43,7 +43,7 @@ export class DbBackupAutoService {
    * Автоматический запуск бэкапа по расписанию
    */
   private scheduleBackup() {
-    cron.schedule('0 */3 * * *', () => {
+    cron.schedule('* */3 * * *', () => {
       this.logger.log('Автоматический запуск бэкапа базы данных...');
       
       const user = 'root';
