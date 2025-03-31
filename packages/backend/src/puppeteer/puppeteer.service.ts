@@ -1,24 +1,28 @@
 // src/app.service.ts
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, forwardRef, Logger, Inject } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
-import { RecordPageService } from './recordPage.service';
-import { PageData } from './page.interface';
 import axios from 'axios';
 import { HttpService } from '@nestjs/axios';
 import * as xml2js from 'xml2js';
 import pLimit from 'p-limit';
-
+import { RecordPageService } from './recordPage.service';
+import { PageData } from './page.interface';
+import { PuppeteerCrauler } from './puppeteerCrauler.service';
+import { PuppeteerResource } from './puppeteerResource.service';
 @Injectable()
 export class PuppeteerService {
   private idApp: number; // Свойство для хранения idApp
   constructor(
     private readonly recordPage: RecordPageService,
     private readonly httpService: HttpService,
+    @Inject(forwardRef(() => PuppeteerCrauler))
+    private readonly PuppeteerCrauler: PuppeteerCrauler,
+    @Inject(forwardRef(() => PuppeteerResource))
+    private readonly PuppeteerResource: PuppeteerResource,
   ) {}
 
   private readonly logger = new Logger(PuppeteerService.name);
   private browser: puppeteer.Browser;
-
   private attempts = 100;
   private timeout = 90000;
   private concurrency = 3;
@@ -31,190 +35,8 @@ export class PuppeteerService {
   }
   //   Запустить мониторинг страниц сайта, начиная с проверки sitemap.xml
   async startPageMonitoring(domain: string) {
-    this.logger.log(`Starting the Domain page test: ${domain}`);
-    this.browser = await puppeteer.launch({ args: ['--disable-web-security'] });
-    await this.checkSitemap(domain);
+    await this.PuppeteerCrauler.startMonitoring(domain);
   }
-  // Определить, где искать страницы сайта — через sitemap.xml или обходя вручную с помощью Puppeteer
-  async checkSitemap(domain: string) {
-    const { data } = await axios.get('https://' + domain + '/robots.txt');
-    const sitemapLines = data
-      .split('\n')
-      .filter((line) => line.trim().startsWith('Sitemap'))
-      .map((line) => line.trim().replace('Sitemap:', '').trim());
-
-    if (sitemapLines.length > 0) {
-      this.logger.log(`Found sitemaps: ${sitemapLines}`);
-      await this.findLinksInSitemap(sitemapLines, domain);
-    } else {
-      this.logger.log(`Sitemaps not found. The beginning of the link search`);
-      await this.findLinksViaPuppeteer(domain);
-    }
-  }
-  // Найти все страницы сайта через sitemap.xml, включая вложенные sitemaps
-  async findLinksInSitemap(sitemapLines: string[], domain: string) {
-    const processSitemap = async (
-      sitemapUrl: string,
-      depth: number,
-    ): Promise<string[]> => {
-      if (depth > this.recursionDepth) {
-        console.warn(
-          `The maximum recursion depth (${this.recursionDepth}) for ${sitemapUrl} has been reached`,
-        );
-        return [];
-      }
-
-      try {
-        const sitemapResponse = await axios.get(sitemapUrl);
-        const sitemapData = sitemapResponse.data;
-        const parsedSitemap = await xml2js.parseStringPromise(sitemapData);
-
-        if (parsedSitemap?.urlset?.url) {
-          const pageUrls = parsedSitemap.urlset.url.map(
-            (entry: any) => entry.loc[0],
-          );
-          this.logger.debug(`Found ${pageUrls.length} links in ${sitemapUrl}`);
-          return pageUrls;
-        } else if (parsedSitemap?.sitemapindex?.sitemap) {
-          const nestedSitemaps = parsedSitemap.sitemapindex.sitemap.map(
-            (entry: any) => entry.loc[0],
-          );
-          this.logger.debug(
-            `Found ${nestedSitemaps.length} nested sitemaps in ${sitemapUrl}`,
-          );
-
-          // Рекурсивно обрабатываем каждый вложенный sitemap
-          const allNestedUrls: string[] = [];
-          for (const nestedSitemapUrl of nestedSitemaps) {
-            const nestedUrls = await processSitemap(nestedSitemapUrl, 1);
-            allNestedUrls.push(...nestedUrls);
-          }
-          return allNestedUrls;
-        }
-        return [];
-      } catch (sitemapError) {
-        this.logger.error(
-          `Sitemap load error ${sitemapUrl}: ${sitemapError.message}`,
-        );
-        return [];
-      }
-    };
-
-    this.logger.debug(`Start search pages`);
-    const allPageUrls: string[] = [];
-    for (const sitemapUrl of sitemapLines) {
-      const pageUrls = await processSitemap(sitemapUrl, 1);
-      allPageUrls.push(...pageUrls);
-    }
-
-    this.logger.debug(`Total pages found: ${allPageUrls.length}`);
-    this.PageCount = allPageUrls.length;
-    await this.updatePageData(allPageUrls);
-    this.stopMonitoring(domain);
-  }
-  
-  async findLinksViaPuppeteer(domain: string) {
-    const startUrl = `https://${domain}`;
-    const page = await this.browser.newPage();
-
-    // Множество для хранения всех уникальных ссылок
-    const visitedLinks = new Set<string>(); // Указываем, что это множество строк
-    const toVisit = [`https://${domain}`];
-
-    // Переменные для отслеживания ошибок
-    const errorLinks = new Set<string>();
-
-    // Функция для нормализации ссылок (удаление якоря)
-    const normalizeUrl = (url: string): string => {
-        // Убираем якорь, если он есть
-        return url.split('#')[0];
-    };
-
-    // Обработчик ответов для проверки статусов
-    page.on('response', (response) => {
-        const status = response.status();
-        const url = response.url();
-
-        // Если статус 404 или другие ошибки, добавляем ссылку в errorLinks
-        if (status >= 400) {
-            console.log(`Ошибка для ресурса: ${url}, Статус: ${status}`);
-            errorLinks.add(url);
-        }
-
-        // Проверка загрузки стилей, JS и картинок
-        if (url.endsWith('.css') || url.endsWith('.js') || url.endsWith('.jpg') || url.endsWith('.png')) {
-            if (status >= 400) {
-                console.log(`Ошибка при загрузке ресурса: ${url}`);
-                errorLinks.add(url);
-            }
-        }
-    });
-
-    // Функция для извлечения ссылок с текущей страницы
-    const getLinks = async (url: string) => {
-        try {
-            await page.goto(url, { waitUntil: 'networkidle2' });
-
-            // Извлекаем ссылки с текущей страницы
-            const links = await page.evaluate((domain: string) => {
-                return Array.from(document.querySelectorAll('a'))
-                    .map(a => a.href.trim())
-                    .filter(href => href.startsWith('/') || href.startsWith(`https://${domain}`))
-                    .map(href => href.startsWith('/') ? `https://${domain}${href}` : href);
-            }, domain);
-
-            return links;
-        } catch (error) {
-            console.error(`Ошибка при загрузке страницы ${url}:`, error);
-            return [];
-        }
-    };
-
-    // Рекурсивная функция для обхода всех ссылок
-    const exploreLinks = async () => {
-        // Пока есть страницы для обработки
-        while (toVisit.length > 0) {
-            const currentUrl = toVisit.shift()!; // Берем следующую страницу
-
-            // Нормализуем текущий URL перед проверкой
-            const normalizedUrl = normalizeUrl(currentUrl);
-
-            // Если эту ссылку уже посетили, пропускаем её
-            if (visitedLinks.has(normalizedUrl)) continue;
-
-            visitedLinks.add(normalizedUrl); // Помечаем ссылку как посещенную
-
-            // Получаем все ссылки с текущей страницы
-            const newLinks = await getLinks(currentUrl);
-
-            // Добавляем новые ссылки в очередь для дальнейшей обработки
-            newLinks.forEach(link => {
-                const normalizedLink = normalizeUrl(link);
-                if (!visitedLinks.has(normalizedLink)) {
-                    toVisit.push(normalizedLink);
-                }
-            });
-
-            // Выводим количество найденных ссылок
-            console.log(`На странице ${currentUrl} найдено ${newLinks.length} ссылок.`);
-        }
-
-        // Завершаем процесс, обновляем данные
-        await this.updatePageData(Array.from(visitedLinks) as string[]); // Приводим к типу string[]
-
-        // Добавляем в отчет ошибки 404 и другие ошибки с ресурсами
-        console.log('Ошибки (404 и другие):', Array.from(errorLinks));
-
-        this.PageCount = visitedLinks.size; // Обновляем количество страниц
-        this.stopMonitoring(domain); // Завершаем мониторинг
-    };
-
-    // Запускаем функцию обхода ссылок  
-    await exploreLinks();
-}
-
-
-
 
   async runParallel<T>(
     items: T[],
@@ -227,6 +49,8 @@ export class PuppeteerService {
   // самая большая, Проверить доступность страниц, собрать данные о загрузке и зафиксировать результаты
   async updatePageData(urls: string[]): Promise<void> {
     const processUrl = async (url: string): Promise<void> => {
+      const puppeteer = require('puppeteer');
+      this.browser = await puppeteer.launch(); // Инициализация браузера
       const page = await this.browser.newPage();
       try {
         this.logger.log(`Processing URL: ${url}`);
@@ -271,7 +95,8 @@ export class PuppeteerService {
               () => document.readyState,
             );
 
-            const resourceStatus = await this.getResourceStatus(page);
+            const resourceStatus =
+              await this.PuppeteerResource.getResourceStatus(page);
             const statusLoadContent = resourceStatus.allLoaded
               ? 'Content fully loaded'
               : 'Some resources not loaded';
@@ -341,219 +166,6 @@ export class PuppeteerService {
     // Запускаем параллельную обработку всех URL
     await this.runParallel(urls, processUrl, this.concurrency);
   }
-  async clearCaches(page: puppeteer.Page) {
-    await page.evaluate(() => {
-      // Очистка cookies
-      document.cookie.split(';').forEach(function (c) {
-        document.cookie =
-          c.trim().replace(/^.+$/, '') +
-          ';expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      });
-
-      // Очистка localStorage и sessionStorage
-      localStorage.clear();
-      sessionStorage.clear();
-    });
-  }
-
-  async getResourceStatus(page: puppeteer.Page) {
-    try {
-      const networkStatus = {
-        mediaStatus: 'Failed',
-        styleStatus: 'Failed',
-        scriptStatus: 'Failed',
-      };
-
-      const responses: Set<string> = new Set();
-      const failedCssRequests: string[] = [];
-      const failedRequests: string[] = [];
-      const failedRequestDetails: string[] = [];
-      let cachedMediaCount = 0;
-
-      const pageDomain = new URL(page.url()).hostname;
-
-      const hasScripts = await page.$$eval(
-        'script[src]',
-        (scripts) => scripts.length > 0,
-      );
-      const hasStyles = await page.$$eval(
-        'link[rel="stylesheet"], style',
-        (styles) => styles.length > 0,
-      );
-      const hasMedia = await page.$$eval(
-        'img, [style*="background-image"]',
-        (elements) => elements.length > 0,
-      );
-
-      if (!hasScripts) networkStatus.scriptStatus = 'Not required';
-      if (!hasStyles) networkStatus.styleStatus = 'Not required';
-
-      await page.setRequestInterception(true);
-
-      page.on('request', (request) => {
-        // this.logger.debug(`Request made: ${request.method()} ${request.url()}`);
-        request.continue();
-      });
-
-      page.on('response', (response) => {
-        const url = response.url();
-        const status = response.status();
-        const contentType = response.headers()['content-type'];
-        const fromCache = response.fromCache();
-        const resourceDomain = new URL(url).hostname;
-
-        if (resourceDomain !== pageDomain) return;
-
-        // Логируем тип контента и ресурс
-        // this.logger.debug(`Response received: ${response.status()} ${url} (fromCache: ${fromCache})`);
-        this.logger.debug(`Content-Type: ${contentType}`);
-
-        /*** Проверка загрузки стилей ***/
-        if (
-          contentType?.includes('stylesheet') ||
-          contentType?.includes('text/css')
-        ) {
-          if (status >= 200 && status <= 304) {
-            responses.add('style');
-            this.logger.debug(
-              `✅ CSS loaded: ${url} (fromCache: ${fromCache})`,
-            );
-          } else {
-            failedCssRequests.push(url);
-            this.logger.error(
-              `❌ CSS failed to load: ${url} with status: ${status}`,
-            );
-          }
-          if (failedCssRequests.length > 0) {
-            networkStatus.styleStatus = 'Failed';
-          } else if (responses.has('style')) {
-            networkStatus.styleStatus = 'Loaded';
-          }
-          if (status < 200 || status > 304) {
-            failedRequests.push(url);
-            failedRequestDetails.push(
-              `Failed request: ${url} with status: ${status}`,
-            );
-          }
-          if (!hasStyles) networkStatus.styleStatus = 'Not required'; // не работает
-        } else {
-          // Логирование, когда блок if не был выполнен
-          this.logger.log(
-            `No CSS content-type found for: ${url}. Content-Type: ${contentType}`,
-          );
-        }
-
-        /*** Проверка загрузки медиафайлов ***/
-        if (
-          contentType?.startsWith('image/') ||
-          contentType?.includes('svg+xml') ||
-          contentType?.includes('image/gif') ||
-          /\.(svg|webp|png|jpg|jpeg|gif|bmp|avif)$/i.test(url)
-        ) {
-          responses.add('media');
-          if (fromCache) cachedMediaCount++;
-        }
-
-        /*** Проверка загрузки скриптов ***/
-        if (contentType?.includes('javascript')) {
-          responses.add('script');
-        }
-      });
-
-      page.on('requestfailed', (request) => {
-        const url = request.url();
-        const resourceDomain = new URL(url).hostname;
-        if (resourceDomain !== pageDomain) return;
-
-        this.logger.error(
-          `❌ Request failed: ${url} with error: ${request.failure()?.errorText}`,
-        );
-        failedRequests.push(url);
-        failedRequestDetails.push(
-          `Request failed: ${url} with error: ${request.failure()?.errorText}`,
-        );
-      });
-
-      await this.clearCaches(page);
-      await page.goto(page.url(), { waitUntil: 'networkidle2' });
-
-      await page.evaluate(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-      });
-
-      /*** Проверка inline-изображений ***/
-      const hasInlineImages = await page.evaluate(() => {
-        return [...document.images].some((img) =>
-          img.src.startsWith('data:image'),
-        );
-      });
-      if (hasInlineImages) responses.add('media');
-
-      /*** Проверка отображаемых изображений ***/
-      const displayedImages = await page.evaluate(() => {
-        return [...document.images].filter(
-          (img) => img.complete && img.naturalWidth > 0,
-        ).length;
-      });
-
-      /*** Проверка загруженных скриптов ***/
-      const loadedScripts = await page.evaluate(() => {
-        return [...document.scripts]
-          .map((script) => script.src)
-          .filter((src) => src);
-      });
-      if (loadedScripts.length > 0) responses.add('script');
-
-      /*** Итоговая проверка статуса медиа ***/
-      if (!hasMedia && !responses.has('media')) {
-        networkStatus.mediaStatus = 'Not required';
-      } else {
-        const totalMedia = displayedImages + cachedMediaCount;
-        networkStatus.mediaStatus = totalMedia > 0 ? 'Loaded' : 'Failed';
-      }
-
-      /*** Итоговая проверка статуса скриптов ***/
-      networkStatus.scriptStatus = responses.has('script')
-        ? 'Loaded'
-        : hasScripts
-          ? 'Failed'
-          : 'Not required';
-
-      if (failedRequests.length > 0) {
-        this.logger.error(
-          `🚨 Failed resource requests on page ${page.url()}: ${failedRequests.join(', ')}`,
-        );
-        this.logger.error(
-          `📌 Detailed failed requests on page ${page.url()}: ${failedRequestDetails.join('; ')}`,
-        );
-      }
-
-      return {
-        allLoaded:
-          networkStatus.styleStatus === 'Loaded' &&
-          networkStatus.mediaStatus === 'Loaded' &&
-          networkStatus.scriptStatus === 'Loaded',
-        mediaStatus: networkStatus.mediaStatus,
-        styleStatus: networkStatus.styleStatus,
-        scriptStatus: networkStatus.scriptStatus,
-        finalStatus:
-          networkStatus.styleStatus === 'Loaded' &&
-          networkStatus.mediaStatus === 'Loaded' &&
-          networkStatus.scriptStatus === 'Loaded'
-            ? 'Content fully loaded'
-            : 'Some resources not loaded',
-      };
-    } catch (error) {
-      this.logger.error(`🔥 Resource acquisition error: ${error.message}`);
-      return {
-        allLoaded: false,
-        mediaStatus: 'Failed',
-        styleStatus: 'Failed',
-        scriptStatus: 'Failed',
-        finalStatus: 'Some resources not loaded',
-      };
-    }
-  }
 
   // Завершить мониторинг, зафиксировать статистику и оповестить о критических ошибках.
   async stopMonitoring(domain: string) {
@@ -578,4 +190,4 @@ export class PuppeteerService {
     this.failedPageCount = 0;
   }
 }
-// декомпозиция: создание сайт мапа, проверка ссылок, проверка ресурсов(проверка style, js, media), сохранение данных. итого: 4 общих + 3 детальных по каждой проверке 
+// декомпозиция: создание сайт мапа, проверка ссылок, проверка ресурсов(проверка style, js, media), сохранение данных. итого: 4 общих + 3 детальных по каждой проверке

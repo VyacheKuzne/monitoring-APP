@@ -5,12 +5,12 @@ import { FilterServerStatusService } from './filterServerStatus.service';
 export class FilterController {
   constructor(private readonly filterStatus: FilterServerStatusService) {}
 
-    @Post('companies/filter')
-    async filterServerStatus(
-        @Body('name') filterName: string,
-        @Body('status') filterStatus: boolean[]
-    ) {
-        console.log(filterName)
-        return await this.filterStatus.filterServerStatus(filterName, filterStatus);
-    }
+  @Post('companies/filter')
+  async filterServerStatus(
+    @Body('name') filterName: string,
+    @Body('status') filterStatus: boolean[],
+  ) {
+    console.log(filterName);
+    return await this.filterStatus.filterServerStatus(filterName, filterStatus);
+  }
 }

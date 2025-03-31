@@ -183,7 +183,8 @@ export class SystemService implements OnModuleInit, OnModuleDestroy {
                   (stat) => stat.iface === iface.iface,
                 );
                 const currentReceived = matchingStat
-                  ? matchingStat.rx_bytes : 0;
+                  ? matchingStat.rx_bytes
+                  : 0;
                 const currentSent = matchingStat ? matchingStat.tx_bytes : 0;
                 const previousReceived =
                   this.previousStats[iface.iface]?.received ?? 0n;

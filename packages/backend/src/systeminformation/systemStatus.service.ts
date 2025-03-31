@@ -9,18 +9,20 @@ export class SystemStatusService {
   private prisma = new PrismaClient();
   private readonly logger = new Logger(SystemStatusService.name);
 
-    async getSystemStatus(idServer: number) {
+  async getSystemStatus(idServer: number) {
+    const serverStat = await this.prisma.checkServerStats.findFirst({
+      where: {
+        // parentServer: idServer // Расскоментировать, когда появятся тексты на каждый сервер
+      },
+      orderBy: { date: 'desc' },
+    });
 
-        const serverStat = await this.prisma.checkServerStats.findFirst({
-            where: {
-                // parentServer: idServer // Расскоментировать, когда появятся тексты на каждый сервер 
-            },
-            orderBy: { date: 'desc', },
-        });
-
-        const status: boolean = 
-            (serverStat?.loadCPU || serverStat?.usedRAM || (serverStat?.received && serverStat?.sent)) 
-            ? true : false;
-        return status;
-    }
+    const status: boolean =
+      serverStat?.loadCPU ||
+      serverStat?.usedRAM ||
+      (serverStat?.received && serverStat?.sent)
+        ? true
+        : false;
+    return status;
+  }
 }

@@ -21,10 +21,14 @@ export class DbBackupAutoService {
   /**
    * Ручной запуск бэкапа
    */
-  async createBackup(data: { password: string; user: string; database: string }): Promise<void> {
+  async createBackup(data: {
+    password: string;
+    user: string;
+    database: string;
+  }): Promise<void> {
     const fileBackup = `backup_${Date.now()}.sql`;
     const filePath = `${this.backupPath}/${fileBackup}`;
-    
+
     const dumpCommand = `mysqldump -u${data.user} -p${data.password} ${data.database} > ${filePath}`;
 
     return new Promise((resolve, reject) => {
@@ -45,22 +49,24 @@ export class DbBackupAutoService {
   private scheduleBackup() {
     cron.schedule('* */3 * * *', () => {
       this.logger.log('Автоматический запуск бэкапа базы данных...');
-      
+
       const user = 'root';
       const password = '123';
       const database = 'monitoring-app';
       const now = new Date();
-      const formattedDate = now.toLocaleString("ru-RU", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-      }).replace(/[\s,:]/g, '-'); // Заменяем пробелы, двоеточия и запятые
+      const formattedDate = now
+        .toLocaleString('ru-RU', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        })
+        .replace(/[\s,:]/g, '-'); // Заменяем пробелы, двоеточия и запятые
       const fileBackup = `backup_${formattedDate}.sql`;
       const filePath = `${this.backupPath}/${fileBackup}`;
-      
+
       const dumpCommand = `mysqldump -u${user} -p${password} ${database} > ${filePath}`;
 
       exec(dumpCommand, (error, stdout, stderr) => {
@@ -76,6 +82,8 @@ export class DbBackupAutoService {
       });
     });
 
-    this.logger.log('Автоматическое резервное копирование настроено (ежедневно в 2:00).');
+    this.logger.log(
+      'Автоматическое резервное копирование настроено (ежедневно в 2:00).',
+    );
   }
 }

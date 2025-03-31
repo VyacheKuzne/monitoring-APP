@@ -6,6 +6,6 @@ import { DbBackupAutoService } from './db-backup-function/db-backup-auto.service
 @Module({
   controllers: [DbBackupController],
   providers: [DbBackupService, DbBackupAutoService],
-  exports: [DbBackupService, DbBackupAutoService], 
+  exports: [DbBackupService, DbBackupAutoService],
 })
 export class DbBackupModule {}
