@@ -30,7 +30,7 @@ const ModalBlock: React.FC = () => {
 
   const mainText = ["Главная"];
   return (
-    <div className="pl-[300px]">
+    <div className="relative z-10 pl-[300px]">
       <div className="fixed top-0 left-0 w-[300px]">
         {modal ? <FormCreateCompany closeForm={() => setModal(false)} /> : null}
         {notification ? <Notifications /> : null}

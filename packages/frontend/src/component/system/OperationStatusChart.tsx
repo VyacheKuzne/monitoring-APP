@@ -41,11 +41,12 @@ const OperationStatusChart: React.FC<Props> = ({ workStatusData }) => {
                                             return (
                                                 <div
                                                     key={`status-${hourIndex}`}
-                                                    className={`w-[12px] h-[40px] rounded-full ${
-                                                        workStatusData[hourIndex - 1] ? 'bg-custom-green' : 'bg-custom-red'
-                                                    }`}
-                                                    title={`Период с ${getHourLabel(hourIndex)} по ${getHourLabel(hourIndex + 1)}`}
-                                                />
+                                                    className={`relative flex justify-center w-[12px] h-[40px] rounded-full group ${ workStatusData[hourIndex - 1] ? 'bg-custom-green' : 'bg-custom-red' }`}
+                                                >
+                                                    <div className="absolute min-w-[120px] hidden group-hover:block bg-gray-100 text-[12px] p-2 rounded-[10px] mt-[50px] shadow-lg">
+                                                        Период: <br /> с {getHourLabel(hourIndex)} по {getHourLabel(hourIndex + 1)}
+                                                    </div>
+                                                </div>
                                             );                          
                                         })}
                                     </div>

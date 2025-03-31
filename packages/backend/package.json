@@ -34,6 +34,7 @@
     "@prisma/client": "^6.3.1",
     "@types/jsdom": "^21.1.7",
     "axios": "^1.7.9",
+    "grammy": "^1.35.1",
     "jsdom": "^26.0.0",
     "node-cron": "^3.0.3",
     "p-limit": "^6.2.0",

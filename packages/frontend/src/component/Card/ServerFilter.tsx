@@ -80,7 +80,7 @@ export default function ServerFilter() {
 
   return (
     <>
-      <div className="absolute -z-10 top-[15%] min-w-[250px] max-w-[380px] max-h-[500px] bg-white rounded-md text-left p-[1.5%] shadow-lg">
+      <div className="absolute top-[15%] min-w-[250px] max-w-[380px] max-h-[500px] bg-white rounded-md text-left p-[1.5%] shadow-lg">
         <p className="text8-16px">Статус работы серверов</p>
         <div className="h-[1px] bg-gray-500 my-[4.5%]" content=""></div>
         <div className="h-[35px]">

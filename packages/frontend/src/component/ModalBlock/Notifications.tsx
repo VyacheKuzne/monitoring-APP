@@ -28,16 +28,23 @@ function Notifications() {
         <div className="absolute bg-white w-[500px] h-screen p-[30px] shadow-xl z-[1]">
           <p className="text-[16px] font-montserrat">Уведомления</p>
           <hr className="my-[5%] h-[2px] bg-slate-600" />
-          <div className="flex flex-col gap-[15px]">
+          <div className="flex flex-col gap-[15px] h-[calc(100%-60px)] overflow-y-auto mb-[30px] 
+                          [&::-webkit-scrollbar]:w-[5px] 
+                          [&::-webkit-scrollbar-thumb]:bg-gray-500 
+                          [&::-webkit-scrollbar-thumb]:rounded-full"
+          >
             {notificationData.length !== 0 ? (
               notificationData.map((notification, index) => (
                 <div className="grid grid-cols-[10px_auto] gap-[15px]">
                   <div className={notification.status === 'notification' ? 'bg-custom-green w-[10px] h-[10px] mt-[5px] rounded-full' : 'bg-custom-red w-[10px] h-[10px] mt-[5px] rounded-full'}></div>
                   <div className="flex flex-col gap-[5px] text-left">
-                    <span className=" text-[14px]">{notification.text}</span>
-                    <span className=" text-[12px]">
-                      {formatDate(notification.date)}
-                    </span>
+                    <span className="text-[14px]">{notification.text}</span>
+                    <div className="flex gap-[10px] text-[12px]">
+                      <span>
+                        {formatDate(notification.date)}
+                      </span>
+                      <a href="">Перейти</a>
+                    </div>
                   </div>
                 </div>
               ))
