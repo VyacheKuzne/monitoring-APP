@@ -9,7 +9,7 @@ export class ServerService {
 
   constructor(
     private readonly httpService: HttpService,
-    private readonly recordedIpService: RecordedIpService // Исправлено с заглавной буквы
+    private readonly recordedIpService: RecordedIpService, // Исправлено с заглавной буквы
   ) {}
 
   public async createServerAndLinkDomain(hostname: string, idCompany: number) {
@@ -19,7 +19,8 @@ export class ServerService {
     }
 
     // Получаем IP и местоположение
-    const { ipAddress, location } = await this.recordedIpService.getIpAndLocation(hostname);
+    const { ipAddress, location } =
+      await this.recordedIpService.getIpAndLocation(hostname);
 
     // Создаем новый сервер с полученными данными
     const createdServer = await this.prisma.server.create({

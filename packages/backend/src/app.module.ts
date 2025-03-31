@@ -30,7 +30,7 @@ import { DbBackupModule } from './db-backup/db-backup.module';
     testDBModule,
     // FrequencyTestModule,
     FilterModule,
-    DbBackupModule,
+    // DbBackupModule,
   ],
   controllers: [AppController],
   providers: [AppService], // ProgressGateway is automatically provided by DomainModule, so no need to add it here

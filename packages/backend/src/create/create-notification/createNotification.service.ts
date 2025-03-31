@@ -22,7 +22,9 @@ export class NotificationService {
       });
       this.logger.log(`Уведмоление создано успешно`);
     } catch (error) {
-      this.logger.error(`Ошибка при поптыке создать уведомелние: ${error.message}`);
+      this.logger.error(
+        `Ошибка при поптыке создать уведомелние: ${error.message}`,
+      );
     }
   }
 }

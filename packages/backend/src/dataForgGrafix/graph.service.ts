@@ -7,7 +7,13 @@ export class GraphService {
 
   // Метод для получения последних 10 значений loadCPU
   async getStats(): Promise<{
-    stats: { loadCPU: number; usedRAM: string; received: string; sent: string;  date: Date }[];
+    stats: {
+      loadCPU: number;
+      usedRAM: string;
+      received: string;
+      sent: string;
+      date: Date;
+    }[];
     workStatus: number[];
   }> {
     try {
@@ -34,16 +40,16 @@ export class GraphService {
         timestamps.push(timestamp);
       }
 
-      const formattedTimestamps = timestamps.map((ts) =>
-        ts.toISOString().slice(11, 16) // Достаём только "HH:MM"
+      const formattedTimestamps = timestamps.map(
+        (ts) => ts.toISOString().slice(11, 16), // Достаём только "HH:MM"
       );
 
-      const stats: Array<{ 
-        loadCPU: number; 
-        usedRAM: string; 
-        received: string; 
-        sent: string; 
-        date: Date 
+      const stats: Array<{
+        loadCPU: number;
+        usedRAM: string;
+        received: string;
+        sent: string;
+        date: Date;
       }> = await this.prisma.$queryRaw`
         SELECT loadCPU, usedRAM, received, sent, date
         FROM checkserverstats
@@ -53,7 +59,7 @@ export class GraphService {
         LIMIT ${288 + 10};
       `;
 
-      const filteredStats = stats.filter(stat => {
+      const filteredStats = stats.filter((stat) => {
         const statDate = new Date(stat.date);
         const now = new Date();
         return statDate >= new Date(now.getTime() - hours * 60 * 60 * 1000);
@@ -81,26 +87,44 @@ export class GraphService {
 
     // Инициализируем массив статусов для 24 часов
     const workStatus: number[] = new Array(hours).fill(0);
-    
+
     // Объект для подсчёта записей по часам
     const hourlyStats: { [key: number]: { total: number; zeros: number } } = {};
- 
+
     // Обрабатываем все данные
     stats.forEach((stat) => {
-      const nowHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0);
-      const statHour = new Date(stat.date.getFullYear(), stat.date.getMonth(), stat.date.getDate(), stat.date.getHours(), 0, 0);
-      
+      const nowHour = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        now.getHours(),
+        0,
+        0,
+      );
+      const statHour = new Date(
+        stat.date.getFullYear(),
+        stat.date.getMonth(),
+        stat.date.getDate(),
+        stat.date.getHours(),
+        0,
+        0,
+      );
+
       const hourDiff = Math.floor(
         (nowHour.getTime() - statHour.getTime()) / (60 * 60 * 1000),
       );
-  
+
       if (hourDiff >= 0 && hourDiff < hours) {
-        
         const invertedIndex = hours - 1 - hourDiff;
-        hourlyStats[invertedIndex] = hourlyStats[invertedIndex] || { total: 0, zeros: 0 };
+        hourlyStats[invertedIndex] = hourlyStats[invertedIndex] || {
+          total: 0,
+          zeros: 0,
+        };
         hourlyStats[invertedIndex].total += 1;
-  
-        if ((stat.loadCPU || stat.usedRAM || (stat.received && stat.sent)) === 0) {
+
+        if (
+          (stat.loadCPU || stat.usedRAM || (stat.received && stat.sent)) === 0
+        ) {
           hourlyStats[invertedIndex].zeros += 1;
         }
       }
@@ -108,7 +132,8 @@ export class GraphService {
 
     for (let i = 0; i < hours; i++) {
       const statsForHour = hourlyStats[i] || { total: 0, zeros: 0 };
-      workStatus[i] = statsForHour.total === 0 || statsForHour.zeros >= threshold ? 0 : 1;
+      workStatus[i] =
+        statsForHour.total === 0 || statsForHour.zeros >= threshold ? 0 : 1;
     }
 
     return workStatus;

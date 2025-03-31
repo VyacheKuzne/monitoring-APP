@@ -1,39 +1,23 @@
-// src/app.service.ts
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, forwardRef, Inject } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
-import { RecordPageService } from './recordPage.service';
+// import { RecordPageService } from './recordPage.service';
 // import { PageData } from './page.interface';
 // import axios from 'axios';
-import { HttpService } from '@nestjs/axios';
+// import { HttpService } from '@nestjs/axios';
 // import * as xml2js from 'xml2js';
 // import pLimit from 'p-limit';
-
+import { PuppeteerService } from './puppeteer.service';
 @Injectable()
-export class PuppeteerResourceStatus {
-  private page: puppeteer.Page;
-  private idApp: number;
-
-  constructor(
-    private readonly recordPage: RecordPageService,
-    private readonly httpService: HttpService,
-  ) {}
-  init(idApp: number, page: puppeteer.Page) {
-    this.idApp = idApp;
-    this.page = page;
-  }
-  private readonly logger = new Logger(PuppeteerResourceStatus.name);
+export class PuppeteerResource {
+  private readonly logger = new Logger(PuppeteerResource.name);
   private browser: puppeteer.Browser;
-
-  private attempts = 100;
-  private timeout = 90000;
-  private concurrency = 3;
+  constructor(
+    @Inject(forwardRef(() => PuppeteerService))
+    private readonly puppeteerService: PuppeteerService,
+  ) {}
+  private PageCount = 0;
   private recursionDepth = 10;
 
-  private PageCount = 0;
-  private failedPageCount = 0;
-  setAppContext(idApp: number) {
-    this.idApp = idApp;
-  }
   async clearCaches(page: puppeteer.Page) {
     await page.evaluate(() => {
       // Очистка cookies
@@ -48,6 +32,7 @@ export class PuppeteerResourceStatus {
       sessionStorage.clear();
     });
   }
+
   async getResourceStatus(page: puppeteer.Page) {
     try {
       const networkStatus = {
@@ -235,12 +220,8 @@ export class PuppeteerResourceStatus {
             ? 'Content fully loaded'
             : 'Some resources not loaded',
       };
-    } catch (error: any) {
-      if (error instanceof Error) {
-        this.logger.error(`🔥 Resource acquisition error: ${error.message}`);
-      } else {
-        this.logger.error('🔥 Unknown error occurred');
-      }
+    } catch (error) {
+      this.logger.error(`🔥 Resource acquisition error: ${error.message}`);
       return {
         allLoaded: false,
         mediaStatus: 'Failed',

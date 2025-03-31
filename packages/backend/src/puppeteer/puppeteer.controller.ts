@@ -7,7 +7,7 @@ import { PageStatusService } from './pageStatus.service';
 export class PuppeteerController {
   constructor(
     private readonly puppeteerService: PuppeteerService,
-    private readonly PageStatusService: PageStatusService
+    private readonly PageStatusService: PageStatusService,
   ) {}
 
   @Get('/:domain/:idApp')
@@ -23,7 +23,7 @@ export class PuppeteerController {
   }
 
   @Get('status/app/:idApp')
-  getPageStatus(@Param('idApp', ParseIntPipe) idApp: number,) {
-    return this.PageStatusService.getPageStatus(idApp)
+  getPageStatus(@Param('idApp', ParseIntPipe) idApp: number) {
+    return this.PageStatusService.getPageStatus(idApp);
   }
 }

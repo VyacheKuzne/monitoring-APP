@@ -1,5 +1,5 @@
 export default interface dataBaseData {
-    password: string | null, 
-    user: string | null,
-    database: string | null,
+  password: string | null;
+  user: string | null;
+  database: string | null;
 }

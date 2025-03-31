@@ -116,7 +116,7 @@ export class DomainService {
 
     this.sendProgress(30, 'Данные WHOIS получены');
     this.sendProgress(40, 'Запрос данных SSL...');
-    const  sslLabsData =  this.getSSLabsData(domain);
+    const sslLabsData = this.getSSLabsData(domain);
 
     this.sendProgress(60, 'Данные SSL получены');
 

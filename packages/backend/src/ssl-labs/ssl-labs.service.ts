@@ -141,7 +141,7 @@ export class SslLabsService {
           update: record,
           create: record,
         });
-        this.logger.log(data); 
+        this.logger.log(data);
       }
 
       this.logger.log('SSL data recorded successfully');

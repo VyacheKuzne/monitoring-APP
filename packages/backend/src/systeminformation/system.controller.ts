@@ -8,8 +8,8 @@ import { SystemStatusService } from './systemStatus.service';
 @Controller('system')
 export class SystemController {
   constructor(
-    private readonly systemService: SystemService, 
-    private readonly SystemStatusService: SystemStatusService
+    private readonly systemService: SystemService,
+    private readonly SystemStatusService: SystemStatusService,
   ) {}
 
   @Get('all')
@@ -37,7 +37,7 @@ export class SystemController {
     );
   }
   @Get('status/server/:idServer')
-  getSystemStatus(@Param('idServer') idServer: number,) {
-    return this.SystemStatusService.getSystemStatus(idServer)
+  getSystemStatus(@Param('idServer') idServer: number) {
+    return this.SystemStatusService.getSystemStatus(idServer);
   }
 }

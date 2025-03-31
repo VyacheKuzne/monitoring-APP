@@ -44,9 +44,8 @@ export class ProgressGateway
       idCompany: number;
       serverId: number;
     },
-  ) 
-  // обьявляем данные
-  {
+  ) {
+    // обьявляем данные
     let progress = 0; // Начальный прогресс
     this.logger.log(`начал работать прогресс бар: ${data.domain}`);
 
