@@ -47,6 +47,8 @@ model app {
 
   checkPage checkPage[] // Связь с таблицей checkPage один ко многим
   notification notification[] // Связь с таблицей notification один ко многим
+  authorized Boolean @default(true)
+
 
   server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
   domain domain @relation(fields: [parentDomain], references: [idDomain]) // Связь с таблицей domain один ко многим
@@ -166,4 +168,4 @@ model notification {
   company company? @relation(fields: [parentCompany], references: [idCompany]) // Связь с таблицей company один ко многим
   server server? @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
   app app? @relation(fields: [parentApp], references: [idApp]) // Связь с таблицей app один ко многим
-}
+} 

@@ -24,7 +24,7 @@ function ServerInfo() {
   const [app, setApp] = useState<App[]>([]);
   const [domain, setDomain] = useState("");
   const [whoisData, setWhoisData] = useState<WhoisData | null>(null);
-
+  const [authorized, setAuthorized] = useState <boolean> (true)
   useEffect(() => {
     getServerInfo();
     getAppInfo();
@@ -93,6 +93,7 @@ function ServerInfo() {
         name: domainName,
         appName: appName,
         idServer: Number(idServer), // Преобразуем в число
+        authorized: authorized,
       });
 
       // После успешного добавления сервера, вызываем обновление данных компании и серверов
@@ -138,7 +139,9 @@ function ServerInfo() {
   const closeModal = () => {
     setModal(false);
   };
-
+  const isAuthorized = () => {
+    setAuthorized(false);
+  };
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
       <ModalBlock />
@@ -178,7 +181,7 @@ function ServerInfo() {
           </button>
 
           {Modal && (
-            <div className="w-screen h-screen absolute flex justify-center items-center bg-color-fon z-10 top-0 left-0">
+            <div className="w-screen h-screen fixed flex justify-center items-center bg-color-fon z-10 top-0 left-0">
               {/* блок контента */}
               <div className="bg-white rounded-[5px] p-2 flex flex-col w-[500px]">
                 {/* верхняя часть дива с кнопкой для закрытия блока */}
@@ -218,6 +221,8 @@ function ServerInfo() {
                     className="w-[50%] p-[5px] bg-slate-300 my-[5px] hover:bg-slate-400 rounded-[5px] text-[14px] font-montserrat transition"
                     type="submit"
                   >
+                    <input type="checkbox" name="isAuthorized" onChange={isAuthorized} id="isAuthorized" />
+                    <p>Авторизация не нужна</p>
                     <p>Создать</p>
                   </button>
                 </form>

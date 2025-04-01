@@ -43,6 +43,7 @@ export class ProgressGateway
       appName: string;
       idCompany: number;
       serverId: number;
+      authorized: boolean;
     },
   ) {
     // обьявляем данные
@@ -66,6 +67,7 @@ export class ProgressGateway
         data.appName,
         data.idCompany,
         data.serverId,
+        data.authorized,
       );
       // Когда прогресс завершен, отправляем финальное сообщение
       this.server.emit('progress', {

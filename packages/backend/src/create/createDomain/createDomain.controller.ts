@@ -17,6 +17,7 @@ export class DomainController {
       appName: string;
       idCompany: number;
       idServer: number;
+      authorized: boolean;
     },
   ) {
     // Проверяем, что все необходимые параметры есть в теле запроса
@@ -40,6 +41,7 @@ export class DomainController {
         Body.appName,
         Body.idCompany,
         Body.idServer,
+        Body.authorized,
       );
 
       // Если процесс завершился успешно

@@ -110,13 +110,14 @@ export class DomainService {
     appName: string,
     idCompany: number,
     serverId: number,
+    authorized: boolean,
   ) {
     this.sendProgress(10, 'Запрос данных WHOIS...');
-    const whoisData = await this.getWhoisData(domain);
+    // await this.getWhoisData(domain);
 
     this.sendProgress(30, 'Данные WHOIS получены');
     this.sendProgress(40, 'Запрос данных SSL...');
-    const sslLabsData = this.getSSLabsData(domain);
+    // this.getSSLabsData(domain);
 
     this.sendProgress(60, 'Данные SSL получены');
 
@@ -135,6 +136,7 @@ export class DomainService {
       data: {
         name: appName,
         parentServer: parentServerId,
+        authorized: authorized,
         parentDomain: existingDomain.idDomain,
       },
     });
@@ -143,7 +145,7 @@ export class DomainService {
     const idApp = createdApp.idApp;
 
     // Получаем данные о страницах домена
-    const getPagesData = await this.getPagesData(domain, idApp);
+    await this.getPagesData(domain, idApp);
     this.sendProgress(100, 'Создание завершено');
     return createdApp;
   }
