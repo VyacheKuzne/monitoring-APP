@@ -6,6 +6,7 @@ import { Observable, throwError, interval, of, from } from 'rxjs';
 import { switchMap } from 'rxjs/operators'; // Import switchMap separately
 import { SSLInfo, SSLInfoAPI, SSLData } from './ssl-labs.interfaces';
 import { PrismaClient } from '@prisma/client';
+import { NotificationService } from '../create/create-notification/createNotification.service';
 
 @Injectable()
 export class SslLabsService {
@@ -15,7 +16,10 @@ export class SslLabsService {
 
   private domain: string;
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly NotificationService: NotificationService,
+  ) {}
 
   // Получение информации об API
   getInfo(): Observable<SSLInfoAPI> {
@@ -174,14 +178,17 @@ export class SslLabsService {
       daysToExpire = Math.ceil(diff / (1000 * 3600 * 24));
 
       if (daysToExpire <= 30) {
-        const url = 'http://localhost:3000/notification/create';
-        const data = {
-          text: `Срок действия SSL сертификата по домену ${this.domain}, истекает через ${daysToExpire} дней`,
+
+        this.NotificationService.createNotification({
+          text: daysToExpire > 0 ?
+            `Срок действия SSL сертификата по домену ${this.domain}, истекает через ${daysToExpire} дней` :
+            `Срок действия SSL сертификата по домену ${this.domain}, закончился. Нужно срочно продлить`,
           parentCompany: null,
           parentServer: null,
           parentApp: null,
-        };
-        await this.httpService.post(url, data).toPromise();
+          status: daysToExpire > 0 ? 'warning' : 'alert',
+          date: new Date()
+        });
       }
     }
   }

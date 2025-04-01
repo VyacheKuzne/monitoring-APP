@@ -33,8 +33,8 @@ export class FrequencyTestService implements OnModuleInit, OnModuleDestroy {
 
   // Метод для запуска всех задач с интервалами
   private startTasks() {
-    // this.runTaskWithInterval('updateWhoisData', INTERVALS.daily);
-    // this.runTaskWithInterval('updateSSLabsData', INTERVALS.daily);
+    this.runTaskWithInterval('updateWhoisData', INTERVALS.daily);
+    this.runTaskWithInterval('updateSSLabsData', INTERVALS.daily);
     this.runTaskWithInterval('updatePagesData', INTERVALS.hourly);
   }
 
@@ -43,12 +43,12 @@ export class FrequencyTestService implements OnModuleInit, OnModuleDestroy {
     try {
       // Запускаем задачу
       switch (taskName) {
-        // case 'updateWhoisData':
-        //   await this.updateWhoisData();
-        //   break;
-        // case 'updateSSLabsData':
-        //   await this.updateSSLabsData();
-        //   break;
+        case 'updateWhoisData':
+          await this.updateWhoisData();
+          break;
+        case 'updateSSLabsData':
+          await this.updateSSLabsData();
+          break;
         case 'updatePagesData':
           await this.updatePagesData();
           break;

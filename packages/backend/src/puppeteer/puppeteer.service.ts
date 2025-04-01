@@ -9,9 +9,13 @@ import { RecordPageService } from './recordPage.service';
 import { PageData } from './page.interface';
 import { PuppeteerCrauler } from './puppeteerCrauler.service';
 import { PuppeteerResource } from './puppeteerResource.service';
+import { PrismaClient } from '@prisma/client';
+import { NotificationService } from '../create/create-notification/createNotification.service';
+
 @Injectable()
 export class PuppeteerService {
   private idApp: number; // Свойство для хранения idApp
+  private prisma = new PrismaClient();
   constructor(
     private readonly recordPage: RecordPageService,
     private readonly httpService: HttpService,
@@ -19,11 +23,12 @@ export class PuppeteerService {
     private readonly PuppeteerCrauler: PuppeteerCrauler,
     @Inject(forwardRef(() => PuppeteerResource))
     private readonly PuppeteerResource: PuppeteerResource,
+    private readonly NotificationService: NotificationService,
   ) {}
 
   private readonly logger = new Logger(PuppeteerService.name);
   private browser: puppeteer.Browser;
-  private attempts = 100;
+  private attempts = 3;
   private timeout = 90000;
   private concurrency = 3;
   private recursionDepth = 10;
@@ -47,7 +52,8 @@ export class PuppeteerService {
     await Promise.all(items.map((item) => limit(() => task(item))));
   }
   // самая большая, Проверить доступность страниц, собрать данные о загрузке и зафиксировать результаты
-  async updatePageData(urls: string[]): Promise<void> {
+  async updatePageData(urls: string[], pageCount: number): Promise<void> {
+    this.PageCount = pageCount;
     const processUrl = async (url: string): Promise<void> => {
       const puppeteer = require('puppeteer');
       this.browser = await puppeteer.launch(); // Инициализация браузера
@@ -172,17 +178,34 @@ export class PuppeteerService {
     this.logger.log(
       `Мониторинг ${domain} завершен. Всего страниц: ${this.PageCount}, Количество страниц со статусом error: ${this.failedPageCount}`,
     );
-    if (this.failedPageCount / this.PageCount >= 0.1) {
-      const url = 'http://localhost:3000/notification/create';
-      const percent = Math.round((this.failedPageCount / this.PageCount) * 100);
-      const data = {
-        text: `При проверке страниц приложения ${domain}, количество провальных проверок достигло ${percent}%.`,
-        parentCompany: null,
-        parentServer: null,
-        parentApp: null,
-      };
 
-      await this.httpService.post(url, data).toPromise();
+    const app = await this.prisma.app.findFirst({
+      where: {
+        idApp: this.idApp
+      },
+      select: {
+        parentServer: true,
+        server: {
+          select: {
+            parentCompany: true
+          }
+        }
+      }
+    })
+
+    if (this.failedPageCount / this.PageCount >= 0.1 || this.PageCount == 0) {
+
+      const percent = Math.round((this.failedPageCount / this.PageCount) * 100);
+      this.NotificationService.createNotification({
+        text: this.PageCount > 0 ?
+          `При проверке страниц приложения ${domain}, количество провальных проверок достигло ${percent}%.` :
+          `При проверке страниц приложения ${domain}, общее количество страниц осталось на 0. Перепроверьте домен.`,
+        parentCompany: app?.server.parentCompany ?? null,
+        parentServer: app?.parentServer ?? null,
+        parentApp: this.idApp,
+        status: 'alert',
+        date: new Date()
+      });
     }
 
     await this.browser.close();

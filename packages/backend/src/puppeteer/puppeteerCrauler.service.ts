@@ -26,17 +26,23 @@ export class PuppeteerCrauler {
 
   // Определить, где искать страницы сайта — через sitemap.xml или обходя вручную с помощью Puppeteer
   async checkSitemap(domain: string) {
-    const { data } = await axios.get('https://' + domain + '/robots.txt');
-    const sitemapLines = data
-      .split('\n')
-      .filter((line) => line.trim().startsWith('Sitemap'))
-      .map((line) => line.trim().replace('Sitemap:', '').trim());
+    try {
+      const { data } = await axios.get('https://' + domain + '/robots.txt');
+      const sitemapLines = data
+        .split('\n')
+        .filter((line) => line.trim().startsWith('Sitemap'))
+        .map((line) => line.trim().replace('Sitemap:', '').trim());
 
-    if (sitemapLines.length > 0) {
-      this.logger.log(`Found sitemaps: ${sitemapLines}`);
-      await this.findLinksInSitemap(sitemapLines, domain);
-    } else {
-      this.logger.log(`Sitemaps not found. The beginning of the link search`);
+      if (sitemapLines.length > 0) {
+        this.logger.log(`Found sitemaps: ${sitemapLines}`);
+        await this.findLinksInSitemap(sitemapLines, domain);
+      } else {
+        this.logger.log(`Sitemaps not found. The beginning of the link search`);
+        await this.findLinksViaPuppeteer(domain);
+      }
+    }
+    catch (error) {
+      this.logger.error(`Failed to fetch robots.txt for ${domain}: ${error.message}`);
       await this.findLinksViaPuppeteer(domain);
     }
   }
@@ -99,7 +105,7 @@ export class PuppeteerCrauler {
 
     this.logger.debug(`Total pages found: ${allPageUrls.length}`);
     this.PageCount = allPageUrls.length;
-    await this.puppeteerService.updatePageData(allPageUrls);
+    await this.puppeteerService.updatePageData(allPageUrls, this.PageCount);
     this.puppeteerService.stopMonitoring(domain);
   }
 
@@ -202,12 +208,12 @@ export class PuppeteerCrauler {
       }
 
       // Завершаем процесс, обновляем данные
-      await this.puppeteerService.updatePageData(Array.from(visitedLinks)); // Приводим к типу string[]
+      this.PageCount = visitedLinks.size; // Обновляем количество страниц
+      await this.puppeteerService.updatePageData(Array.from(visitedLinks), this.PageCount); // Приводим к типу string[]
 
       // Добавляем в отчет ошибки 404 и другие ошибки с ресурсами
       console.log('Ошибки (404 и другие):', Array.from(errorLinks));
 
-      this.PageCount = visitedLinks.size; // Обновляем количество страниц
       this.puppeteerService.stopMonitoring(domain); // Завершаем мониторинг
     };
 

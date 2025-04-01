@@ -6,6 +6,7 @@ import { Observable, throwError, of, from } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { parseString } from 'xml2js';
 import { PrismaClient } from '@prisma/client';
+import { NotificationService } from '../create/create-notification/createNotification.service';
 
 export interface WhoisData {
   domainName: string;
@@ -53,6 +54,7 @@ export class WhoisService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly NotificationService: NotificationService,
   ) {
     this.apiKey = this.configService.get<string>('WHOISXMLAPI_API_KEY') || '';
     if (!this.apiKey) {
@@ -235,14 +237,17 @@ export class WhoisService {
 
   async whoisNotification(whoisData: WhoisData) {
     if (whoisData.daysToExpire && whoisData.daysToExpire <= 30) {
-      const url = 'http://localhost:3000/notification/create';
-      const data = {
-        text: `Срок действия домена ${whoisData.domainName}, истекает через ${whoisData.daysToExpire} дней`,
+
+      this.NotificationService.createNotification({
+        text: whoisData.daysToExpire > 0 ? 
+          `Срок действия домена ${whoisData.domainName}, истекает через ${whoisData.daysToExpire} дней`:
+          `Срок действия домена ${whoisData.domainName}, закончился. Нужно срочно продлить`,
         parentCompany: null,
         parentServer: null,
         parentApp: null,
-      };
-      await this.httpService.post(url, data).toPromise();
+        status: whoisData.daysToExpire > 0 ? 'warning' : 'alert',
+        date: new Date()
+      });
     }
   }
 }

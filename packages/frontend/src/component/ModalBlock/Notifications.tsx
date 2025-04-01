@@ -12,7 +12,7 @@ function Notifications() {
   const getInfo = async () => {
     axios.get("http://localhost:3000/notifications/get").then((response) => {
       setNotificationData(response.data);
-      console.log(response.data);
+      // console.log(response.data);
     });
   };
 
@@ -21,6 +21,25 @@ function Notifications() {
     return `${String(dateObject.getDate()).padStart(2, "0")}.${String(dateObject.getMonth() + 1).padStart(2, "0")}.${dateObject.getFullYear()} в
         ${String(dateObject.getHours()).padStart(2, "0")}:${String(dateObject.getMinutes()).padStart(2, "0")}`;
   };
+
+  const generateLink = (
+    company: number | null, 
+    server: number | null,
+    app: number | null
+  ) => {
+    const parts = [
+      { key: 'company', value: company },
+      { key: 'server', value: server },
+      { key: 'app', value: app }
+    ];
+  
+    const url = "http://localhost:3001";
+    const linkParts = parts
+      .filter(part => part.value !== null) // Оставляем только непустые значения
+      .map(part => `${part.key}/${part.value}`); // Формируем сегменты пути
+  
+    return linkParts.length > 0 ? `${url}/${linkParts.join('/')}/` : '';
+  }
 
   return (
     <>
@@ -35,15 +54,19 @@ function Notifications() {
           >
             {notificationData.length !== 0 ? (
               notificationData.map((notification, index) => (
-                <div className="grid grid-cols-[10px_auto] gap-[15px]">
-                  <div className={notification.status === 'notification' ? 'bg-custom-green w-[10px] h-[10px] mt-[5px] rounded-full' : 'bg-custom-red w-[10px] h-[10px] mt-[5px] rounded-full'}></div>
+                <div className="grid grid-cols-[10px_auto] gap-[15px]" key={index}>
+                  <div className={`w-[10px] h-[10px] mt-[5px] rounded-full 
+                    ${notification.status === 'alert' ? 'bg-custom-red' : notification.status === 'warning' ? 
+                    'bg-custom-yellow' : 'bg-custom-green'}`} />
                   <div className="flex flex-col gap-[5px] text-left">
                     <span className="text-[14px]">{notification.text}</span>
                     <div className="flex gap-[10px] text-[12px]">
-                      <span>
-                        {formatDate(notification.date)}
-                      </span>
-                      <a href="">Перейти</a>
+                      <span>{formatDate(notification.date)}</span>
+                      {generateLink(notification.parentCompany, notification.parentServer, notification.parentApp) !== '' ? 
+                        <a href={generateLink(notification.parentCompany, notification.parentServer, notification.parentApp)}>
+                          Перейти
+                        </a> : null
+                      }
                     </div>
                   </div>
                 </div>

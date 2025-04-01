@@ -3,6 +3,6 @@ export interface NotificationData {
   parentCompany: number | null;
   parentServer: number | null;
   parentApp: number | null;
-  status: string | null;
+  status: string;
   date: Date;
 }

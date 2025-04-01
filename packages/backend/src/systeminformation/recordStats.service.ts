@@ -2,10 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SystemData } from './interfaces/system-data.interface';
 import { PrismaClient } from '@prisma/client';
 import { HttpService } from '@nestjs/axios';
+import { NotificationService } from '../create/create-notification/createNotification.service';
 
 @Injectable()
 export class RecordStatsService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly NotificationService: NotificationService,
+  ) {}
 
   private prisma = new PrismaClient();
   private readonly logger = new Logger(RecordStatsService.name);
@@ -64,7 +67,6 @@ export class RecordStatsService {
     }
   }
   async statsNotification(currentLoad: number) {
-    const url = 'http://localhost:3000/notification/create';
     const thresholdDrop = this.percent * this.reductionRatio;
     const hour = 3600000;
 
@@ -80,13 +82,14 @@ export class RecordStatsService {
       const timeDifference = Date.now() - this.highLoadStartTime;
 
       if (timeDifference >= this.timer && !this.initialNotificationSent) {
-        const data = {
+        this.NotificationService.createNotification({
           text: `Сервер в нагрузке свыше ${this.percent}%, уже дольше ${(this.timer / 60000).toFixed(0)} минут.`,
-          parentCompany: null,
-          parentServer: null,
+          parentCompany: 1,
+          parentServer: 1,
           parentApp: null,
-        };
-        await this.httpService.post(url, data).toPromise();
+          status: 'warning',
+          date: new Date()
+        });
         this.initialNotificationSent = true;
       }
       if (timeDifference >= hour) {
@@ -96,13 +99,14 @@ export class RecordStatsService {
           this.lastHourlyReminder === null ||
           nextReminderTime > this.lastHourlyReminder
         ) {
-          const data = {
+          this.NotificationService.createNotification({
             text: `Сервер в нагрузке свыше ${this.percent}%, уже дольше ${hoursElapsed} часов`,
-            parentCompany: null,
-            parentServer: null,
+            parentCompany: 1,
+            parentServer: 1,
             parentApp: null,
-          };
-          await this.httpService.post(url, data).toPromise();
+            status: 'alert',
+            date: new Date()
+          });
           this.lastHourlyReminder = nextReminderTime; // Обновляем время последнего напоминания
         }
       }

@@ -34,7 +34,9 @@ export class NotificationService {
           date: notificationData.date,
         },
       });
-      this.sendTelegramMessage(this.chatId, notification.text);
+      if(notification.status === 'alert' || notification.status === 'warning') {
+        this.sendTelegramMessage(this.chatId, notification.text);
+      }
 
       this.logger.log(`The notification was created successfully`);
     } 

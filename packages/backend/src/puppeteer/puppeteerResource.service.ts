@@ -15,8 +15,6 @@ export class PuppeteerResource {
     @Inject(forwardRef(() => PuppeteerService))
     private readonly puppeteerService: PuppeteerService,
   ) {}
-  private PageCount = 0;
-  private recursionDepth = 10;
 
   async clearCaches(page: puppeteer.Page) {
     await page.evaluate(() => {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { App } from "../../interfaces/app";
 import axios from "axios";
+import { now } from "moment";
 
 interface AppCardProps {
   appData: App; // Принят объект типа App
@@ -22,13 +23,19 @@ function AppCard({ appData }: AppCardProps) {
 
   const checkStatus = async () => {
     try {
-      // console.log(`http://localhost:3000/pages/status/${appData.idApp}`)
       const responseStatus = await axios.get(`http://localhost:3000/pages/status/app/${appData.idApp}`);
       setStatus(responseStatus.data);
     }
     catch {
       setStatus(false);
     }
+  }
+
+  const formatDate = (date: Date) => {
+    const termDate = new Date(date); // Преобразуем в объект Date
+    const nowDate = new Date();
+  
+    return termDate > nowDate ? `до: ${termDate.toLocaleDateString()}` : 'истёк';
   }
 
   return (
@@ -38,7 +45,7 @@ function AppCard({ appData }: AppCardProps) {
       href={`app/${appData.idApp}/`}
     >
       <div className="flex items-center justify-between">
-        <span>{appData.name}</span> {/* Выводим название приложения */}
+        <span className="text-left">{appData.name}</span> {/* Выводим название приложения */}
         {status ?
           <div className="flex items-center gap-[10px]">
             <span className="text-[12px]">Статус: Активен</span>
@@ -56,22 +63,14 @@ function AppCard({ appData }: AppCardProps) {
           <span>Домен: {appData.domain?.name || "Загрузка"}</span>
         </div>
         <div className="flex items-center justify-end auto text-[12px]">
-          <span>
-            до{" "}
-            {appData.domain?.expires
-              ? new Date(appData.domain.expires).toLocaleDateString()
-              : "Загрузка"}
+          <span>{appData.domain?.expires ? formatDate(appData.domain.expires) : "Загрузка"}
           </span>
         </div>
         <div className="text-left">
           <span>SSL сертификат</span>
         </div>
         <div className="flex items-center justify-end auto text-[12px]">
-          <span>
-            до{" "}
-            {appData.domain?.SSL[0]?.expires
-              ? new Date(appData.domain?.SSL[0]?.expires).toLocaleDateString()
-              : "Загрузка"}
+          <span>{appData.domain?.SSL[0]?.expires ? formatDate(appData.domain?.SSL[0]?.expires) : "Загрузка"}
           </span>
         </div>
       </div>

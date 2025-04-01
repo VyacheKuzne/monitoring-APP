@@ -178,7 +178,7 @@ function ServerInfo() {
           </button>
 
           {Modal && (
-            <div className="w-screen h-screen absolute flex justify-center items-center bg-color-fon z-10 top-0 left-0">
+            <div className="fixed w-screen h-screen flex justify-center items-center bg-color-fon z-10 top-0 left-0">
               {/* блок контента */}
               <div className="bg-white rounded-[5px] p-2 flex flex-col w-[500px]">
                 {/* верхняя часть дива с кнопкой для закрытия блока */}

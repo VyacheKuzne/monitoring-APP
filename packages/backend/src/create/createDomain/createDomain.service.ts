@@ -30,7 +30,7 @@ export class DomainService {
         this.httpService.get(`http://localhost:3000/whois?domain=${domain}`),
       );
       this.NotificationService.createNotification({
-        text: `успешно получены данные по домейну ${domain}`,
+        text: `Успешно получены данные по домену ${domain}`,
         parentCompany: null,
         parentServer: null,
         parentApp: null,

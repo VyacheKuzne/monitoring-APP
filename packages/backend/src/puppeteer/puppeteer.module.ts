@@ -7,6 +7,7 @@ import { PuppeteerController } from './puppeteer.controller';
 import { HttpModule } from '@nestjs/axios';
 import { PageStatusService } from './pageStatus.service';
 import { PuppeteerResource } from './puppeteerResource.service';
+import { NotificationService } from 'src/create/create-notification/createNotification.service';
 @Module({
   imports: [HttpModule],
   providers: [
@@ -15,6 +16,7 @@ import { PuppeteerResource } from './puppeteerResource.service';
     PageStatusService,
     PuppeteerCrauler,
     PuppeteerResource,
+    NotificationService
   ],
   controllers: [PuppeteerController],
 })
