@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import { RecordPageService } from './recordPage.service';
-import { PageData } from './page.interface';
+import { СheckPageData } from './page.interface';
 import axios from 'axios';
 import { HttpService } from '@nestjs/axios';
 import * as xml2js from 'xml2js';

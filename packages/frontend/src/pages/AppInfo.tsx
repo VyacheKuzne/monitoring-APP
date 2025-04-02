@@ -1,23 +1,15 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../App.css";
 import ModalBlock from "../block/ModalBlock";
 import InfoBlock from "../block/InfoBlock";
-import { assert } from "console";
 import link from "../img/link.svg";
 import { Company } from "../interfaces/company";
 import { Server } from "../interfaces/server";
-import { App } from "../interfaces/app";
+import { App, Page } from "../interfaces/app";
 import CopySvg from "../img/Copy.svg";
-import { CheckPage } from "../interfaces/app";
 import "./AppInfo.css";
-import { getActiveElement } from "@testing-library/user-event/dist/utils";
-// import { WhoisData } from '../interfaces/whois';
-// import CpuInfoCard, { DataPoint } from '../component/system/CpuInfoCard';
-// import FormCreateServer from '../component/ModalBlock/FormCreateServer';
-// import PlusSvg from '../img/Plus.svg'
-// import AppCard from '../component/Card/AppCard';
 
 function AppInfo() {
   useEffect(() => {
@@ -39,15 +31,14 @@ function AppInfo() {
   ];
   const crumb = [`${company?.name}`, `${server?.hostname}`, `${app?.name}`];
 
-  const [appPage, setAppPage] = useState<CheckPage[]>([]);
+  const [appPage, setAppPage] = useState<Page[]>([]);
 
   const getAppInfo = async () => {
     try {
       const response = await axios.get(
         `http://localhost:3000/company/${idCompany}/server/${idServer}/app/${idApp}/get`,
       );
-      console.log(response);
-      console.log(typeof idServer);
+      console.log(response.data.pageInfo)
 
       if (!response.data.pageInfo) {
         console.log("Отсутствуют данные о страницах");
@@ -64,14 +55,10 @@ function AppInfo() {
   };
   // обьявяляем масив для работы с заголовками таблицы
   const headers = [
-    "Статус загрузки контента",
-    "Статус загрузки медиа",
-    "Статус загрузки стилей",
-    "Статус загрузки скриптов",
-    "Время ответа",
-    "Приложение",
+    "Название страницы",
+    "Статус работы",
     "URL",
-    "История",
+    "История проверок",
   ];
 
   const timeOutRef = useRef<NodeJS.Timeout | null>(null); // Ссылка на тайм-аут
@@ -114,24 +101,42 @@ function AppInfo() {
       showFullUrlBlock.style.display = "none";
     }
   }
+  const formatDate = (date: Date | null | undefined) => {
+    if (!date) return 'Загрузка';
+
+    const termDate = new Date(date); // Преобразуем в объект Date
+    const nowDate = new Date();
+  
+    return termDate > nowDate ? `до: ${termDate.toLocaleDateString()}` : 'истёк';
+  }
+
+  const navigate = useNavigate();
+  const navigateToHistory = (idPage: number) => () => {
+    navigate(`page/${idPage}`);
+  };
 
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
       <ModalBlock />
       <div className="flex flex-col sm:gap-[3.5vh] m-[2%]">
         <InfoBlock url={url} crumb={crumb} />
-        {isVisibleMessage && (
-          <div
-            key={messageKey} // Пересоздаём, чтобы сбросить анимацию
-            className="bg-white w-fit p-[10px] rounded-[10px] z-10 fixed right-[30px] message-box"
-          >
-            <p>URL скопирован!</p>
-            <div className="progress-bar animate-progress"></div>
+        <div className="bg-white rounded-[5px] p-[30px]  shadow-xl">
+          <div className="grid grid-cols-[auto_auto] max-w-[500px] gap-[15px]">
+            <span className="text-left text-[14px]">Домен: {app?.domain?.name}</span>
+            <span className="text-left text-[12px]">{formatDate(app?.domain?.expires)}</span>
+            <span className="text-left text-[14px]">SSL сертификаты:</span>
+            <div className="flex flex-col gap-[10px]">
+              {app?.domain?.SSL.map((SSL, index) => (
+                <div className="flex gap-[10px] items-center" key={index}>
+                  <div className={`w-[7px] h-[7px] rounded-full 
+                    ${SSL.expires && new Date(SSL.expires) > new Date() ? 'bg-custom-green' : 'bg-custom-red'}`} />
+                  <span className="text-left text-[12px]">{formatDate(SSL.expires)}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
-
-        {/* отображение данных о страницах */}
-        <div className="bg-white rounded-[10px]">
+        </div>
+        <div className="bg-white rounded-[10px] shadow-xl">
           {appPage.length > 0 ? (
             <table className="w-full">
               {/* Заголовки таблицы */}
@@ -144,76 +149,47 @@ function AppInfo() {
                   ))}
                 </tr>
               </thead>
-              {/* Данные таблицы */}
               <tbody>
                 {appPage.map((page, index) => (
                   <tr
-                    key={page.idCheckPage}
-                    className={index % 2 === 0 ? "bg-color-bg" : "bg-white"}
+                    key={page.idPage}
+                    className={`${index % 2 === 0 ? "bg-color-bg" : "bg-white"}`}
                   >
-                    {/* <td className='class-td'>{page.idCheckPage}</td> */}
-                    <td className="class-td">
-                      {page.statusLoadContent === "Content fully loaded" ? (
-                        <p className="text-green-500">
-                          Страница успешно загружена
-                        </p>
-                      ) : (
-                        <p className="text-slate-600">
-                          При загрузке страницы возникли проблемы
-                        </p>
-                      )}
+                    <td className="class-td text-left">{page.title}</td>
+                    <td className="flex justify-center class-td">
+                      <div className="flex gap-[10px] items-center">
+                        <span className="text8-16">{page.checkPage && page.checkPage[0]?.statusLoadPage === "200" ? 'Активна' : 'Упала'}</span>
+                        <div className={`min-w-[17px] min-h-[17px] rounded-full ${page.checkPage && page.checkPage[0]?.statusLoadPage === "200" ? 'bg-custom-green' : 'bg-custom-red'}`} />
+                      </div>
                     </td>
                     <td className="class-td">
-                      {page.statusLoadMedia === "Failed" ? (
-                        <p className="text-red-500">Ошибка загрузки медиа</p>
-                      ) : (
-                        <p className="text-slate-600">Медиа загружены</p>
-                      )}
-                    </td>
-                    <td className="class-td">
-                      {page.statusLoadStyles === "Failed" ? (
-                        <p className="text-red-500">Ошибка загрузки стилей</p>
-                      ) : (
-                        <p className="text-slate-600">Стили загружены</p>
-                      )}
-                    </td>
-                    <td className="class-td">
-                      {page.statusLoadScripts === "Failed" ? (
-                        <p className="text-red-500">Ошибка загрузки скриптов</p>
-                      ) : (
-                        <p className="text-slate-600">Скрипты загружены</p>
-                      )}
-                    </td>
-                    <td className="class-td">{page.responseTime}мс.</td>
-                    <td className="class-td">{page.responseTime}мс.</td>
-                    <td className="class-td relative">
-                      <p
-                        className="w-[100px]  overflow-x-hidden whitespace-nowrap cursor-pointer"
-                        onMouseEnter={() => showFullUrl(index)}
-                        onMouseLeave={() => closeFullUrl(index)}
+                      <button
+                        onClick={() => copyUrl(page.urlPage)}
+                        className="flex gap-[5px]"
                       >
-                        {page.urlPage}
-                      </p>
+                        <p
+                          className="w-auto max-w-[350px] overflow-x-hidden whitespace-nowrap cursor-pointer text-left"
+                          onMouseEnter={() => showFullUrl(index)}
+                          onMouseLeave={() => closeFullUrl(index)}
+                        >
+                          {page.urlPage}
+                        </p>
+                        <img src={CopySvg} alt="Копировать url" className="mb-[7px]" />
+                      </button>
                       <div
                         className="hidden absolute bg-white rounded-md p-4 w-[200px]  z-20 shadow-xl"
                         data-key={index}
                       >
                         <p className="break-all">{page.urlPage}</p>
                       </div>
-                      <button
-                        onClick={() => copyUrl(page.urlPage)}
-                        className="absolute right-0 top-[35%]"
-                      >
-                        <img src={CopySvg} alt="Копировать url" />
-                      </button>
                     </td>
-                    <td className="class-td max-w-fit relative">
-                      <button className="flex">
+                    <td className="flex justify-center class-td w-full">
+                      <button className="flex gap-[5px]" onClick={navigateToHistory(page.idPage)}>
                         <p>Подробнее</p>
                         <img
                           src={link}
                           alt="подробнее"
-                          className="absolute right-[5%]"
+                          className="mb-[7px]"
                         />
                       </button>
                     </td>
@@ -222,9 +198,19 @@ function AppInfo() {
               </tbody>
             </table>
           ) : (
-            <p>Нет данных</p>
-          )}
+            <p>Нет данных</p>)
+          }
         </div>
+        
+        {isVisibleMessage && (
+          <div
+            key={messageKey}
+            className="bg-white w-fit p-[10px] rounded-[5px] z-10 fixed right-[30px] message-box shadow-lg"
+          >
+            <p className="px-[10px] py-[5px]">URL скопирован!</p>
+            <div className="progress-bar animate-progress"></div>
+          </div>
+        )}
       </div>
     </div>
   );

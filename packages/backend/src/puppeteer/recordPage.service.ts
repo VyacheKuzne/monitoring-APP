@@ -1,34 +1,44 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PageData } from './page.interface';
+import { PageData, СheckPageData } from './page.interface';
 
 @Injectable()
 export class RecordPageService {
   private prisma = new PrismaClient();
   private readonly logger = new Logger(RecordPageService.name);
 
-  async recordPage(pageData: PageData) {
-    if (pageData) {
-      const result = await this.prisma.checkPage.create({
-        data: {
+  async recordPage(pageData: PageData, checkPageData: СheckPageData) {
+    if (checkPageData) {
+      const page = await this.prisma.page.upsert({
+        where: { urlPage: pageData.urlPage },
+        update: { 
           parentApp: pageData.parentApp,
+          title: pageData.title,
+        },
+        create: {
+          parentApp: pageData.parentApp,
+          title: pageData.title,
           urlPage: pageData.urlPage,
-          statusLoadPage: pageData.statusLoadPage,
-          statusLoadContent: pageData.statusLoadContent,
-          statusLoadDOM: pageData.statusLoadDOM,
-          statusLoadMedia: pageData.mediaStatus,
-          statusLoadStyles: pageData.styleStatus,
-          statusLoadScripts: pageData.scriptStatus,
-          requestTime: parseFloat(pageData.requestTime),
-          responseTime: parseFloat(pageData.responseTime),
-          responseRate: parseFloat(pageData.responseRate),
+        }
+      });
+
+      const checkPage = await this.prisma.checkPage.create({
+        data: {
+          parentPage: page.idPage,
+          statusLoadPage: checkPageData.statusLoadPage,
+          statusLoadContent: checkPageData.statusLoadContent,
+          statusLoadDOM: checkPageData.statusLoadDOM,
+          statusLoadMedia: checkPageData.mediaStatus,
+          statusLoadStyles: checkPageData.styleStatus,
+          statusLoadScripts: checkPageData.scriptStatus,
+          responseTime: parseFloat(checkPageData.responseTime),
 
           date: new Date(),
         },
       });
 
       this.logger.log(`Данные успешно сохранены, url: ${pageData.urlPage}`);
-      return result;
+      return checkPage;
     } else {
       this.logger.error('Page data recording error');
       return;

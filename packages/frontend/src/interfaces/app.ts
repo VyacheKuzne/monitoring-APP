@@ -26,20 +26,27 @@ interface SSL {
   expires: Date | null; // Или Date
 }
 
+export interface Page {
+  idPage: number;
+  title: string;
+  urlPage: string;
+  checkPage?: CheckPage[];
+  
+  app?: App | null;
+}
+
 export interface CheckPage {
   idCheckPage: number;
-  parentApp?: number | null;
-  urlPage: string;
+  parentPage?: number | null;
   statusLoadPage: string;
   statusLoadContent: string;
   statusLoadDOM: string;
   statusLoadMedia: string;
   statusLoadStyles: string;
   statusLoadScripts: string;
-  requestTime: number;
   responseTime: number;
-  responseRate: number;
   date: Date;
-  app?: App | null; // Связь с таблицей app (один ко многим)
+  
+  page?: Page | null; // Связь с таблицей page (один ко многим)
 }
-export type AppData = App | App[];
+export type PageData = Page | Page[];

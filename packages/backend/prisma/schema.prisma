@@ -45,7 +45,7 @@ model app {
   parentDomain Int
   name String @db.VarChar(50)
 
-  checkPage checkPage[] // Связь с таблицей checkPage один ко многим
+  page page[] // Связь с таблицей checkPage один ко многим
   notification notification[] // Связь с таблицей notification один ко многим
 
   server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
@@ -135,23 +135,30 @@ model disk {
   checkServerStats checkServerStats @relation(fields: [parentServerStats], references: [idCheckServerStats], onDelete: Cascade) // Связь с таблицей checkServerStats один ко многим
 }
 
+model page {
+  idPage Int @id @default(autoincrement())
+  parentApp Int
+  title String @db.VarChar(70)
+  urlPage String @db.VarChar(2050) @unique
+  
+  app app? @relation(fields: [parentApp], references: [idApp])
+  checkPage checkPage[]
+}
+
 model checkPage {
   idCheckPage Int @id @default(autoincrement())
-  parentApp Int?
-  urlPage String @db.VarChar(2050)
+  parentPage Int?
   statusLoadPage  String @db.VarChar(50)
   statusLoadContent  String @db.VarChar(50)
   statusLoadDOM  String @db.VarChar(50)
   statusLoadMedia  String @db.VarChar(50)
   statusLoadStyles  String @db.VarChar(50)
   statusLoadScripts  String @db.VarChar(50)
-  requestTime Float
   responseTime Float
-  responseRate Float
 
   date DateTime
 
-  app app? @relation(fields: [parentApp], references: [idApp]) // Связь с таблицей app один ко многим
+  page page? @relation(fields: [parentPage], references: [idPage]) // Связь с таблицей app один ко многим
 }
 
 model notification {

@@ -89,10 +89,33 @@ export class AppService {
   async getAppInfo(idApp: number, idServer: number, idCompany: number) {
     return {
       app: await this.prisma.app.findFirst({
-        where: { idApp: idApp },
+        where: { idApp },
+        include: {
+          domain: { 
+            select: { 
+              idDomain: true,
+              name: true,
+              expires: true,
+              SSL: true 
+          }}
+        }
       }),
-      pageInfo: await this.prisma.checkPage.findMany({
-        where: { parentApp: idApp },
+      pageInfo: await this.prisma.page.findMany({
+        where: { parentApp: idApp, },
+        select: { 
+          idPage: true,
+          parentApp: true,
+          title: true,
+          urlPage: true,
+          checkPage: {
+            where: {
+              date: {
+                gte: new Date(Date.now() - 60 * 60 * 1000),
+              },
+            },
+            orderBy: { date: 'desc' }
+          }
+        }
       }),
       server: await this.prisma.server.findFirst({
         where: { idServer: idServer },
@@ -102,6 +125,27 @@ export class AppService {
       }),
     };
   }
+  async getAppPageHistory(idPage: number, idApp: number, idServer: number, idCompany: number) {
+    return {
+      app: await this.prisma.app.findFirst({
+        where: { idApp },
+      }),
+      pageInfo: await this.prisma.page.findFirst({
+        where: { idPage, },
+      }),
+      checkPageInfo: await this.prisma.checkPage.findMany({
+        where: { parentPage: idPage, },
+        orderBy: { date: 'desc' },
+      }),
+      server: await this.prisma.server.findFirst({
+        where: { idServer: idServer },
+      }),
+      company: await this.prisma.company.findFirst({
+        where: { idCompany: idCompany },
+      }),
+    }
+  }
+
   async getAllNotifications() {
     return this.prisma.notification.findMany({
       orderBy: { date: 'desc' },

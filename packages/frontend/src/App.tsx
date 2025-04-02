@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import CompanyInfo from "./pages/CompanyInfo";
 import ServerInfo from "./pages/ServerInfo";
 import AppInfo from "./pages/AppInfo";
+import TestPageHistory from "./pages/TestPageHistory";
 
 // // src/App.tsx
 // import React, { useState, useEffect } from 'react';
@@ -134,7 +135,10 @@ function App() {
           path="/company/:idCompany/server/:idServer/app/:idApp"
           element={<AppInfo />}
         />
-
+        <Route
+          path="/company/:idCompany/server/:idServer/app/:idApp/page/:idPage"
+          element={<TestPageHistory />}
+        />
         {/* </ModalProvider> */}
       </Routes>
     </Router>

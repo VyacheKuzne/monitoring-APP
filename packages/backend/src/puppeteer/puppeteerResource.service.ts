@@ -88,17 +88,17 @@ export class PuppeteerResource {
           contentType?.includes('stylesheet') ||
           contentType?.includes('text/css')
         ) {
-          if (status >= 200 && status <= 304) {
-            responses.add('style');
-            this.logger.debug(
-              `✅ CSS loaded: ${url} (fromCache: ${fromCache})`,
-            );
-          } else {
-            failedCssRequests.push(url);
-            this.logger.error(
-              `❌ CSS failed to load: ${url} with status: ${status}`,
-            );
-          }
+          // if (status >= 200 && status <= 304) {
+          //   responses.add('style');
+          //   this.logger.debug(
+          //     `✅ CSS loaded: ${url} (fromCache: ${fromCache})`,
+          //   );
+          // } else {
+          //   failedCssRequests.push(url);
+          //   this.logger.error(
+          //     `❌ CSS failed to load: ${url} with status: ${status}`,
+          //   );
+          // }
           if (failedCssRequests.length > 0) {
             networkStatus.styleStatus = 'Failed';
           } else if (responses.has('style')) {
@@ -113,9 +113,9 @@ export class PuppeteerResource {
           if (!hasStyles) networkStatus.styleStatus = 'Not required'; // не работает
         } else {
           // Логирование, когда блок if не был выполнен
-          this.logger.log(
-            `No CSS content-type found for: ${url}. Content-Type: ${contentType}`,
-          );
+          // this.logger.log(
+          //   `No CSS content-type found for: ${url}. Content-Type: ${contentType}`,
+          // );
         }
 
         /*** Проверка загрузки медиафайлов ***/
@@ -140,9 +140,9 @@ export class PuppeteerResource {
         const resourceDomain = new URL(url).hostname;
         if (resourceDomain !== pageDomain) return;
 
-        this.logger.error(
-          `❌ Request failed: ${url} with error: ${request.failure()?.errorText}`,
-        );
+        // this.logger.error(
+        //   `❌ Request failed: ${url} with error: ${request.failure()?.errorText}`,
+        // );
         failedRequests.push(url);
         failedRequestDetails.push(
           `Request failed: ${url} with error: ${request.failure()?.errorText}`,
@@ -195,12 +195,12 @@ export class PuppeteerResource {
           : 'Not required';
 
       if (failedRequests.length > 0) {
-        this.logger.error(
-          `🚨 Failed resource requests on page ${page.url()}: ${failedRequests.join(', ')}`,
-        );
-        this.logger.error(
-          `📌 Detailed failed requests on page ${page.url()}: ${failedRequestDetails.join('; ')}`,
-        );
+        // this.logger.error(
+        //   `🚨 Failed resource requests on page ${page.url()}: ${failedRequests.join(', ')}`,
+        // );
+        // this.logger.error(
+        //   `📌 Detailed failed requests on page ${page.url()}: ${failedRequestDetails.join('; ')}`,
+        // );
       }
 
       return {
@@ -219,7 +219,7 @@ export class PuppeteerResource {
             : 'Some resources not loaded',
       };
     } catch (error) {
-      this.logger.error(`🔥 Resource acquisition error: ${error.message}`);
+      // this.logger.error(`🔥 Resource acquisition error: ${error.message}`);
       return {
         allLoaded: false,
         mediaStatus: 'Failed',

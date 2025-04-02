@@ -6,7 +6,7 @@ import { HttpService } from '@nestjs/axios';
 import * as xml2js from 'xml2js';
 import pLimit from 'p-limit';
 import { RecordPageService } from './recordPage.service';
-import { PageData } from './page.interface';
+import { PageData, СheckPageData } from './page.interface';
 import { PuppeteerCrauler } from './puppeteerCrauler.service';
 import { PuppeteerResource } from './puppeteerResource.service';
 import { PrismaClient } from '@prisma/client';
@@ -58,6 +58,14 @@ export class PuppeteerService {
       const puppeteer = require('puppeteer');
       this.browser = await puppeteer.launch(); // Инициализация браузера
       const page = await this.browser.newPage();
+
+      let title = '';
+      let PageData: PageData = {
+        parentApp: this.idApp,
+        title: title,
+        urlPage: url,
+      }
+
       try {
         this.logger.log(`Processing URL: ${url}`);
 
@@ -93,6 +101,10 @@ export class PuppeteerService {
         }
         try {
           if (statusLoadPage !== 'Error') {
+
+            title = await page.evaluate(() => document.title);
+            PageData.title = title;
+
             // Страница загрузилась успешно, выполняем проверки
             await page.waitForFunction(
               () => document.readyState === 'complete',
@@ -122,45 +134,40 @@ export class PuppeteerService {
             const requestTime = navigationEntry?.startTime ?? 0;
             const responseTime = navigationEntry?.responseEnd ?? 0;
             const responseRate = responseTime - requestTime;
-            this.logger.log(`Страница загрузилась коректно, url:${url}`);
+
+            this.logger.log(`The ${url} page loaded correctly`);
             if (!this.idApp) {
               this.logger.log('idAPP is error!');
             }
 
-            const PageData: PageData = {
-              parentApp: this.idApp,
-              urlPage: url,
+            const СheckPageData: СheckPageData = {
               statusLoadPage,
               statusLoadContent,
               statusLoadDOM,
               mediaStatus: resourceStatus.mediaStatus,
               styleStatus: resourceStatus.styleStatus,
               scriptStatus: resourceStatus.scriptStatus,
-              requestTime: requestTime.toFixed(2),
               responseTime: responseTime.toFixed(2),
-              responseRate: responseRate.toFixed(2),
             };
-            this.recordPage.recordPage(PageData);
+            this.recordPage.recordPage(PageData, СheckPageData);
           } else {
             throw new Error(`Failed to load after all attempts`);
           }
         } catch (error) {
           this.logger.error(`Error load page: ${error.message}`);
-          const PageData: PageData = {
-            parentApp: this.idApp,
-            urlPage: url,
+          PageData.title = url;
+
+          const СheckPageData: СheckPageData = {
             statusLoadPage: 'Error',
             statusLoadContent: 'Failed',
             statusLoadDOM: 'Unknown',
             mediaStatus: 'Failed',
             styleStatus: 'Failed',
             scriptStatus: 'Failed',
-            requestTime: '0',
             responseTime: '0',
-            responseRate: '0',
           };
           this.failedPageCount++;
-          this.recordPage.recordPage(PageData);
+          this.recordPage.recordPage(PageData, СheckPageData);
         }
         // Очистка состояния страницы перед следующим URL
         await page.goto('about:blank');
@@ -176,7 +183,7 @@ export class PuppeteerService {
   // Завершить мониторинг, зафиксировать статистику и оповестить о критических ошибках.
   async stopMonitoring(domain: string) {
     this.logger.log(
-      `Мониторинг ${domain} завершен. Всего страниц: ${this.PageCount}, Количество страниц со статусом error: ${this.failedPageCount}`,
+      `Monitoring of ${domain} is completed. Total pages: ${this.PageCount}, The number of pages with the error status: ${this.failedPageCount}`,
     );
 
     const app = await this.prisma.app.findFirst({

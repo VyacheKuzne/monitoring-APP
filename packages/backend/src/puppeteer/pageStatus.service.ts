@@ -10,20 +10,29 @@ export class PageStatusService {
   private readonly logger = new Logger(PageStatusService.name);
 
   async getPageStatus(idApp: number) {
-    const pages = await this.prisma.checkPage.findMany({
-      where: {
-        parentApp: idApp,
-        date: {
-          gte: new Date(Date.now() - 60 * 60 * 1000),
+    const pages = await this.prisma.page.findMany({
+        where: {
+          parentApp: idApp,
         },
-      },
-    });
+        select: {
+          idPage: true,
+          checkPage: {
+            where: {
+              date: {
+                gte: new Date(Date.now() - 60 * 60 * 1000),
+              },
+            },
+          },
+        },
+      });
 
     let okay = 0;
     let notOkay = 0;
 
-    pages.map((page) => {
-      page.statusLoadPage === '200' ? okay++ : notOkay++;
+    pages.forEach((page) => {
+        page.checkPage.forEach((check) => {
+            check.statusLoadPage === "200" ? okay++ : notOkay++;
+        });
     });
 
     const totalCount = okay + notOkay;

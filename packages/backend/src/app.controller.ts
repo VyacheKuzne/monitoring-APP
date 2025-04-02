@@ -61,6 +61,16 @@ export class AppController {
     return this.appService.getAppInfo(idApp, idServer, idCompany);
   }
 
+  @Get('/company/:idCompany/server/:idServer/app/:idApp/page/:idPage/get')
+  async getAppPageHistory(
+    @Param('idPage', ParseIntPipe) idPage: number,
+    @Param('idApp', ParseIntPipe) idApp: number,
+    @Param('idServer', ParseIntPipe) idServer: number,
+    @Param('idCompany', ParseIntPipe) idCompany: number,
+  ) {
+    return this.appService.getAppPageHistory(idPage, idApp, idServer, idCompany);
+  }
+
   @Get('/notifications/get')
   async getAllNotifications() {
     return this.appService.getAllNotifications();
