@@ -44,10 +44,11 @@ model app {
   parentServer Int
   parentDomain Int
   name String @db.VarChar(50)
-
+  authorized Boolean @default(true)
+  
   checkPage checkPage[] // Связь с таблицей checkPage один ко многим
   notification notification[] // Связь с таблицей notification один ко многим
-  authorized Boolean @default(true)
+
 
 
   server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим

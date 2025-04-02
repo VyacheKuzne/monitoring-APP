@@ -10,16 +10,18 @@ export class PuppeteerController {
     private readonly PageStatusService: PageStatusService,
   ) {}
 
-  @Get('/:domain/:idApp')
+  @Get('/:domain/:idApp/:authorized')
   async getPageLoadInfo(
     @Param('domain') domain: string,
     @Param('idApp', ParseIntPipe) idApp: number,
+    @Param('authorized') authorized: boolean,
   ) {
     // Устанавливаем idApp в сервисе перед вызовом startPageMonitoring
     this.puppeteerService.setAppContext(idApp);
 
+
     // Теперь только передаем domain
-    return this.puppeteerService.startPageMonitoring(domain);
+    return this.puppeteerService.startPageMonitoring(domain, authorized);
   }
 
   @Get('status/app/:idApp')

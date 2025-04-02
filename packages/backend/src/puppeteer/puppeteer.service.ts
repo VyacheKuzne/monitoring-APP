@@ -1,17 +1,19 @@
 // src/app.service.ts
 import { Injectable, forwardRef, Logger, Inject } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
-import axios from 'axios';
+import { MonitoringConfig } from './page.interface';
 import { HttpService } from '@nestjs/axios';
-import * as xml2js from 'xml2js';
+// import * as xml2js from 'xml2js';
 import pLimit from 'p-limit';
 import { RecordPageService } from './recordPage.service';
 import { PageData } from './page.interface';
 import { PuppeteerCrauler } from './puppeteerCrauler.service';
 import { PuppeteerResource } from './puppeteerResource.service';
+import { NotificationService } from 'src/create/create-notification/createNotification.service';
 @Injectable()
 export class PuppeteerService {
   private idApp: number; // Свойство для хранения idApp
+  private authorized: boolean;
   constructor(
     private readonly recordPage: RecordPageService,
     private readonly httpService: HttpService,
@@ -19,6 +21,7 @@ export class PuppeteerService {
     private readonly PuppeteerCrauler: PuppeteerCrauler,
     @Inject(forwardRef(() => PuppeteerResource))
     private readonly PuppeteerResource: PuppeteerResource,
+    private readonly NotificationService: NotificationService,
   ) {}
 
   private readonly logger = new Logger(PuppeteerService.name);
@@ -26,16 +29,16 @@ export class PuppeteerService {
   private attempts = 100;
   private timeout = 90000;
   private concurrency = 3;
-  private recursionDepth = 10;
-
+  // private recursionDepth = 10;
   private PageCount = 0;
   private failedPageCount = 0;
+
   setAppContext(idApp: number) {
     this.idApp = idApp;
   }
   //   Запустить мониторинг страниц сайта, начиная с проверки sitemap.xml
-  async startPageMonitoring(domain: string) {
-    await this.PuppeteerCrauler.startMonitoring(domain);
+  async startPageMonitoring(domain: string, authorized: boolean) {
+    await this.PuppeteerCrauler.startMonitoring(domain, authorized);
   }
 
   async runParallel<T>(
@@ -173,16 +176,16 @@ export class PuppeteerService {
       `Мониторинг ${domain} завершен. Всего страниц: ${this.PageCount}, Количество страниц со статусом error: ${this.failedPageCount}`,
     );
     if (this.failedPageCount / this.PageCount >= 0.1) {
-      const url = 'http://localhost:3000/notification/create';
       const percent = Math.round((this.failedPageCount / this.PageCount) * 100);
       const data = {
         text: `При проверке страниц приложения ${domain}, количество провальных проверок достигло ${percent}%.`,
         parentCompany: null,
         parentServer: null,
         parentApp: null,
+        status: 'error',
+        date: new Date(),
       };
-
-      await this.httpService.post(url, data).toPromise();
+      this.NotificationService.createNotification(data);
     }
 
     await this.browser.close();

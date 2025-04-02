@@ -11,3 +11,7 @@ export interface PageData {
   responseTime: string;
   responseRate: string;
 }
+export interface MonitoringConfig {
+  domain: string;
+  authorized: boolean;
+}

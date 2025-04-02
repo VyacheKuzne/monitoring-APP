@@ -29,14 +29,14 @@ export class DomainService {
       const response = await firstValueFrom(
         this.httpService.get(`http://localhost:3000/whois?domain=${domain}`),
       );
-      this.NotificationService.createNotification({
-        text: `успешно получены данные по домейну ${domain}`,
-        parentCompany: null,
-        parentServer: null,
-        parentApp: null,
-        status: 'notification',
-        date: new Date(),
-      });
+      // this.NotificationService.createNotification({
+      //   text: `успешно получены данные по домейну ${domain}`,
+      //   parentCompany: null,
+      //   parentServer: null,
+      //   parentApp: null,
+      //   status: 'notification',
+      //   date: new Date(),
+      // });
       return response.data;
     } catch (error) {
       console.error('Ошибка при получении информации о домене:', error);
@@ -61,10 +61,11 @@ export class DomainService {
   public async getPagesData(
     domain: string,
     idApp: number,
+    authorized: boolean,
   ): Promise<{ creationDate?: string }> {
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`http://localhost:3000/pages/${domain}/${idApp}`),
+        this.httpService.get(`http://localhost:3000/pages/${domain}/${idApp}/${authorized}`),
       );
       return response.data;
     } catch (error) {
@@ -145,7 +146,7 @@ export class DomainService {
     const idApp = createdApp.idApp;
 
     // Получаем данные о страницах домена
-    await this.getPagesData(domain, idApp);
+    await this.getPagesData(domain, idApp, authorized);
     this.sendProgress(100, 'Создание завершено');
     return createdApp;
   }
