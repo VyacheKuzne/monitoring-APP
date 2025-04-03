@@ -20,7 +20,6 @@ export class DomainController {
       authorized: boolean;
     },
   ) {
-    // Проверяем, что все необходимые параметры есть в теле запроса
     if (!Body.idServer) {
       throw new Error('idServer is required');
     }
@@ -28,14 +27,12 @@ export class DomainController {
       throw new Error('idCompany is required');
     }
 
-    // Отправляем сообщение о начале процесса создания домена
     this.progressGateway.server.emit('progress', {
       progress: 0,
       message: 'Начало создания домена',
     });
 
     try {
-      // Выполняем создание домена и приложения
       const createdApp = await this.domainService.createDomainAndLinkDomain(
         Body.name,
         Body.appName,
@@ -43,22 +40,19 @@ export class DomainController {
         Body.idServer,
         Body.authorized,
       );
-
-      // Если процесс завершился успешно
       this.progressGateway.server.emit('progress', {
         progress: 100,
         message: 'Домен и приложение успешно созданы',
         app: createdApp,
       });
 
-      return createdApp; // Возвращаем результат
+      return createdApp; 
     } catch (error) {
-      // В случае ошибки, отправляем информацию о сбое
       this.progressGateway.server.emit('progress', {
         progress: 100,
         message: `Ошибка: ${error.message}`,
       });
-      throw error; // Перебрасываем ошибку дальше
+      throw error; 
     }
   }
 }

@@ -85,7 +85,7 @@ function ServerInfo() {
   const createDomain = async (event: React.FormEvent) => {
     event.preventDefault();
     const domainName = domainData.replace("https://", "");
-
+    console.log(authorized)
     try {
       // Выполняем POST-запрос для создания сервера и ждём его завершения
       await axios.post("http://localhost:3000/domain/create", {
@@ -95,7 +95,7 @@ function ServerInfo() {
         idServer: Number(idServer), // Преобразуем в число
         authorized: authorized,
       });
-
+      
       // После успешного добавления сервера, вызываем обновление данных компании и серверов
       // await getCompanyInfo();
     } catch (error) {
@@ -140,7 +140,7 @@ function ServerInfo() {
     setModal(false);
   };
   const isAuthorized = () => {
-    setAuthorized(false);
+    setAuthorized(!authorized);
   };
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">

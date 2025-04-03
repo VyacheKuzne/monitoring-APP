@@ -67,6 +67,7 @@ export class DomainService {
       const response = await firstValueFrom(
         this.httpService.get(`http://localhost:3000/pages/${domain}/${idApp}/${authorized}`),
       );
+      this.logger.debug('отпарвил данные')
       return response.data;
     } catch (error) {
       console.error('Ошибка при получении информации о страницах:', error);
@@ -114,11 +115,11 @@ export class DomainService {
     authorized: boolean,
   ) {
     this.sendProgress(10, 'Запрос данных WHOIS...');
-    // await this.getWhoisData(domain);
+    await this.getWhoisData(domain);
 
     this.sendProgress(30, 'Данные WHOIS получены');
     this.sendProgress(40, 'Запрос данных SSL...');
-    // this.getSSLabsData(domain);
+    this.getSSLabsData(domain);
 
     this.sendProgress(60, 'Данные SSL получены');
 

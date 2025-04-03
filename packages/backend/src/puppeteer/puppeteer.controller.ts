@@ -1,5 +1,11 @@
 // puppeteer.controller.ts
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  ParseBoolPipe,
+} from '@nestjs/common';
 import { PuppeteerService } from './puppeteer.service';
 import { PageStatusService } from './pageStatus.service';
 
@@ -14,11 +20,10 @@ export class PuppeteerController {
   async getPageLoadInfo(
     @Param('domain') domain: string,
     @Param('idApp', ParseIntPipe) idApp: number,
-    @Param('authorized') authorized: boolean,
+    @Param('authorized', ParseBoolPipe) authorized: boolean,
   ) {
     // Устанавливаем idApp в сервисе перед вызовом startPageMonitoring
     this.puppeteerService.setAppContext(idApp);
-
 
     // Теперь только передаем domain
     return this.puppeteerService.startPageMonitoring(domain, authorized);

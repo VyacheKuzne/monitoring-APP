@@ -16,7 +16,7 @@ interface WhoisData {
   registrar?: string;
   creationDate?: string;
   expirationDate?: string;
-  raw?: string; // Содержимое ответа whois в необработанном виде
+  raw?: string; 
 }
 
 @Controller()
@@ -45,13 +45,13 @@ export class AppController {
   ) {
     return this.appService.getServer(idServer, idCompany);
   }
-  // маршурт чтобы получить данные о приложениях на сервере
+ 
   @Get('/company/:idCompany/server/:idServer/app/get')
   async getApp(@Param('idServer') idServer: number) {
     const numberServer = Number(idServer);
     return this.appService.getApp(numberServer);
   }
-  // запрос на получение данных о приложении
+
   @Get('/company/:idCompany/server/:idServer/app/:idApp/get')
   async getAppInfo(
     @Param('idApp', ParseIntPipe) idApp: number,

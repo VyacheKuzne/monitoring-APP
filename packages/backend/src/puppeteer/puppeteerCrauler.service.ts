@@ -5,7 +5,7 @@ import { MonitoringConfig } from './page.interface';
 // import { PageData } from './page.interface';
 import axios from 'axios';
 // import { HttpService } from '@nestjs/axios';
-import * as xml2js from 'xml2js';
+// import * as xml2js from 'xml2js';
 // import pLimit from 'p-limit';
 import { PuppeteerService } from './puppeteer.service';
 import { AutorizationService } from 'src/puppeteer/functionForCrauler/autorization.service';
@@ -25,7 +25,7 @@ export class PuppeteerCrauler {
   private recursionDepth = 10;
   //   Запустить мониторинг страниц сайта, начиная с проверки sitemap.xml
   async startMonitoring(domain: string, authorized: boolean) {
-    this.logger.log(`Starting the Domain page test: ${domain}`);
+    this.logger.log(`Начало проверок для приложения: ${domain}`);
     this.browser = await puppeteer.launch({ args: ['--disable-web-security'] });
     await this.checkSitemap(domain, authorized);
   }
@@ -42,24 +42,26 @@ export class PuppeteerCrauler {
       this.logger.log(`Found sitemaps: ${sitemapLines}`);
       await this.findLinksInSitemap.findLinksInSitemap(sitemapLines, domain);
     } else {
-      this.logger.log(`Sitemaps not found. The beginning of the link search`);
+      this.logger.log(
+        `Сайт мап не найден. Начинаем искать в автоматическом режиме`,
+      );
       await this.findLinksViaPuppeteer(domain, authorized);
     }
   }
 
   async findLinksViaPuppeteer(domain: string, authorized: boolean) {
+    this.logger.debug('начал работать findLinksViaPuppeteer');
     const startUrl = `https://${domain}`;
     const page: Page = await this.browser.newPage();
     const visitedLinks = new Set<string>();
     const toVisit = [`${startUrl}`];
     const errorLinks = new Set<string>();
+    const subPageCandidates: string[] = [];
 
-    // 🔹 Список URL, которые не нужно проверять (заполни сам)
     const blacklistPatterns: RegExp[] = [
       /^https:\/\/a7-bill-stage\.tw1\.ru\/api\/users\/\d+$/,
     ];
 
-    // 🔹 Функция для проверки URL в черном списке
     const isBlacklisted = (url: string): boolean => {
       return blacklistPatterns.some((pattern) => pattern.test(url));
     };
@@ -74,8 +76,9 @@ export class PuppeteerCrauler {
         errorLinks.add(url);
       }
     });
-    // 🔹 Функция получения ссылок
+
     const getLinks = async (url: string) => {
+      this.logger.debug('начал работать getLinks');
       try {
         await page.goto(url, { waitUntil: 'networkidle2' });
 
@@ -96,68 +99,76 @@ export class PuppeteerCrauler {
       }
     };
 
-    // 🔹 Проверка вложенных страниц (например, /employees/1, /employees/2 и т. д.)
-    const checkSubPages = async (baseUrl: string) => {
-      let index = 1;
-      while (true) {
-        const testUrl = `${baseUrl}/${index}`;
+    const checkSubPages = async (baseUrls: string[]) => {
+      this.logger.debug('начал работать checkSubPages');
+      for (const baseUrl of baseUrls) {
+        let index = 1;
+        while (true) {
+          const testUrl = `${baseUrl}/${index}`;
 
-        // Пропускаем URL из блэклиста
-        if (isBlacklisted(testUrl)) {
-          console.log(`⚠️ Пропущен (блэклист): ${testUrl}`);
-          break;
-        }
+          if (isBlacklisted(testUrl)) {
+            console.log(`⚠️ Пропущен (блэклист): ${testUrl}`);
+            break;
+          }
 
-        try {
-          const response = await page.goto(testUrl, {
-            waitUntil: 'networkidle2',
-          });
-          console.log(
-            `✅ Проверено: ${testUrl} (Статус: ${response?.status()})`,
-          );
-          index++;
-        } catch (error) {
-          console.log(`❌ Ошибка при проверке ${testUrl}:`, error);
-          break;
+          try {
+            const response = await page.goto(testUrl, {
+              waitUntil: 'networkidle2',
+            });
+            console.log(
+              `✅ Проверено: ${testUrl} (Статус: ${response?.status()})`,
+            );
+            index++;
+          } catch (error) {
+            console.log(`❌ Ошибка при проверке ${testUrl}:`, error);
+            break;
+          }
         }
       }
     };
 
-    // 🔹 Запуск проверки
+    this.logger.debug(
+      `Проверяем авторизацию: ${authorized}, тип: ${typeof authorized}`,
+    );
     if (authorized) {
-      this.logger.debug(authorized);
+      this.logger.debug(`авторизация нужна`);
       await this.AutorizationService.login(page, domain);
-      while (toVisit.length > 0) {
-        const currentUrl = toVisit.shift()!;
-        const normalizedUrl = normalizeUrl(currentUrl);
+    } else {
+      this.logger.debug(`авторизация не нужна`);
+    }
 
-        if (visitedLinks.has(normalizedUrl) || isBlacklisted(normalizedUrl))
-          continue;
-        visitedLinks.add(normalizedUrl);
+    while (toVisit.length > 0) {
+      const currentUrl = toVisit.shift()!;
+      const normalizedUrl = normalizeUrl(currentUrl);
 
-        const newLinks = await getLinks(currentUrl);
-        for (const link of newLinks) {
-          const normalizedLink = normalizeUrl(link);
-          if (
-            !visitedLinks.has(normalizedLink) &&
-            !isBlacklisted(normalizedLink)
-          ) {
-            toVisit.push(normalizedLink);
-          }
-          await checkSubPages(normalizedLink);
+      if (visitedLinks.has(normalizedUrl) || isBlacklisted(normalizedUrl))
+        continue;
+      visitedLinks.add(normalizedUrl);
+
+      const newLinks = await getLinks(currentUrl);
+      for (const link of newLinks) {
+        const normalizedLink = normalizeUrl(link);
+        if (
+          !visitedLinks.has(normalizedLink) &&
+          !isBlacklisted(normalizedLink)
+        ) {
+          toVisit.push(normalizedLink);
+          subPageCandidates.push(normalizedLink); // Добавляем ссылку в кандидаты для вложенной проверки
         }
-
-        console.log(
-          `🔗 На странице ${currentUrl} найдено ${newLinks.length} ссылок.`,
-        );
       }
 
-      console.log('📊 Итог:', visitedLinks.size, 'страниц проверено');
+      console.log(
+        `🔗 На странице ${currentUrl} найдено ${newLinks.length} ссылок.`,
+      );
     }
-    else{
-      return console.log('не прошла вторизация');
-    }
+
+    console.log('📊 Итог:', visitedLinks.size, 'страниц проверено');
+
     await this.puppeteerService.updatePageData(Array.from(visitedLinks));
+
+    console.log('🛑 Запускаем проверку вложенных страниц...');
+    await checkSubPages(subPageCandidates);
+
     console.log('🛑 Мониторинг завершен');
     this.puppeteerService.stopMonitoring(domain);
   }
