@@ -10,7 +10,6 @@ export class FilterController {
     @Body('name') filterName: string,
     @Body('status') filterStatus: boolean[],
   ) {
-    console.log(filterName);
     return await this.filterStatus.filterServerStatus(filterName, filterStatus);
   }
 }

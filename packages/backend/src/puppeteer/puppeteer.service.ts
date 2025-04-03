@@ -10,6 +10,7 @@ import { PageData, СheckPageData } from './page.interface';
 import { PuppeteerCrauler } from './puppeteerCrauler.service';
 import { PuppeteerResource } from './puppeteerResource.service';
 import { PrismaClient } from '@prisma/client';
+import { PuppeteerCheckFile } from './puppeteerCheckFile.service';
 import { NotificationService } from '../create/create-notification/createNotification.service';
 
 @Injectable()
@@ -23,6 +24,7 @@ export class PuppeteerService {
     private readonly PuppeteerCrauler: PuppeteerCrauler,
     @Inject(forwardRef(() => PuppeteerResource))
     private readonly PuppeteerResource: PuppeteerResource,
+    private readonly PuppeteerCheckFile: PuppeteerCheckFile,
     private readonly NotificationService: NotificationService,
   ) {}
 
@@ -30,7 +32,7 @@ export class PuppeteerService {
   private browser: puppeteer.Browser;
   private attempts = 3;
   private timeout = 90000;
-  private concurrency = 3;
+  private concurrency = 1;
   private recursionDepth = 10;
 
   private PageCount = 0;
@@ -56,10 +58,11 @@ export class PuppeteerService {
     this.PageCount = pageCount;
     const processUrl = async (url: string): Promise<void> => {
       const puppeteer = require('puppeteer');
-      this.browser = await puppeteer.launch(); // Инициализация браузера
+      this.browser = await puppeteer.launch({protocolTimeout: 10000}); // Инициализация браузера
       const page = await this.browser.newPage();
 
       let title = '';
+
       let PageData: PageData = {
         parentApp: this.idApp,
         title: title,
@@ -101,9 +104,19 @@ export class PuppeteerService {
         }
         try {
           if (statusLoadPage !== 'Error') {
-
+            
             title = await page.evaluate(() => document.title);
-            PageData.title = title;
+            if (title && title.trim() !== '') {
+              PageData.title = title;
+            }
+            const isFile = await this.PuppeteerCheckFile.checkFile(response);
+
+            if (!PageData.title && isFile) {
+              let fileName = url.split('/').pop() || url;
+              fileName = decodeURIComponent(fileName);
+              const cleanedFileName = fileName.replace(/\s+/g, '_');
+              PageData.title = `Файл - ${cleanedFileName}`;
+            }
 
             // Страница загрузилась успешно, выполняем проверки
             await page.waitForFunction(
@@ -113,27 +126,29 @@ export class PuppeteerService {
               () => document.readyState,
             );
 
-            const resourceStatus =
-              await this.PuppeteerResource.getResourceStatus(page);
-            const statusLoadContent = resourceStatus.allLoaded
-              ? 'Content fully loaded'
-              : 'Some resources not loaded';
+            let statusLoadContent = '';
+            let mediaStatus = '';
+            let styleStatus = '';
+            let scriptStatus = '';
+            if(!isFile) {
+              const resourceStatus = await this.PuppeteerResource.getResourceStatus(page);
+              statusLoadContent = resourceStatus.allLoaded 
+                ? 'Content fully loaded' : 'Some resources not loaded';
+              mediaStatus = resourceStatus.mediaStatus;
+              styleStatus = resourceStatus.styleStatus;
+              scriptStatus = resourceStatus.scriptStatus;
+            }
+            else {
+              statusLoadContent = 'Content fully loaded';
+              let mediaStatus = 'Loaded';
+              let styleStatus = 'Loaded';
+              let scriptStatus = 'Loaded';
+            }
 
-            const navigationEntry = await page.evaluate(() => {
-              const entries = performance.getEntriesByType('navigation');
-              if (entries.length > 0) {
-                const navEntry = entries[0] as PerformanceNavigationTiming;
-                return {
-                  startTime: navEntry.startTime,
-                  responseEnd: navEntry.responseEnd,
-                };
-              }
-              return null;
-            });
-
-            const requestTime = navigationEntry?.startTime ?? 0;
-            const responseTime = navigationEntry?.responseEnd ?? 0;
-            const responseRate = responseTime - requestTime;
+            const responseTime = (await page.evaluate(() => {
+              const entry = performance.getEntriesByType('navigation')[0];
+              return entry instanceof PerformanceNavigationTiming ? entry.responseEnd : 0;
+            }));
 
             this.logger.log(`The ${url} page loaded correctly`);
             if (!this.idApp) {
@@ -144,9 +159,9 @@ export class PuppeteerService {
               statusLoadPage,
               statusLoadContent,
               statusLoadDOM,
-              mediaStatus: resourceStatus.mediaStatus,
-              styleStatus: resourceStatus.styleStatus,
-              scriptStatus: resourceStatus.scriptStatus,
+              mediaStatus,
+              styleStatus,
+              scriptStatus,
               responseTime: responseTime.toFixed(2),
             };
             this.recordPage.recordPage(PageData, СheckPageData);

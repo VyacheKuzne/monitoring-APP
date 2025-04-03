@@ -38,7 +38,6 @@ function AppInfo() {
       const response = await axios.get(
         `http://localhost:3000/company/${idCompany}/server/${idServer}/app/${idApp}/get`,
       );
-      console.log(response.data.pageInfo)
 
       if (!response.data.pageInfo) {
         console.log("Отсутствуют данные о страницах");
@@ -87,16 +86,16 @@ function AppInfo() {
       setTimeout(() => setIsVisibleMessage(false), 2000);
     }, 10); // Задержка для сброса анимации
   };
-  function showFullUrl(index: number) {
+  function showFullUrl(key: string, index: number) {
     let showFullUrlBlock: HTMLElement | null;
-    showFullUrlBlock = document.querySelector(`[data-key = "${index}"]`);
+    showFullUrlBlock = document.querySelector(`[data-key = "${key}-${index}"]`);
     if (showFullUrlBlock) {
       showFullUrlBlock.style.display = "block";
     }
   }
-  function closeFullUrl(index: number) {
+  function closeFullUrl(key: string, index: number) {
     let showFullUrlBlock: HTMLElement | null;
-    showFullUrlBlock = document.querySelector(`[data-key = "${index}"]`);
+    showFullUrlBlock = document.querySelector(`[data-key = "${key}-${index}"]`);
     if (showFullUrlBlock) {
       showFullUrlBlock.style.display = "none";
     }
@@ -127,13 +126,34 @@ function AppInfo() {
             <span className="text-left text-[14px]">SSL сертификаты:</span>
             <div className="flex flex-col gap-[10px]">
               {app?.domain?.SSL.map((SSL, index) => (
-                <div className="flex gap-[10px] items-center" key={index}>
-                  <div className={`w-[7px] h-[7px] rounded-full 
-                    ${SSL.expires && new Date(SSL.expires) > new Date() ? 'bg-custom-green' : 'bg-custom-red'}`} />
-                  <span className="text-left text-[12px]">{formatDate(SSL.expires)}</span>
+                <div key={index}>
+                  <div className="relative flex gap-[10px] items-center "
+                    onMouseEnter={() => showFullUrl('ssl', index)}
+                    onMouseLeave={() => closeFullUrl('ssl', index)} 
+                  >
+                    <div className={`w-[7px] h-[7px] rounded-full 
+                      ${SSL.expires && new Date(SSL.expires) > new Date() ? 'bg-custom-green' : 'bg-custom-red'}`} />
+                    <span className="text-left text-[12px]">
+                      {formatDate(SSL.expires)}
+                    </span>
+                  </div>
+                  <div
+                    className="hidden absolute bg-white rounded-md p-4 w-[200px]  z-20 shadow-xl"
+                    data-key={`ssl-${index}`}
+                  >
+                    <p className="text8-16px break-all">
+                      Осталось {SSL.expires
+                      ? Math.round(
+                          (new Date(SSL.expires).getTime() - new Date().getTime()) /
+                            (1000 * 60 * 60 * 24)
+                        )
+                      : "Неизвестно"} дней
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
+            <span className="text-left text-[14px]">Всего {appPage.length} страниц</span>
           </div>
         </div>
         <div className="bg-white rounded-[10px] shadow-xl">
@@ -169,16 +189,17 @@ function AppInfo() {
                       >
                         <p
                           className="w-auto max-w-[350px] overflow-x-hidden whitespace-nowrap cursor-pointer text-left"
-                          onMouseEnter={() => showFullUrl(index)}
-                          onMouseLeave={() => closeFullUrl(index)}
+                          onMouseEnter={() => showFullUrl('url', index)}
+                          onMouseLeave={() => closeFullUrl('url', index)}
+
                         >
                           {page.urlPage}
                         </p>
                         <img src={CopySvg} alt="Копировать url" className="mb-[7px]" />
                       </button>
                       <div
-                        className="hidden absolute bg-white rounded-md p-4 w-[200px]  z-20 shadow-xl"
-                        data-key={index}
+                        className="hidden absolute bg-white rounded-md p-4 w-[200px] z-20 shadow-xl"
+                        data-key={`url-${index}`}
                       >
                         <p className="break-all">{page.urlPage}</p>
                       </div>

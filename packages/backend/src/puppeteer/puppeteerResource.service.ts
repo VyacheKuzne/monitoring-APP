@@ -81,7 +81,7 @@ export class PuppeteerResource {
 
         // Логируем тип контента и ресурс
         // this.logger.debug(`Response received: ${response.status()} ${url} (fromCache: ${fromCache})`);
-        this.logger.debug(`Content-Type: ${contentType}`);
+        // this.logger.debug(`Content-Type: ${contentType}`);
 
         /*** Проверка загрузки стилей ***/
         if (

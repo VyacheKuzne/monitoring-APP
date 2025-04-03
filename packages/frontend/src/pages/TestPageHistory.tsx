@@ -8,6 +8,7 @@ import { Company } from "../interfaces/company";
 import { Server } from "../interfaces/server";
 import { App, Page, CheckPage } from "../interfaces/app";
 import "./AppInfo.css";
+import link from "../img/link.svg";
 
 function TestPageHistory() {
   useEffect(() => {
@@ -88,6 +89,12 @@ function TestPageHistory() {
               <div className={`min-w-[17px] min-h-[17px] rounded-full 
                 ${appCheckPage[0]?.statusLoadPage === "200" ? 'bg-custom-green' : 'bg-custom-red'}`} />
             </div>
+            <a href={appPage?.urlPage} 
+              className="flex gap-[5px] max-w-[500px] text-left text-[10px] text-slate-600 col-span-full overflow-x-hidden whitespace-nowrap"
+            >
+              <p>Перейти на страницу: {appPage?.urlPage}</p>
+              <img src={link} alt="подробнее" className="mb-[7px]" />
+            </a>
             <hr className="h-[2px] col-span-full bg-slate-600" />
             
           </div>
