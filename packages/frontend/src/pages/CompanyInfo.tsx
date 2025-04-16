@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { Helmet } from 'react-helmet-async';
 import axios from "axios";
 import "../App.css";
 import ModalBlock from "../block/ModalBlock";
@@ -82,6 +83,11 @@ function CompanyInfo() {
   };
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
+      <Helmet>
+        <title>Сервера компании {getCompanyName()}</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href={`http://localhost:3001/company/${idCompany}/`} />
+      </Helmet>
       <ModalBlock />
       <div className="flex flex-col sm:gap-y-[3.5vh] m-[2%]">
         <InfoBlock crumb={[getCompanyName()]} />
@@ -92,12 +98,13 @@ function CompanyInfo() {
           <button
             onClick={showModal}
             className="flex justify-center items-center max-w-[400px] min-h-[200px] p-[30px] bg-white 
-        hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition "
+          hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition "
           >
             <img
               src={PlusSvg}
               className="w-[30px] h-[30px] mx-3"
-              alt="Закрыть модальное окно"
+              alt="Закрыть модальное окно" 
+              loading="lazy"
             />
             <p>Добавить сервер</p>
           </button>
@@ -111,7 +118,7 @@ function CompanyInfo() {
                     className="rotate-45 select-none"
                     onClick={closeModal}
                   >
-                    <img src={PlusSvg} alt="Закрыть модальное окно" />
+                    <img src={PlusSvg} alt="Закрыть модальное окно" loading="lazy" />
                   </button>
                 </div>
                 {/* форма для запоолнения */}

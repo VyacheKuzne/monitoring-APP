@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { Helmet } from 'react-helmet-async';
 import axios from "axios";
 import "../App.css";
 import ModalBlock from "../block/ModalBlock";
@@ -74,6 +75,14 @@ function TestPageHistory() {
 
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
+      <Helmet>
+        <title>Веб-страница приложения {`${app?.name}`} - {`${appPage?.title}`}</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link 
+          rel="canonical" 
+          href={`http://localhost:3001/company/${idCompany}/server/${idServer}/app/${idApp}/page/${idPage}`} 
+        />
+      </Helmet>
       <ModalBlock />
       <div className="flex flex-col sm:gap-[3.5vh] m-[2%]">
         <InfoBlock url={url} crumb={crumb} />
@@ -89,11 +98,16 @@ function TestPageHistory() {
               <div className={`min-w-[17px] min-h-[17px] rounded-full 
                 ${appCheckPage[0]?.statusLoadPage === "200" ? 'bg-custom-green' : 'bg-custom-red'}`} />
             </div>
-            <a href={appPage?.urlPage} 
+            <a 
+              href={appPage?.urlPage} 
+              target="_blank"
+              rel="nofollow noreferrer nofollow" 
               className="flex gap-[5px] max-w-[500px] text-left text-[10px] text-slate-600 col-span-full overflow-x-hidden whitespace-nowrap"
             >
+              {/* открываем сторонню ссылку в новой вкладке, не индексируем, не 
+                даём инфу откуда был переход, защищаем от window.opener */}
               <p>Перейти на страницу: {appPage?.urlPage}</p>
-              <img src={link} alt="подробнее" className="mb-[7px]" />
+              <img src={link} alt="подробнее" className="mb-[7px]" loading="lazy" />
             </a>
             <hr className="h-[2px] col-span-full bg-slate-600" />
             

@@ -50,7 +50,7 @@ const ModalBlock: React.FC = () => {
                     className={`w-[5px] rounded-md mx-[9px] ${isDashboard ? "bg-custom-green" : "bg-gray-500"}`}
                     content=""
                   ></div>
-                  <a className=" px-[5%]" href="/">
+                  <a className=" px-[5%]" href="/" rel="sponsored">
                     {text}
                   </a>
                 </div>

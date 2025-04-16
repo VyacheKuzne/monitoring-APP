@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { Helmet } from 'react-helmet-async';
 import axios from "axios";
 import "../App.css";
 import ModalBlock from "../block/ModalBlock";
@@ -141,6 +142,11 @@ function ServerInfo() {
 
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
+      <Helmet>
+        <title>Сервер компании {`${company?.name}`} - {`${server?.hostname}`}</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href={`http://localhost:3001/company/${idCompany}/server/${idServer}/`} />
+      </Helmet>
       <ModalBlock />
       <div className="flex flex-col sm:gap-[3.5vh] m-[2%]">
         <InfoBlock url={url} crumb={crumb} />
@@ -173,6 +179,7 @@ function ServerInfo() {
               src={PlusSvg}
               className="w-[30px] h-[30px] mx-3"
               alt="Закрыть модальное окно"
+              loading="lazy"
             />
             <p>Добавить приложение</p>
           </button>
@@ -187,7 +194,7 @@ function ServerInfo() {
                     className="rotate-45 select-none"
                     onClick={closeModal}
                   >
-                    <img src={PlusSvg} alt="Закрыть модальное окно" />
+                    <img src={PlusSvg} alt="Закрыть модальное окно" loading="lazy" />
                   </button>
                 </div>
                 {/* форма для запоолнения */}

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { App } from "../../interfaces/app";
 import axios from "axios";
-import { now } from "moment";
 
 interface AppCardProps {
   appData: App; // Принят объект типа App
@@ -43,6 +42,7 @@ function AppCard({ appData }: AppCardProps) {
       className="flex flex-col gap-y-[25px] max-w-[400px] min-h-[200px] p-[30px] bg-white 
         hover:bg-slate-200 rounded-[5px] text-[16px] font-montserrat shadow-xl transition"
       href={`app/${appData.idApp}/`}
+      rel="nofollow"
     >
       <div className="flex items-center justify-between">
         <span className="text-left">{appData.name}</span> {/* Выводим название приложения */}

@@ -103,6 +103,7 @@ export default function ServerFilter() {
                       src={SearchSvg}
                       alt="Кнопка поиска"
                       className="h-[20px] w-[1.2em] ml-[10px]"
+                      loading="lazy"
                   />
                 </div>
             </div>
@@ -139,12 +140,13 @@ export default function ServerFilter() {
           {servers.map((server, index) => (
             <a
               href={`/company/${server.idCompany}/`}
+              rel="nofollow"
               className="flex gap-[15px] items-center mb-[4.5%]"
               key={index}
             >
               <div className={`min-w-[18px] w-[18px] min-h-[18px] h-[18px] rounded-full ${serversStatus[index] ? `bg-custom-green` : `bg-custom-red`}`} />
               <span className="w-full text8-16px">{server.name}</span>
-              <img src={transitArrow} alt="Перейти к серверам" />
+              <img src={transitArrow} alt="Перейти к серверам" className="w-[15px] h-[15px]" loading="lazy" />
             </a>
 
           ))}

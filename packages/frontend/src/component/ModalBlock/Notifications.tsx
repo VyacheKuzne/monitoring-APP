@@ -63,7 +63,10 @@ function Notifications() {
                     <div className="flex gap-[10px] text-[12px]">
                       <span>{formatDate(notification.date)}</span>
                       {generateLink(notification.parentCompany, notification.parentServer, notification.parentApp) !== '' ? 
-                        <a href={generateLink(notification.parentCompany, notification.parentServer, notification.parentApp)}>
+                        <a 
+                          href={generateLink(notification.parentCompany, notification.parentServer, notification.parentApp)}
+                          rel="nofollow"
+                        >
                           Перейти
                         </a> : null
                       }

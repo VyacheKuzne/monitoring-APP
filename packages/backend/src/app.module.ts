@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { WhoisModule } from './whois/whois.module';
 import { ConfigModule } from '@nestjs/config';
 import { SystemModule } from './systeminformation/system.module'; // Import SystemModule
-import { testDBModule } from './testDB/testDB.module';
 import { SslLabsModule } from './ssl-labs/ssl-labs.module';
 import { GraphModule } from './dataForgGrafix/graph.module';
 import { DomainModule } from './create/createDomain/createDomain.module'; // Import DomainModule here
@@ -27,7 +26,6 @@ import { DbBackupModule } from './db-backup/db-backup.module';
     PuppeteerModule,
     ConfigModule.forRoot({ isGlobal: true }),
     CreateNotificationModule,
-    testDBModule,
     // FrequencyTestModule,
     FilterModule,
     // DbBackupModule,

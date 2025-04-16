@@ -3,17 +3,11 @@ import { pageProps } from "../interfaces/pageprops";
 import Crumbs from "../component/Button/Сrumbs";
 
 export default function InfoBlock({ url = [], crumb = [] }: pageProps) {
-  // const urls = Array.isArray(url) ? url : [url];
-  // const crumbs = urls.map((u: string, index: number) => ({
-  //   url: index ===  ? '' : u,
-  //   crumb: crumb[index],
-  // }));
-  // console.log(crumbs);
 
   return (
     <>
-      <div className="flex flex-col">
-        <div className="flex gap-[10px] items-center w-1/2 bg-white rounded-md text-left p-[1.5%] shadow-lg">
+      <div className="flex flex-col w-auto">
+        <div className="flex gap-[10px] min-w-1/2 items-center bg-white rounded-md text-left p-[1.5%] shadow-lg">
           {[...Array(crumb.length)].map((_, index) => (
             <div className="flex gap-[10px]" key={index}>
               {index == crumb.length ? (

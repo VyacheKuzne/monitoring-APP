@@ -12,7 +12,7 @@ const ModalWindow: React.FC<ModalBlockProps> = ({ closeForm, children }) => {
               className="rotate-45 select-none"
               onClick={() => closeForm(false)}
             >
-              <img src={PlusSvg} alt="Закрыть модальное окно" />
+              <img src={PlusSvg} alt="Закрыть модальное окно" loading="lazy" />
             </button>
           </div>
           <div className="px-[30px] pb-[30px]">{children}</div>

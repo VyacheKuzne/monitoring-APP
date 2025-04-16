@@ -45,11 +45,12 @@ export default function ClientButton({ companiesData }: ModalBlockProps) {
         <img
           src={ClientSvg}
           alt="Развернуть клиентов"
-          className="mt-[1px]"
+          className="w-[22px] h-[22px]"
           style={{
             transform: `rotate(${rotateAngle}deg)`,
             transition: "transform 0.3s ease",
           }}
+          loading="lazy"
         />
         <p className="mx-[5%]">Клиент</p>
       </button>
@@ -64,7 +65,7 @@ export default function ClientButton({ companiesData }: ModalBlockProps) {
                 {client.idCompany === Number(idCompany) ? (
                   <div className="absolute left-[-14px] min-w-[11px] w-[11px] min-h-[11px] h-[11px] bg-custom-green border-[2px] border-white rounded-full" />
                 ) : null}
-                <a href={`/company/${client.idCompany}/`}>{client.name}</a>
+                <a href={`/company/${client.idCompany}/`} rel="nofollow">{client.name}</a>
               </li>
             ))}
           </ul>

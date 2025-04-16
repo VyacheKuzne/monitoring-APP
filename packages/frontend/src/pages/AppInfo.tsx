@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Helmet } from 'react-helmet-async';
 import axios from "axios";
 import "../App.css";
 import ModalBlock from "../block/ModalBlock";
@@ -38,6 +39,7 @@ function AppInfo() {
       const response = await axios.get(
         `http://localhost:3000/company/${idCompany}/server/${idServer}/app/${idApp}/get`,
       );
+      console.log(response.data.pageInfo);
 
       if (!response.data.pageInfo) {
         console.log("Отсутствуют данные о страницах");
@@ -116,6 +118,14 @@ function AppInfo() {
 
   return (
     <div className="App font-montserrat grid grid-cols-[300px_auto]">
+      <Helmet>
+        <title>Приложение на сервере {`${server?.hostname}`} - {`${app?.name}`}</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link 
+          rel="canonical" 
+          href={`http://localhost:3001/company/${idCompany}/server/${idServer}/app/${idApp}/`} 
+        />
+      </Helmet>
       <ModalBlock />
       <div className="flex flex-col sm:gap-[3.5vh] m-[2%]">
         <InfoBlock url={url} crumb={crumb} />
@@ -195,7 +205,7 @@ function AppInfo() {
                         >
                           {page.urlPage}
                         </p>
-                        <img src={CopySvg} alt="Копировать url" className="mb-[7px]" />
+                        <img src={CopySvg} alt="Копировать url" className="mb-[7px] w-[9px] h-[9px]" loading="lazy" />
                       </button>
                       <div
                         className="hidden absolute bg-white rounded-md p-4 w-[200px] z-20 shadow-xl"
@@ -210,7 +220,8 @@ function AppInfo() {
                         <img
                           src={link}
                           alt="подробнее"
-                          className="mb-[7px]"
+                          className="mb-[7px] w-[11px] h-[11px]" 
+                          loading="lazy"
                         />
                       </button>
                     </td>
