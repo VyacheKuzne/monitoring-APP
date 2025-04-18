@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+   binaryTargets = ["native", "windows", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+}
+
+model company {
+  idCompany Int @id @default(autoincrement())
+  name String @db.VarChar(50)
+
+  server server[] // Связь с таблицей server один ко многим
+  notification notification[] // Связь с таблицей notification один ко многим
+}
+
+model server {
+  idServer Int @id @default(autoincrement())
+  parentCompany Int
+  ipAddress String @db.VarChar(50)
+  hostname String @db.VarChar(50)
+  location String @db.VarChar(50)
+  os String @db.VarChar(50)
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  app app[] // Связь с таблицей app один ко многим
+  domain domain[] // Связь с таблицей domain один ко многим
+  checkServerStats checkServerStats[] // Связь с таблицей checkServerStats один ко многим
+  notification notification[] // Связь с таблицей notification один ко многим
+
+  company company @relation(fields: [parentCompany], references: [idCompany]) // Связь с таблицей company один ко многим
+}
+
+model app {
+  idApp Int @id @default(autoincrement())
+  parentServer Int
+  parentDomain Int
+  name String @db.VarChar(50)
+
+  page page[] // Связь с таблицей checkPage один ко многим
+  notification notification[] // Связь с таблицей notification один ко многим
+
+  server server @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
+  domain domain @relation(fields: [parentDomain], references: [idDomain]) // Связь с таблицей domain один ко многим
+}
+
+model domain {
+  idDomain Int @id @default(autoincrement())
+  name String @db.VarChar(50) @unique
+  registered DateTime?
+  expires DateTime?
+  updated DateTime?
+  parentStatus Int?
+  nameRegistar String? @db.VarChar(50)
+  nameOwner String? @db.VarChar(50)
+  access Boolean?
+  parentServer Int?
+
+  app app[] // Связь с таблицей app один ко многим
+  SSL SSL[] // Связь с таблицей SSL один ко многим
+
+  server server? @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
+  status status? @relation(fields: [parentStatus], references: [idStatus]) // Связь с таблицей status один ко многим
+}
+
+model SSL {
+  idSSL Int @id @default(autoincrement())
+  serialNumber String @db.VarChar(64) @unique
+  namePublisher String @db.VarChar(50)
+  registered DateTime
+  expires DateTime
+  parentStatus Int?
+  fingerprint String @db.VarChar(500)
+  publickey String @db.VarChar(50)
+  privatekey String @db.VarChar(50)
+  version String @db.VarChar(50)
+  parentDomain Int
+
+  domain domain? @relation(fields: [parentDomain], references: [idDomain]) // Связь с таблицей ssl один ко многим
+  status status? @relation(fields: [parentStatus], references: [idStatus]) // Связь с таблицей status один ко многим
+}
+
+model status {
+  idStatus Int @id @default(autoincrement())
+  status String @db.VarChar(50)
+
+  domain domain[] // Связь с таблицей domain один ко многим
+  SSL SSL[] // Связь с таблицей SSL один ко многим
+}
+
+model checkServerStats {
+  idCheckServerStats Int @id @default(autoincrement())
+  parentServer Int?
+
+  modelCPU String
+  loadCPU Float
+  totalRAM BigInt
+  usedRAM BigInt
+  remainingRAM BigInt
+  
+  iface String
+  ip4 String
+  ip6 String
+  received BigInt
+  sent BigInt
+  speed Float
+
+  countProcesses Int?
+  countErrors Int?
+  date DateTime
+
+  server server? @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
+  disk disk[] // Связь с таблицей disk один ко многим
+}
+
+model disk {
+  idDisk Int @id @default(autoincrement())
+  parentServerStats Int
+  device String?
+  mount String
+  type String
+  totalMemory BigInt
+  usedMemory BigInt
+  remainingMemory BigInt
+  loadMemory Float
+
+  checkServerStats checkServerStats @relation(fields: [parentServerStats], references: [idCheckServerStats], onDelete: Cascade) // Связь с таблицей checkServerStats один ко многим
+}
+
+model page {
+  idPage Int @id @default(autoincrement())
+  parentApp Int
+  title String @db.VarChar(70)
+  urlPage String @db.VarChar(700) @unique
+  
+  app app? @relation(fields: [parentApp], references: [idApp])
+  checkPage checkPage[]
+}
+
+model checkPage {
+  idCheckPage Int @id @default(autoincrement())
+  parentPage Int?
+  statusLoadPage  String @db.VarChar(50)
+  statusLoadContent  String @db.VarChar(50)
+  statusLoadDOM  String @db.VarChar(50)
+  statusLoadMedia  String @db.VarChar(50)
+  statusLoadStyles  String @db.VarChar(50)
+  statusLoadScripts  String @db.VarChar(50)
+  responseTime Float
+
+  date DateTime
+
+  page page? @relation(fields: [parentPage], references: [idPage]) // Связь с таблицей app один ко многим
+}
+
+model notification {
+  idNotification Int @id @default(autoincrement())
+  text String
+  parentCompany Int?
+  parentServer Int?
+  status String?
+  parentApp Int?
+  date DateTime
+
+  company company? @relation(fields: [parentCompany], references: [idCompany]) // Связь с таблицей company один ко многим
+  server server? @relation(fields: [parentServer], references: [idServer]) // Связь с таблицей server один ко многим
+  app app? @relation(fields: [parentApp], references: [idApp]) // Связь с таблицей app один ко многим
+}
