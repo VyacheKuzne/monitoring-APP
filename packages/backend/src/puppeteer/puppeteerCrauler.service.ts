@@ -50,20 +50,25 @@ export class PuppeteerCrauler {
   }
 
   async findLinksViaPuppeteer(domain: string, authorized: boolean) {
-    this.logger.debug('начал работать findLinksViaPuppeteer');
+    this.logger.debug('Начал работать findLinksViaPuppeteer');
     const startUrl = `https://${domain}`;
     const page: Page = await this.browser.newPage();
     const visitedLinks = new Set<string>();
     const toVisit = [`${startUrl}`];
     const errorLinks = new Set<string>();
-    const subPageCandidates: string[] = [];
+    let subPageCandidates: string[] = [];
 
     const blacklistPatterns: RegExp[] = [
       /^https:\/\/a7-bill-stage\.tw1\.ru\/api\/users\/\d+$/,
     ];
 
     const isBlacklisted = (url: string): boolean => {
-      return blacklistPatterns.some((pattern) => pattern.test(url));
+      const blacklisted = blacklistPatterns.some((pattern) =>
+        pattern.test(url),
+      );
+      if (blacklisted)
+        console.log(`🚫 URL ${url} в черном списке, пропускаем.`);
+      return blacklisted;
     };
 
     const normalizeUrl = (url: string): string => url.split('#')[0];
@@ -78,11 +83,11 @@ export class PuppeteerCrauler {
     });
 
     const getLinks = async (url: string) => {
-      this.logger.debug('начал работать getLinks');
+      this.logger.debug('Начал работать getLinks');
       try {
         await page.goto(url, { waitUntil: 'networkidle2' });
 
-        return await page.evaluate((domain: string) => {
+        const links = await page.evaluate((domain: string) => {
           return Array.from(document.querySelectorAll('a'))
             .map((a) => a.href.trim())
             .filter(
@@ -93,6 +98,8 @@ export class PuppeteerCrauler {
               href.startsWith('/') ? `https://${domain}${href}` : href,
             );
         }, domain);
+
+        return links.filter((link) => !isBlacklisted(link)); // Фильтруем перед возвратом
       } catch (error) {
         console.error(`Ошибка при загрузке страницы ${url}:`, error);
         return [];
@@ -100,7 +107,8 @@ export class PuppeteerCrauler {
     };
 
     const checkSubPages = async (baseUrls: string[]) => {
-      this.logger.debug('начал работать checkSubPages');
+      this.logger.debug('Начал работать checkSubPages');
+      baseUrls = baseUrls.filter((url) => !isBlacklisted(url)); // Убираем ссылки перед обработкой
       for (const baseUrl of baseUrls) {
         let index = 1;
         while (true) {
@@ -108,7 +116,7 @@ export class PuppeteerCrauler {
 
           if (isBlacklisted(testUrl)) {
             console.log(`⚠️ Пропущен (блэклист): ${testUrl}`);
-            break;
+            break; // Прерываем цикл на первом запрещенном URL
           }
 
           try {
@@ -131,29 +139,27 @@ export class PuppeteerCrauler {
       `Проверяем авторизацию: ${authorized}, тип: ${typeof authorized}`,
     );
     if (authorized) {
-      this.logger.debug(`авторизация нужна`);
+      this.logger.debug(`Авторизация нужна`);
       await this.AutorizationService.login(page, domain);
     } else {
-      this.logger.debug(`авторизация не нужна`);
+      this.logger.debug(`Авторизация не нужна`);
     }
 
     while (toVisit.length > 0) {
       const currentUrl = toVisit.shift()!;
       const normalizedUrl = normalizeUrl(currentUrl);
 
-      if (visitedLinks.has(normalizedUrl) || isBlacklisted(normalizedUrl))
+      if (visitedLinks.has(normalizedUrl) || isBlacklisted(normalizedUrl)) {
         continue;
+      }
       visitedLinks.add(normalizedUrl);
 
       const newLinks = await getLinks(currentUrl);
       for (const link of newLinks) {
         const normalizedLink = normalizeUrl(link);
-        if (
-          !visitedLinks.has(normalizedLink) &&
-          !isBlacklisted(normalizedLink)
-        ) {
+        if (!visitedLinks.has(normalizedLink)) {
           toVisit.push(normalizedLink);
-          subPageCandidates.push(normalizedLink); // Добавляем ссылку в кандидаты для вложенной проверки
+          subPageCandidates.push(normalizedLink);
         }
       }
 

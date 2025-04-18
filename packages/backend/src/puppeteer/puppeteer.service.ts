@@ -28,7 +28,7 @@ export class PuppeteerService {
   private browser: puppeteer.Browser;
   private attempts = 100;
   private timeout = 90000;
-  private concurrency = 3;
+  private concurrency = 2;
   // private recursionDepth = 10;
   private PageCount = 0;
   private failedPageCount = 0;
